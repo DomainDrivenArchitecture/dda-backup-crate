@@ -17,8 +17,15 @@
 (ns org.domaindrivenarchitecture.pallet.crate.backup
    (:require
     [pallet.actions :as actions]
+    [pallet.stevedore :as stevedore]
     [org.domaindrivenarchitecture.cm.util :as util]
     ))
+
+(def facility
+  :dda-backup)
+
+(def backup-user-name 
+  "dataBackupSource")
 
 (defn- script-path
   [app-name]
@@ -50,25 +57,23 @@
 
 (defn create-backup-source-user
   []
-  (let [user-name "dataBackupSource"]
-    (actions/user user-name 
-                  :action :create 
-                  :create-home true 
-                  :shell :bash
-                  :password "WIwn6jIUt2Rbc")
-    (actions/directory (str "/home/" user-name "/transport-outgoing")
-                       :action :create
-                       :owner user-name
-                       :group user-name)
-    (actions/directory (str "/home/" user-name "/store")
-                       :action :create
-                       :owner user-name
-                       :group user-name)
-    (actions/directory (str "/home/" user-name "/restore")
-                       :action :create
-                       :owner user-name
-                       :group user-name)
-    )
+  (actions/user backup-user-name 
+                :action :create 
+                :create-home true 
+                :shell :bash
+                :password "WIwn6jIUt2Rbc")
+  (actions/directory (str "/home/" backup-user-name "/transport-outgoing")
+                     :action :create
+                     :owner backup-user-name
+                     :group backup-user-name)
+  (actions/directory (str "/home/" backup-user-name "/store")
+                     :action :create
+                     :owner backup-user-name
+                     :group backup-user-name)
+  (actions/directory (str "/home/" backup-user-name "/restore")
+                     :action :create
+                     :owner backup-user-name
+                     :group backup-user-name)
   )
 
 (defn create-source-environment
@@ -122,20 +127,33 @@
   )
 
 
-(defn install-backup-source
-  ""
+(defn install-backup-environment
   [& {:keys [app-name]}]
-  (create-backup-source-user)
-  (create-source-environment app-name)
-)
+  (let [installed-marker 
+        (str "/home/pallet/state/" (name facility))]
+    (actions/plan-when-not 
+      (stevedore/script (file-exists? installed-marker))
+      (create-backup-source-user)
+      (create-source-environment app-name)
+      (actions/file
+        installed-marker
+        :action :create)
+      )))
 
-(defn configure-backup-source
+(defn install-backup-app-instance
   [& {:keys [app-name
-             semantic-name
+             instance-name
              backup-lines 
              source-transport-lines 
              restore-lines]}]
-  (create-source-backup app-name semantic-name backup-lines)
-  (create-source-transport app-name semantic-name source-transport-lines)
-  (create-source-restore app-name semantic-name restore-lines)
-)
+  (let [installed-marker 
+        (str "/home/pallet/state/" (name facility) "-" instance-name)]
+    (actions/plan-when-not 
+      (stevedore/script (file-exists? installed-marker))
+      (create-source-backup app-name instance-name backup-lines)
+      (create-source-transport app-name instance-name source-transport-lines)
+      (create-source-restore app-name instance-name restore-lines)
+      (actions/file
+        (str "/home/pallet/state/" (name facility) "-" instance-name)
+        :action :create)
+      )))
