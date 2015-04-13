@@ -129,16 +129,9 @@
 
 (defn install-backup-environment
   [& {:keys [app-name]}]
-  (let [installed-marker 
-        (str "/home/pallet/state/" (name facility))]
-    (actions/plan-when-not 
-      (stevedore/script (file-exists? installed-marker))
-      (create-backup-source-user)
-      (create-source-environment app-name)
-      (actions/file
-        installed-marker
-        :action :create)
-      )))
+  (create-backup-source-user)
+  (create-source-environment app-name)
+  )
 
 (defn install-backup-app-instance
   [& {:keys [app-name
@@ -146,14 +139,7 @@
              backup-lines 
              source-transport-lines 
              restore-lines]}]
-  (let [installed-marker 
-        (str "/home/pallet/state/" (name facility) "-" instance-name)]
-    (actions/plan-when-not 
-      (stevedore/script (file-exists? installed-marker))
-      (create-source-backup app-name instance-name backup-lines)
-      (create-source-transport app-name instance-name source-transport-lines)
-      (create-source-restore app-name instance-name restore-lines)
-      (actions/file
-        (str "/home/pallet/state/" (name facility) "-" instance-name)
-        :action :create)
-      )))
+  (create-source-backup app-name instance-name backup-lines)
+  (create-source-transport app-name instance-name source-transport-lines)
+  (create-source-restore app-name instance-name restore-lines)
+  )
