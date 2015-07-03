@@ -2,10 +2,19 @@
 
 
 ## [dda-backup-crate](https://github.com/DomainDrivenArchitecture/dda-backup-crate)
-* Es werden die Kommandozeilen-Befehle für die Installation eines applikationsspezifischen Backup-Systems logisch gebündelt und im Pallet-Kontext ausgeführt.
-* Welche Befehle für einen Backup nötig sind, ist den Dokumentationen der Applikation, für welche der Backup eingerichtet wird, zu entnehmen.
+TODO review jem 3.7.: Im aktiv schreiben:
+Der Crate bündelt die Installation eines applikationsspezifischen Backup-Systems.
+
+## Kompatibilität
+Der Crate funktioniert unter:
+ * pallet 0.8
+ * ubuntu 14.04
+ * TODO review mje 27.6.2015: Aufführen, welche apt-get pakete wir hier verwenden.
+ * TODO rework sct 29.6.2015: Ich weiß von keinen... der Crate nutzt kein actions/package oder so... solte das wenige Zeug, das wir nutzen (tar, unzip, usw. nicht standardmäßig bei Ubuntu dabei sein?)
+ * TODO review jem 3.7.: die pakete sind nicht mit dabei, und dass kein anderer die genutzen pakete beschreibt ist ja kein grund, dass wir das auch nicht beschreiben?
 
 ## Funktionalität
+TODO review jem 3.7.: Im aktiv schreiben, sonst gut.
 Durch die Verwendung des Backup-Crates wird angestoßen:
 * benötigten Backup-User (dataBackupSource) auf dem Linux-Zielsystem angelegen. Ordner und Skripte, die für den Backup benutzt werden, werden durch ihn verwaltet.
 * benötigte Ordnerstrukturen anlegen, d.h. dass im home-Directory des neu angelegten Backup-Users folgende Ordner angelegt werden:
@@ -15,12 +24,6 @@ Durch die Verwendung des Backup-Crates wird angestoßen:
 * Backup-Scripte installieren; sie führen die benötigten Schritte zur Erstellung eines Backups aus. Je nach Applikation können diese unterschiedlich aussehen.
 * die benötigten Cronjobs eintragen, welche für die regelmäßige Ausführung der oben genannten Scripte sorgen.
 
-## Kompatibilität
-Der Crate funktioniert unter:
- * pallet 0.8
- * ubuntu 14.04
- * TODO review mje 27.6.2015: Aufführen, welche apt-get pakete wir hier verwenden.
- * TODO rework sct 29.6.2015: Ich weiß von keinen... der Crate nutzt kein actions/package oder so... solte das wenige Zeug, das wir nutzen (tar, unzip, usw. nicht standardmäßig bei Ubuntu dabei sein?)
  
 ## Features
 * Der Crate bietet die Möglichkeit eines Backups von Files
@@ -37,13 +40,16 @@ Der Crate funktioniert unter:
 * Die Methode **org.domaindrivenarchitecture.pallet.crate.backup/install-backup-app-instance** wird bei der Installation des Backups aufgerufen.
 * Sie erhält folgende Eingabe-Parameter:
 
-| Parameter       | Bedeutung     |
-| --------------- |-------------|
-| app-name        | Der Applikationssname (z.B. JIRA) |
-| instance-name        | Der semantische Name der Applikation |
-| backup-lines   | Kommandozeilen-Befehle zur Einrichtung des Backup-Prozesses  |
+| Parameter       	| Bedeutung     |
+| --------------- 	|-------------|
+| app-name        	| Der Applikationssname (z.B. JIRA) |
+
+TODO review jem 3.7.: instance name gibt's nicht - entweder Beschreibung raus oder richtig (siehe unten).
+ 
+| instance-name  	| Der semantische Name der Applikation |
+| backup-lines   	| Kommandozeilen-Befehle zur Einrichtung des Backup-Prozesses  |
 | source-transport-lines | Kommandozeilen-Befehle zur Einrichtung des Transport-Prozesses |
-| restore-lines | Kommandozeilen-Befehle zur Einrichtung des Restore-Prozesses |
+| restore-lines 	| Kommandozeilen-Befehle zur Einrichtung des Restore-Prozesses |
  
 * Pro Applikation werden die drei Kommandozeilen-Befehls-Listen definiert.
 * Es ist sinnvoll, diese Definitionen in einen eigenen Namensraum (Namespace) zu packen.
@@ -52,6 +58,8 @@ Der Crate funktioniert unter:
 
  
 ## Anwendungsbeispiele
+
+TODO review jem 3.7.: Hier bitte nochmal sorgfältig Einrückung, Überschriften Struktur!
 
 #### Skript-Definitionen am Beispiel von Owncloud
 Es werden die drei Skripte definiert und anschließend die Installation der Backup-Architektur angestoßen.
@@ -62,20 +70,21 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
 * backup-lib: Funktionalitäten für den Backup-Schritt
 * restore-lib: Funktionalitäten für den Restore-Schritt
 
+	```
 	(:require
 		[org.domaindrivenarchitecture.pallet.crate.backup :as backup]
 		[org.domaindrivenarchitecture.pallet.crate.backup.common-lib :as common-lib]
 		[org.domaindrivenarchitecture.pallet.crate.backup.backup-lib :as backup-lib]
 		[org.domaindrivenarchitecture.pallet.crate.backup.restore-lib :as restore-lib]
-    )
+    )```
 
 ######Skript zur Backup-Erstellung: 
 
 * Sichern der Datenbank: backup-lib/backup-mysql
 * Sichern der Files: backup-lib/backup-files-rsync
 
-
-	  (defn owncloud-source-backup-script-lines
+  ```  
+     (defn owncloud-source-backup-script-lines
   	    ""
   	    [& {:keys [semantic-name
     	            app-name
@@ -104,10 +113,10 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
             	:app app-name 
             	:semantic-name semantic-name) 
           	(common-lib/start-app-server "apache2")
-        )))
+        )))```
 
 ###### Skript für den Transport:
-
+```
 	(defn owncloud-source-transport-script-lines
   	[& {:keys [semantic-name
        	      app-name
@@ -121,10 +130,10 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
             		:gens-stored-on-source-system generations 
             		:files-to-transport [:rsync :mysql])
           	)
-        ))
+        ))```
 
 ###### Skript für die Wiederherstellung:
-
+```
 	(defn owncloud-restore-script-lines
   	[& {:keys [db-pass]}]
   		(let 	[db-user "owncloud"
@@ -156,10 +165,10 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
             		restore-lib/restore-tail
             	)
           ))
-  )
+  )```
   
 ###### Installationsaufruf:
-  
+```  
   	(backup/install-backup-app-instance
            	:app-name app-name 
            	:instance-name semantic-name
@@ -176,7 +185,7 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
            	:restore-lines
            	(owncloud-restore-script-lines 
              	:db-pass db-pass))
-         ))
+         ))```
   
   
 
