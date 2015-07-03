@@ -2,16 +2,12 @@
 
 
 ## [dda-backup-crate](https://github.com/DomainDrivenArchitecture/dda-backup-crate)
-TODO review jem 3.7.: Im aktiv schreiben:
-Der Crate bündelt die Installation eines applikationsspezifischen Backup-Systems.
+Der Crate stellt dem Nutzer die Installation & Konfiguration eines applikationsspezifischen Backup-Systems bereit.
 
 ## Kompatibilität
 Der Crate funktioniert unter:
  * pallet 0.8
  * ubuntu 14.04
- * TODO review mje 27.6.2015: Aufführen, welche apt-get pakete wir hier verwenden.
- * TODO rework sct 29.6.2015: Ich weiß von keinen... der Crate nutzt kein actions/package oder so... solte das wenige Zeug, das wir nutzen (tar, unzip, usw. nicht standardmäßig bei Ubuntu dabei sein?)
- * TODO review jem 3.7.: die pakete sind nicht mit dabei, und dass kein anderer die genutzen pakete beschreibt ist ja kein grund, dass wir das auch nicht beschreiben?
 
 ## Funktionalität
 TODO review jem 3.7.: Im aktiv schreiben, sonst gut.
@@ -43,9 +39,6 @@ Durch die Verwendung des Backup-Crates wird angestoßen:
 | Parameter       	| Bedeutung     |
 | --------------- 	|-------------|
 | app-name        	| Der Applikationssname (z.B. JIRA) |
-
-TODO review jem 3.7.: instance name gibt's nicht - entweder Beschreibung raus oder richtig (siehe unten).
- 
 | instance-name  	| Der semantische Name der Applikation |
 | backup-lines   	| Kommandozeilen-Befehle zur Einrichtung des Backup-Prozesses  |
 | source-transport-lines | Kommandozeilen-Befehle zur Einrichtung des Transport-Prozesses |
