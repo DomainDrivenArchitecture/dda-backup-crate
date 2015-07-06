@@ -10,13 +10,12 @@ Der Crate funktioniert unter:
  * ubuntu 14.04
 
 ## Funktionalität
-TODO review jem 3.7.: Im aktiv schreiben, sonst gut.
-Durch die Verwendung des Backup-Crates wird angestoßen:
-* benötigten Backup-User (dataBackupSource) auf dem Linux-Zielsystem angelegen. Ordner und Skripte, die für den Backup benutzt werden, werden durch ihn verwaltet.
+Die Verwendung des Backup-Crates führt aus:
+* benötigten Backup-User (dataBackupSource) auf dem Linux-Zielsystem angelegen. Backup-User verwaltet Ordner und Skripte, die für den Backup benutzt werden.
 * benötigte Ordnerstrukturen anlegen, d.h. dass im home-Directory des neu angelegten Backup-Users folgende Ordner angelegt werden:
-  * transport-outgoing - zur Ablage von Backups, die auf eine andere Maschine gebracht werden sollen
+  * transport-outgoing - zur Ablage von Backups, die das laufende Backup-System auf eine andere Maschine bringt
   * store - der Ort zur Ablage der momentan gespeicherten lokalen Backups
-  * restore - der Ort, von dem aus der Restore-Prozess angestoßen wird
+  * restore - der Ort, von dem aus das Backup-Sysem den Restore-Prozess angestößt
 * Backup-Scripte installieren; sie führen die benötigten Schritte zur Erstellung eines Backups aus. Je nach Applikation können diese unterschiedlich aussehen.
 * die benötigten Cronjobs eintragen, welche für die regelmäßige Ausführung der oben genannten Scripte sorgen.
 
@@ -52,12 +51,10 @@ Durch die Verwendung des Backup-Crates wird angestoßen:
  
 ## Anwendungsbeispiele
 
-TODO review jem 3.7.: Hier bitte nochmal sorgfältig Einrückung, Überschriften Struktur!
-
-#### Skript-Definitionen am Beispiel von Owncloud
+### Skript-Definitionen am Beispiel von Owncloud
 Es werden die drei Skripte definiert und anschließend die Installation der Backup-Architektur angestoßen.
 
-###### Namespaces im Crate:
+#### Namespaces im Crate:
 * backup: Hauptfunktionalität, z.B. Funktion zum Installationsaufruf, siehe unten
 * commun-lib: Gemeinsam genutzte Funktionalitäten, z.B. Skript-Header, o.Ä.
 * backup-lib: Funktionalitäten für den Backup-Schritt
@@ -71,7 +68,7 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
 		[org.domaindrivenarchitecture.pallet.crate.backup.restore-lib :as restore-lib]
     )```
 
-######Skript zur Backup-Erstellung: 
+#### Skript zur Backup-Erstellung: 
 
 * Sichern der Datenbank: backup-lib/backup-mysql
 * Sichern der Files: backup-lib/backup-files-rsync
@@ -108,7 +105,7 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
           	(common-lib/start-app-server "apache2")
         )))```
 
-###### Skript für den Transport:
+#### Skript für den Transport:
 ```
 	(defn owncloud-source-transport-script-lines
   	[& {:keys [semantic-name
@@ -125,7 +122,7 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
           	)
         ))```
 
-###### Skript für die Wiederherstellung:
+#### Skript für die Wiederherstellung:
 ```
 	(defn owncloud-restore-script-lines
   	[& {:keys [db-pass]}]
@@ -160,7 +157,7 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
           ))
   )```
   
-###### Installationsaufruf:
+#### Installationsaufruf:
 ```  
   	(backup/install-backup-app-instance
            	:app-name app-name 
