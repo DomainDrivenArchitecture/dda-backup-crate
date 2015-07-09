@@ -60,72 +60,71 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
 * backup-lib: Funktionalitäten für den Backup-Schritt
 * restore-lib: Funktionalitäten für den Restore-Schritt
 
-	```
-	(:require
-		[org.domaindrivenarchitecture.pallet.crate.backup :as backup]
-		[org.domaindrivenarchitecture.pallet.crate.backup.common-lib :as common-lib]
-		[org.domaindrivenarchitecture.pallet.crate.backup.backup-lib :as backup-lib]
-		[org.domaindrivenarchitecture.pallet.crate.backup.restore-lib :as restore-lib]
-    )```
+```
+(:require
+	[org.domaindrivenarchitecture.pallet.crate.backup :as backup]
+	[org.domaindrivenarchitecture.pallet.crate.backup.common-lib :as common-lib]
+	[org.domaindrivenarchitecture.pallet.crate.backup.backup-lib :as backup-lib]
+	[org.domaindrivenarchitecture.pallet.crate.backup.restore-lib :as restore-lib])
+```
 
 #### Skript zur Backup-Erstellung: 
 
 * Sichern der Datenbank: backup-lib/backup-mysql
 * Sichern der Files: backup-lib/backup-files-rsync
 
-  ```  
-     (defn owncloud-source-backup-script-lines
-  	    ""
-  	    [& {:keys [semantic-name
-    	            app-name
-        	        mysql-pwd]}]
-    	(into [] 
-    	   (concat 
-            common-lib/head
-            common-lib/export-timestamp
-            [(str "mv /home/dataBackupSource/store/"
-            	    (common-lib/backup-file-prefix app-name semantic-name :rsync)
-                	"*."
-                	(common-lib/file-type-extension :rsync)
-                	" /home/dataBackupSource/transport-outgoing/"
-                	(common-lib/backup-file-name app-name semantic-name :rsync))
-           	""]
-            (common-lib/stop-app-server "apache2")         
-          	(backup-lib/backup-mysql 
-            	:db-user "owncloud" 
-            	:db-pass mysql-pwd 
-            	:db-name "owncloud" 
-            	:app app-name
-            	:semantic-name semantic-name)
-          	(backup-lib/backup-files-rsync
-            	:root-dir "/var/www/" 
-            	:subdir-to-save "owncloud"
-            	:app app-name 
-            	:semantic-name semantic-name) 
-          	(common-lib/start-app-server "apache2")
-        )))```
+```  
+(defn owncloud-source-backup-script-lines
+    ""
+    [& {:keys [semantic-name
+       app-name
+        mysql-pwd]}]
+    (into [] 
+       (concat 
+        common-lib/head
+        common-lib/export-timestamp
+        [(str "mv /home/dataBackupSource/store/"
+       	    (common-lib/backup-file-prefix app-name semantic-name :rsync)
+             	"*."
+              	(common-lib/file-type-extension :rsync)
+               	" /home/dataBackupSource/transport-outgoing/"
+               	(common-lib/backup-file-name app-name semantic-name :rsync))
+       	""]
+        (common-lib/stop-app-server "apache2")         
+       	(backup-lib/backup-mysql 
+       	    :db-user "owncloud" 
+            :db-pass mysql-pwd 
+            :db-name "owncloud" 
+            :app app-name
+            :semantic-name semantic-name)
+        (backup-lib/backup-files-rsync
+            :root-dir "/var/www/" 
+            :subdir-to-save "owncloud"
+            :app app-name 
+            :semantic-name semantic-name) 
+        (common-lib/start-app-server "apache2"))))
+```
 
 #### Skript für den Transport:
 ```
-	(defn owncloud-source-transport-script-lines
-  	[& {:keys [semantic-name
-       	      app-name
-              generations]}]
-  		(into [] 
+(defn owncloud-source-transport-script-lines
+	[& {:keys [semantic-name
+       		app-name
+             	generations]}]
+  	(into [] 
         	(concat 
           		common-lib/head
           		(backup-lib/source-transport-script-lines 
             		:app-name app-name
             		:semantic-name semantic-name 
             		:gens-stored-on-source-system generations 
-            		:files-to-transport [:rsync :mysql])
-          	)
-        ))```
+            		:files-to-transport [:rsync :mysql]))))
+```
 
 #### Skript für die Wiederherstellung:
 ```
-	(defn owncloud-restore-script-lines
-  	[& {:keys [db-pass]}]
+(defn owncloud-restore-script-lines
+	[& {:keys [db-pass]}]
   		(let 	[db-user "owncloud"
         		db-name "owncloud"]
     		(into [] 
@@ -152,14 +151,13 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
               			(restore-lib/restore-rsync
                 			:restore-target-dir "/var/www/owncloud"))
             		restore-lib/restore-file-tail
-            		restore-lib/restore-tail
-            	)
-          ))
-  )```
+            		restore-lib/restore-tail))))
+```
   
 #### Installationsaufruf:
+
 ```  
-  	(backup/install-backup-app-instance
+(backup/install-backup-app-instance
            	:app-name app-name 
            	:instance-name semantic-name
            	:backup-lines 
@@ -174,8 +172,8 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
                 :generations 1)
            	:restore-lines
            	(owncloud-restore-script-lines 
-             	:db-pass db-pass))
-         ))```
+             	:db-pass db-pass))))
+```
   
   
 
