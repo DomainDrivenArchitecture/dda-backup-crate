@@ -105,7 +105,7 @@
 (defn create-sudo-user
   "creates a sudo user with pw is encrypted handed over. 
 Passwords can be generated e.g. by mkpasswd test123. 
-So password test123 is representet by sqliZ6M65Vfjo."
+So password test1234 is representet by 3hLlUVSs1Aa1c"
   [& {:keys [user-name 
              encrypted-password
              authorized-key-ids 
