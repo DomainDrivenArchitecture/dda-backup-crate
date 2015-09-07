@@ -33,26 +33,26 @@
   )
 
 (defn- cron-name
-  [semantic-name script-type]
+  [instance-name script-type]
   (case script-type
       :backup 
-      (str semantic-name "_backup")
+      (str instance-name "_backup")
       :restore 
-      (str semantic-name "_restore")
+      (str instance-name "_restore")
       :source-transport
-      (str semantic-name "_source_transport")
+      (str instance-name "_source_transport")
       )
   )
 
 (defn- script-name
-  [semantic-name script-type]
-  (str (cron-name semantic-name script-type) ".sh")
+  [instance-name script-type]
+  (str (cron-name instance-name script-type) ".sh")
   )
 
 
 (defn- script-path-with-name
-  [app-name semantic-name script-type]
-  (str (script-path app-name) "/" (script-name semantic-name script-type))
+  [app-name instance-name script-type]
+  (str (script-path app-name) "/" (script-name instance-name script-type))
   )
 
 (defn create-backup-source-user
@@ -86,24 +86,24 @@
   )
 
 (defn create-source-backup
-  [app-name semantic-name backup-lines]
+  [app-name instance-name backup-lines]
   (actions/remote-file
-    (script-path-with-name app-name semantic-name :backup)
+    (script-path-with-name app-name instance-name :backup)
     :mode "700"
     :overwrite-changes true
     :literal true
     :content (util/create-file-content 
                backup-lines))
   (actions/symbolic-link 
-    (script-path-with-name app-name semantic-name :backup)
-    (str "/etc/cron.daily/10_" (cron-name semantic-name :backup))
+    (script-path-with-name app-name instance-name :backup)
+    (str "/etc/cron.daily/10_" (cron-name instance-name :backup))
     :action :create)
   )
 
 (defn create-source-restore
-  [app-name semantic-name restore-lines]
+  [app-name instance-name restore-lines]
   (actions/remote-file
-    (script-path-with-name app-name semantic-name :restore)  
+    (script-path-with-name app-name instance-name :restore)  
     :mode "700"
     :overwrite-changes true
     :literal true
@@ -112,17 +112,17 @@
   )
 
 (defn create-source-transport
-  [app-name semantic-name source-transport-lines]
+  [app-name instance-name source-transport-lines]
   (actions/remote-file
-    (script-path-with-name app-name semantic-name :source-transport)   
+    (script-path-with-name app-name instance-name :source-transport)   
     :mode "700"
     :overwrite-changes true
     :literal true
     :content (util/create-file-content 
                source-transport-lines))
   (actions/symbolic-link 
-    (script-path-with-name app-name semantic-name :source-transport) 
-    (str "/etc/cron.daily/20_" (cron-name semantic-name :source-transport))
+    (script-path-with-name app-name instance-name :source-transport) 
+    (str "/etc/cron.daily/20_" (cron-name instance-name :source-transport))
     :action :create)
   )
 

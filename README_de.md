@@ -76,7 +76,7 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
 ```  
 (defn owncloud-source-backup-script-lines
     ""
-    [& {:keys [semantic-name
+    [& {:keys [instance-name
        app-name
         mysql-pwd]}]
     (into [] 
@@ -84,11 +84,11 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
         common-lib/head
         common-lib/export-timestamp
         [(str "mv /home/dataBackupSource/store/"
-       	    (common-lib/backup-file-prefix app-name semantic-name :rsync)
+       	    (common-lib/backup-file-prefix app-name instance-name :rsync)
              	"*."
               	(common-lib/file-type-extension :rsync)
                	" /home/dataBackupSource/transport-outgoing/"
-               	(common-lib/backup-file-name app-name semantic-name :rsync))
+               	(common-lib/backup-file-name app-name instance-name :rsync))
        	""]
         (common-lib/stop-app-server "apache2")         
        	(backup-lib/backup-mysql 
@@ -96,19 +96,19 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
             :db-pass mysql-pwd 
             :db-name "owncloud" 
             :app app-name
-            :semantic-name semantic-name)
+            :instance-name instance-name)
         (backup-lib/backup-files-rsync
             :root-dir "/var/www/" 
             :subdir-to-save "owncloud"
             :app app-name 
-            :semantic-name semantic-name) 
+            :instance-name instance-name) 
         (common-lib/start-app-server "apache2"))))
 ```
 
 #### Skript für den Transport:
 ```
 (defn owncloud-source-transport-script-lines
-	[& {:keys [semantic-name
+	[& {:keys [instance-name
        		app-name
              	generations]}]
   	(into [] 
@@ -116,7 +116,7 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
           		common-lib/head
           		(backup-lib/source-transport-script-lines 
             		:app-name app-name
-            		:semantic-name semantic-name 
+            		:instance-name instance-name 
             		:gens-stored-on-source-system generations 
             		:files-to-transport [:rsync :mysql]))))
 ```
@@ -159,15 +159,15 @@ Es werden die drei Skripte definiert und anschließend die Installation der Back
 ```  
 (backup/install-backup-app-instance
            	:app-name app-name 
-           	:instance-name semantic-name
+           	:instance-name instance-name
            	:backup-lines 
            	(owncloud-source-backup-script-lines
-                :semantic-name semantic-name
+                :instance-name instance-name
                 :app-name app-name
                 :mysql-pwd db-pass)
                 :source-transport-lines 
            	(owncloud-source-transport-script-lines 
-                :semantic-name semantic-name
+                :instance-name instance-name
                 :app-name app-name
                 :generations 1)
            	:restore-lines
