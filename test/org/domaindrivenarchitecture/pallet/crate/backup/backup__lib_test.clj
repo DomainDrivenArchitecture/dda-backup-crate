@@ -31,8 +31,8 @@
              "cd /home/dataBackupSource/store"
              "# test wether pwd points to expected place"
             "if [ \"$PWD\" == \"/home/dataBackupSource/store\" ]; then"
-            "  (ls -t portal_prod_file_*|head -n 1;ls portal_prod_file_*)|sort|uniq -u|xargs rm"
-            "  (ls -t portal_prod_mysql_*|head -n 1;ls portal_prod_mysql_*)|sort|uniq -u|xargs rm"
+            "  (ls -t portal_prod_file_*|head -n 1;ls portal_prod_file_*)|sort|uniq -u|xargs rm -r"
+            "  (ls -t portal_prod_mysql_*|head -n 1;ls portal_prod_mysql_*)|sort|uniq -u|xargs rm -r"
             "fi"
             ""]
            (sut/source-transport-script-lines
