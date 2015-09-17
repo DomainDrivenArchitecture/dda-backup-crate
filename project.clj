@@ -18,7 +18,9 @@
               {:dependencies [[org.slf4j/jcl-over-slf4j "1.7.2"]]
                :exclusions [commons-logging]}}
  :local-repo-classpath true
- :repositories {"clojars" "http://clojars.org/repo/"}
+ :repositories {"public" "https://artifacts.meissa-gmbh.de/archiva/repository/public/"
+                 "snapshots" "https://tech:test12345@artifacts.meissa-gmbh.de:443/archiva/repository/snapshots/"
+                 "releases" "https://tech:test12345@artifacts.meissa-gmbh.de/archiva/repository/internal/"}
  :classifiers {:tests {:source-paths ^:replace ["test"]
                        :resource-paths ^:replace []}})
  
