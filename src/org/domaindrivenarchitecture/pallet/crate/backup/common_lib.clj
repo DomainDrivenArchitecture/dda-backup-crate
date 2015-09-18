@@ -37,14 +37,14 @@
 
 (defn backup-file-prefix
   ""
-  [app semantic-name type]
-  (str app "_" semantic-name "_" (file-type-name type))
+  [app instance-name type]
+  (str app "_" instance-name "_" (file-type-name type))
   )
 
 (defn backup-file-name
   ""
-  [app semantic-name type]
-  (str (backup-file-prefix app semantic-name type) 
+  [app instance-name type]
+  (str (backup-file-prefix app instance-name type) 
        "_${timestamp}." 
        (file-type-extension type))
   )

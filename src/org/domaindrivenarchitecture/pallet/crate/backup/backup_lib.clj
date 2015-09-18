@@ -22,7 +22,7 @@
   [& {:keys [root-dir
              subdir-to-save
              app 
-             semantic-name
+             instance-name
              file-type]
       :or {file-type :file-compressed}}]
   (let [tar-options (case file-type
@@ -31,9 +31,9 @@
   ["#backup the files" 
    (str "cd " root-dir)  
    (str "tar " tar-options " /home/dataBackupSource/transport-outgoing/" 
-        (common/backup-file-name app semantic-name file-type) " " subdir-to-save)
+        (common/backup-file-name app instance-name file-type) " " subdir-to-save)
    (str "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/"
-        (common/backup-file-name app semantic-name file-type))
+        (common/backup-file-name app instance-name file-type))
    ""])
   )
 
@@ -41,13 +41,13 @@
   [& {:keys [root-dir
              subdir-to-save
              app 
-             semantic-name]
+             instance-name]
       }]
   (let [file-type :rsync]
   ["#backup the files" 
    (str "cd " root-dir) 
    (str "rsync -Aax " subdir-to-save " /home/dataBackupSource/transport-outgoing/" 
-        (common/backup-file-name app semantic-name file-type))
+        (common/backup-file-name app instance-name file-type))
    ""])
   )
 
@@ -57,22 +57,22 @@
              db-pass 
              db-name 
              app 
-             semantic-name]
+             instance-name]
       }]
   ["#backup db"
    (str "mysqldump --no-create-db=true -h localhost -u " db-user " -p" db-pass 
         " " db-name " > /home/dataBackupSource/transport-outgoing/"
-        (common/backup-file-name app semantic-name :mysql))
+        (common/backup-file-name app instance-name :mysql))
    (str "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/"
-        (common/backup-file-name app semantic-name :mysql))
+        (common/backup-file-name app instance-name :mysql))
    ""]
   )
 
 (defn- remove-old-gens
   ""
-  [app semantic-name  gens-stored-on-source-system type]
+  [app instance-name  gens-stored-on-source-system type]
   (let [file-name-pattern 
-        (str (common/backup-file-prefix app semantic-name type) "_*")]
+        (str (common/backup-file-prefix app instance-name type) "_*")]
     (str "  (ls -t " file-name-pattern "|head -n " gens-stored-on-source-system
           ";ls " file-name-pattern")|sort|uniq -u|xargs rm -r")
     )
@@ -81,13 +81,13 @@
 (defn source-transport-script-lines
   ""
   [& {:keys [app-name 
-             semantic-name 
+             instance-name 
              gens-stored-on-source-system 
              files-to-transport]
       }]
    {:pre [(not (nil? gens-stored-on-source-system))
          (not (nil? app-name))
-         (not (nil? semantic-name))
+         (not (nil? instance-name))
          (not (nil? files-to-transport))
          (vector? files-to-transport)]}
   (into []
@@ -100,7 +100,7 @@
            "# test wether pwd points to expected place"
            "if [ \"$PWD\" == \"/home/dataBackupSource/store\" ]; then"]
           (into []
-           (map #(remove-old-gens app-name semantic-name 
+           (map #(remove-old-gens app-name instance-name 
                    gens-stored-on-source-system %) files-to-transport))
           ["fi"
           ""]

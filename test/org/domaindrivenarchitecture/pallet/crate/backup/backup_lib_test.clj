@@ -37,7 +37,7 @@
             ""]
            (sut/source-transport-script-lines
              :app-name "portal"
-             :semantic-name "prod"
+             :instance-name "prod"
              :gens-stored-on-source-system 1 
              :files-to-transport [:file-compressed :mysql])))
     )
@@ -52,7 +52,7 @@
             :db-pass "pwd"
             :db-name "lportal" 
             :app "portal"
-            :semantic-name "prod")))
+            :instance-name "prod")))
     )
   )
 
@@ -68,7 +68,7 @@
              :root-dir "/var/lib/liferay/data/"
              :subdir-to-save "document_library"
              :app "portal"
-             :semantic-name "prod")))
+             :instance-name "prod")))
     )
   (testing
     "backup files as uncompressed archive"
@@ -81,7 +81,7 @@
              :root-dir "/var/lib/liferay/data/"
              :subdir-to-save "document_library"
              :app "portal"
-             :semantic-name "prod"
+             :instance-name "prod"
              :file-type :file-plain)))
     )
   )
