@@ -8,6 +8,10 @@
                 [com.palletops/pallet "0.8.0-RC.11" :classifier "tests"]
                 [com.palletops/stevedore "0.8.0-beta.7"]
                 [org.domaindrivenarchitecture.org/dda-config-crate "0.2.0"]]
+ :repositories [["snapshots" :clojars]
+                ["releases" :clojars]]
+ :deploy-repositories [["snapshots" :clojars]
+                       ["releases" :clojars]]
  :profiles {:dev
             {:dependencies
              [[com.palletops/pallet "0.8.0-RC.11" :classifier "tests"]
