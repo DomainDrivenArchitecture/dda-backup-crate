@@ -68,6 +68,7 @@
    ""]
   )
 
+
 (defn- remove-old-gens
   ""
   [app instance-name  gens-stored-on-source-system type]
@@ -78,8 +79,8 @@
     )
   )
 
-(defn source-transport-script-lines
-  ""
+(defn backup-transport-script-lines
+  "backup script part responsible for source transport"
   [& {:keys [app-name 
              instance-name 
              gens-stored-on-source-system 
@@ -91,7 +92,7 @@
          (not (nil? files-to-transport))
          (vector? files-to-transport)]}
   (into []
-        (concat 
+        (concat
           ["# Move transported files to store"
            "mv /home/dataBackupSource/transport-outgoing/* /home/dataBackupSource/store"
            ""
@@ -105,4 +106,21 @@
           ["fi"
           ""]
           ))
-    )
+  )
+
+(defn source-transport-script-lines
+  "full blown bash script"
+  [& {:keys [app-name 
+             instance-name 
+             gens-stored-on-source-system 
+             files-to-transport]
+      }]
+  (into []
+        (concat 
+          common/head
+          (backup-transport-script-lines 
+            :app-name app-name 
+            :instance-name instance-name 
+            :gens-stored-on-source-system gens-stored-on-source-system 
+            :files-to-transport files-to-transport)
+          )))

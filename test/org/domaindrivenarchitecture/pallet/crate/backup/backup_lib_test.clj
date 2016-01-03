@@ -24,7 +24,9 @@
 (deftest portal-backup-script-lines 
   (testing 
     "manage-source-system-gens"
-    (is (= ["# Move transported files to store"
+    (is (= ["#!/bin/bash"
+            ""
+            "# Move transported files to store"
              "mv /home/dataBackupSource/transport-outgoing/* /home/dataBackupSource/store"
              ""
              "# Manage old backup generations"
