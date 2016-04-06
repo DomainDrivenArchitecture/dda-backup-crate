@@ -17,7 +17,9 @@
 
 (ns org.domaindrivenarchitecture.pallet.crate.backup.restore-lib
   (require 
-    [org.domaindrivenarchitecture.pallet.crate.backup.common-lib :as common]))
+    [schema.core :as s]
+    [org.domaindrivenarchitecture.pallet.crate.backup.common-lib :as common]
+    [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as element]))
 
 (def restore-parameters
   ["if [ -z \"$1\" ]; then"
@@ -26,7 +28,7 @@
    "  echo \"restore.sh [file_name_prefix]\""
    "  echo \"  file_name_prefix: mandantory, the file name prefix for the files to restore like 'liferay_pa-prod'.\""
    "  echo \"\""
-   "  echo \"Example 'restore.sh liferay_pa-prod' will use the newest backup-files with the pattern iferay_pa-prod_mysql_* and iferay_pa-prod_file_*\""                                                                                                                                              
+   "  echo \"Example 'restore.sh pa-prod' will use the newest backup-files with the pattern iferay_pa-prod_mysql_* and iferay_pa-prod_file_*\""                                                                                                                                              
    "  exit 1"                                                                                                                                       
    "fi"
    ""]
@@ -37,105 +39,147 @@
    "cd /home/dataBackupSource/restore"
    ""])
 
-(defn restore-locate-restore-dumps
-  ""
-  []
-  ["# Get the dumps"
-   (str "most_recent_sql_dump=$(ls -d -t1 $1" 
-        (common/file-type-name :mysql)
-        "_* | head -n1)")
-   (str "most_recent_file_dump=$(ls -d -t1 $1" 
-        (common/file-type-name :file-compressed) 
-        "_* | head -n1)")
-   ""
-   "echo \"using this inputs:\""
-   "echo \"$most_recent_sql_dump\""
-   "echo \"$most_recent_file_dump\""
-   ""]
-  )
+(s/defn restore-dump-name
+  "Get the newest file for restore."
+  [element :- element/BackupElement]
+  (str "most_recent_" (get-in element [:name]) "_" (element/element-type-name (get-in element [:type]))"_dump"))
 
-(def restore-head 
-  ["if [ \"$most_recent_sql_dump\" ] && [ \"$most_recent_file_dump\" ]; then"
-   "  echo \"starting restore\""
-   "  "
+(s/defn get-restore-dump
+  "Get the newest file for restore."
+  [element :- element/BackupElement]
+  [(str (restore-dump-name element) 
+        "=$(ls -d -t1 $1" 
+        (element/backup-file-prefix-pattern element)
+        "_* | head -n1)")])
+
+(s/defn echo-restore-dump
+  "Echo used file for restore."
+  [element :- element/BackupElement]
+  [(str "echo \"$"
+        (restore-dump-name element)
+        "\"")])
+
+(defn provide-restore-dumps
+  "Provide the most recent files for restore."
+  [elements]
+  (into
+    []
+    (concat
+      ["# Get the dumps"]
+      (mapcat get-restore-dump elements) 
+      [""
+       "echo \"using this inputs:\""]
+      (mapcat echo-restore-dump elements)
+      [""])))
+
+
+(s/defn restore-head-element
+  [element :- element/BackupElement]
+  (str "[ \"$" (restore-dump-name element) "\" ]"))
+
+(defn restore-head-script 
+  [elements]
+  [(str "if "
+        (clojure.string/join
+          " && "
+           (map restore-head-element elements))
+        "; then")
+   "echo \"starting restore\""
+   ""
    ])
 
 (def restore-tail 
-  ["  echo \"finished restore successfull, pls. start the appserver.\""
+  ["echo \"finished restore successfull, pls. start the appserver.\""
    "fi"
    ""])
 
 (def restore-db-head
-  ["  # ------------- restore db --------------"
-   "  echo \"db restore ...\""
-   "  "])
+  ["# ------------- restore db --------------"
+   "echo \"db restore ...\""
+   ""])
 
 (def restore-db-tail
-  ["  echo \"finished db restore\""
-   "  "])
+  ["echo \"finished db restore\""
+   ""])
 
-(defn restore-mysql
-  ""
-  [& {:keys [db-user 
-             db-pass 
-             db-name 
-             dump-filename 
-             create-options]
-      :or {dump-filename "${most_recent_sql_dump}"
-           create-options nil}}]
-  (let [used-create-options (if create-options
-                              (str " " create-options)
+(s/defn restore-mysql-dump :- [s/Str]
+  "lines for restoring a mysql dump"
+  [element :- element/BackupElement]
+  (let [db-user-name (get-in element [:db-user-name])
+        db-user-passwd (get-in element [:db-user-passwd])
+        db-name (get-in element [:db-name])
+        used-create-options (if (contains? element :db-create-options)
+                              (get-in element [:db-create-options])
                               "")]
-    [(str "mysql -hlocalhost -u" db-user " -p" db-pass " -e \"drop database " db-name "\";")
-     (str "mysql -hlocalhost -u" db-user " -p" db-pass " -e \"create database " 
+    [(str "mysql -hlocalhost -u" db-user-name " -p" db-user-passwd " -e \"drop database " db-name "\";")
+     (str "mysql -hlocalhost -u" db-user-name " -p" db-user-passwd " -e \"create database " 
           db-name used-create-options "\";")
-     (str "mysql -hlocalhost -u" db-user " -p" db-pass " " db-name " < " dump-filename)
+     (str "mysql -hlocalhost -u" db-user-name " -p" db-user-passwd " " db-name " < " (restore-dump-name element))
      ""
-     ])
+     ]))
+
+(s/defn restore-mysql-script :- [s/Str]
+  "The script for restoring mysql."
+  [element :- element/BackupElement]
+  (let []
+    (into
+      []
+      (concat
+        restore-db-head
+        (when (contains? element :db-pre-processing)
+          (get-in element [:db-pre-processing]))
+        (restore-mysql-dump element)
+        (when (contains? element :db-post-processing)
+          (get-in element [:db-post-processing]))
+        restore-db-tail
+        )))
   )
 
 (def restore-file-head
-  ["  # ------------- restore file --------------"
-   "  echo \"file restore ...\""
-   "  "])
+  ["# ------------- restore file --------------"
+   "echo \"file restore ...\""
+   ""])
 
 (def restore-file-tail
-  ["  echo \"finished file restore.\""
-   "  "])
+  ["echo \"finished file restore.\""
+   ""])
 
-(defn restore-tar
-  ""
-  [& {:keys [restore-target-dir
-             file-type
-             new-owner]
-      :or {dump-filename "${most_recent_sql_dump}"
-           file-type :file-compressed}}]
-  (let [chown
-        (if new-owner
-          [(str "chown -R " new-owner ":" new-owner " " restore-target-dir)]
-          [])
-        tar-onwe-options 
-        (if new-owner
-          ""
-          "--same-owner --same-permissions ")
-        tar-compress-option 
-        (case file-type
-          :file-compressed "z"
-          :file-plain "")
-        ]
-    (into []
-          (concat 
-            [(str "rm -r " restore-target-dir "/*")
-             (str "tar " 
-                  tar-onwe-options 
-                  "-x" 
-                  tar-compress-option 
-                  "f ${most_recent_file_dump} -C "
-                  restore-target-dir)]
-            chown
-            [""]
-            ))
-    )
+
+(s/defn restore-tar-dump :- [s/Str]
+  "restore files from a tar dump."
+  [element :- element/BackupElement]
+  (let [restore-target-dir (get-in element [:root-dir]) 
+        chown (if (contains? element :new-owner)
+                [(str "chown -R " (get-in element [:new-owner]) 
+                      ":" (get-in element [:new-owner]) 
+                      " " restore-target-dir)]
+                [])
+        tar-own-options (if (contains? element :new-owner)
+                          ""
+                          "--same-owner --same-permissions ")
+        tar-compress-option (if (= (get-in element [:type]) :file-compressed)
+                              "z"
+                              "")]
+    (into 
+      []
+      (concat 
+        ;TODO: Use NonRootDirectory type here!
+        [(str "rm -r " restore-target-dir "/*")
+         (str "tar " tar-own-options "-x" tar-compress-option "f ${" (restore-dump-name element) "} -C " restore-target-dir)]
+        chown
+        [""]))
+    ))
+
+(s/defn restore-tar-script :- [s/Str]
+  "The script for restoring a tar file."
+  [element :- element/BackupElement]
+  (into 
+    []
+    (concat
+      restore-file-head
+      (restore-tar-dump element)
+      restore-file-tail
+    ))
   )
 
 (defn restore-rsync

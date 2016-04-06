@@ -18,7 +18,7 @@
   (:require
     [clojure.test :refer :all]
     [pallet.actions :as actions]
-    [org.domaindrivenarchitecture.pallet.crate.backup.restore-lib :as sut]
+    [org.domaindrivenarchitecture.pallet.crate.backup.restore-lib-0-2 :as sut]
     ))
 
 (deftest restore-mysql

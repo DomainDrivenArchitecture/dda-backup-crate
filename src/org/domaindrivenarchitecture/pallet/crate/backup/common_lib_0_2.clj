@@ -15,7 +15,39 @@
 ; limitations under the License.
 
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup.common-lib)
+(ns org.domaindrivenarchitecture.pallet.crate.backup.common-lib-0-2)
+
+(defn file-type-name
+  [type]
+  (case type
+    :file-compressed "file"
+    :file-plain "file"
+    :rsync "file"
+    :mysql "mysql")
+  )
+
+(defn file-type-extension
+  [type]
+  (case type
+    :file-compressed "tgz"
+    :file-plain "tar"
+    :rsync "dir"
+    :mysql "sql")
+  )
+
+(defn backup-file-prefix
+  ""
+  [app instance-name type]
+  (str app "_" instance-name "_" (file-type-name type))
+  )
+
+(defn backup-file-name
+  ""
+  [app instance-name type]
+  (str (backup-file-prefix app instance-name type) 
+       "_${timestamp}." 
+       (file-type-extension type))
+  )
 
 (defn prefix
   "prefixes each string contained in lines with indent."

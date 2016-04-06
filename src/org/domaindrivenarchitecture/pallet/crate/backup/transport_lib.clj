@@ -14,19 +14,15 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup.common-lib-test
-  (:require
-    [clojure.test :refer :all]
-    [pallet.actions :as actions]
-    [org.domaindrivenarchitecture.pallet.crate.backup.common-lib-0-2 :as sut]
-    ))
+(ns org.domaindrivenarchitecture.pallet.crate.backup.transport-lib
+  (require 
+    [org.domaindrivenarchitecture.pallet.crate.backup.common-lib :as common]))
 
-(deftest app-server
-  (testing 
-    "stop app server"
-    (is (= ["#stop appserver"
-            "service tomcat7 stop"
-            ""]
-           (sut/stop-app-server "tomcat7")))
-    )  
-  )
+(def pwd-test
+  ["# Move transported files to store"
+   "mv /home/dataBackupSource/transport-outgoing/* /home/dataBackupSource/store"
+   ""
+   "# Manage old backup generations"
+   "cd /home/dataBackupSource/store"
+   "# test wether pwd points to expected place"
+   "if [ \"$PWD\" == \"/home/dataBackupSource/store\" ]; then"])

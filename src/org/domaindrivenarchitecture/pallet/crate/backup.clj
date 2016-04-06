@@ -16,130 +16,58 @@
 
 (ns org.domaindrivenarchitecture.pallet.crate.backup
    (:require
-    [pallet.actions :as actions]
-    [pallet.stevedore :as stevedore]
-    [org.domaindrivenarchitecture.cm.util :as util]
-    ))
+     [schema.core :as s]
+     [schema-tools.core :as st]
+     [pallet.actions :as actions]
+     [pallet.stevedore :as stevedore]
+     [org.domaindrivenarchitecture.cm.util :as util]
+     [org.domaindrivenarchitecture.pallet.crate.config :as config]
+     [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as backup-element]
+     [org.domaindrivenarchitecture.pallet.crate.backup.app :as app]
+     ))
 
 (def facility
   :dda-backup)
 
-(def backup-user-name 
-  "dataBackupSource")
+(def ScriptType
+  "The backup elements"
+  (s/enum :backup :restore :source-transport))
 
-(defn- script-path
-  [app-name]
-  (str "/usr/lib/" app-name)
-  )
-
-(defn- cron-name
-  [instance-name script-type]
-  (case script-type
-      :backup 
-      (str instance-name "_backup")
-      :restore 
-      (str instance-name "_restore")
-      :source-transport
-      (str instance-name "_source_transport")
-      )
-  )
-
-(defn- script-name
-  [instance-name script-type]
-  (str (cron-name instance-name script-type) ".sh")
-  )
+(def BackupConfig
+  "The configuration for backup crate." 
+  {:backup-name s/Str
+   :service-restart s/Str
+   :script-path s/Str
+   :backup-user app/User
+   :gens-stored-on-source-system s/Num
+   :elements [backup-element/BackupElement]})
 
 
-(defn- script-path-with-name
-  [app-name instance-name script-type]
-  (str (script-path app-name) "/" (script-name instance-name script-type))
-  )
-
-(defn create-backup-source-user
+(s/defn default-backup-config
+  "The default backup configuration."
   []
-  (actions/user backup-user-name 
-                :action :create 
-                :create-home true 
-                :shell :bash
-                :password "WIwn6jIUt2Rbc")
-  (actions/directory (str "/home/" backup-user-name "/transport-outgoing")
-                     :action :create
-                     :owner backup-user-name
-                     :group backup-user-name)
-  (actions/directory (str "/home/" backup-user-name "/store")
-                     :action :create
-                     :owner backup-user-name
-                     :group backup-user-name)
-  (actions/directory (str "/home/" backup-user-name "/restore")
-                     :action :create
-                     :owner backup-user-name
-                     :group backup-user-name)
-  )
+  {:service-restart "tomcat7"
+   :backup-user {:name "dataBackupSource"
+                 :encrypted-passwd "WIwn6jIUt2Rbc"}
+   :script-path "/usr/lib/dda-backup/"
+   :gens-stored-on-source-system 3})
 
-(defn create-source-environment
-  [app-name]
-  (actions/directory 
-    (script-path app-name)
-    :action :create
-    :owner "root"
-    :group "root")
-  )
+(s/defn ^:always-validate merge-config :- BackupConfig
+  "merges the partial config with default config & ensures that resulting config is valid."
+  [partial-config]
+  (config/deep-merge (default-backup-config) partial-config))
 
-(defn create-source-backup
-  [app-name instance-name backup-lines]
-  (actions/remote-file
-    (script-path-with-name app-name instance-name :backup)
-    :mode "700"
-    :overwrite-changes true
-    :literal true
-    :content (util/create-file-content 
-               backup-lines))
-  (actions/symbolic-link 
-    (script-path-with-name app-name instance-name :backup)
-    (str "/etc/cron.daily/10_" (cron-name instance-name :backup))
-    :action :create)
-  )
+(defn install
+  "collected install actions for backup crate."
+  [app-name partial-config]
+  (let [config (merge-config partial-config)]
+    (app/create-backup-source-user (st/get-in config [:backup-user])) 
+    (app/create-script-environment (st/get-in config [:script-path]))
+  ))
 
-(defn create-source-restore
-  [app-name instance-name restore-lines]
-  (actions/remote-file
-    (script-path-with-name app-name instance-name :restore)  
-    :mode "700"
-    :overwrite-changes true
-    :literal true
-    :content (util/create-file-content 
-               restore-lines))
-  )
-
-(defn create-source-transport
-  [app-name instance-name source-transport-lines]
-  (actions/remote-file
-    (script-path-with-name app-name instance-name :source-transport)   
-    :mode "700"
-    :overwrite-changes true
-    :literal true
-    :content (util/create-file-content 
-               source-transport-lines))
-  (actions/symbolic-link 
-    (script-path-with-name app-name instance-name :source-transport) 
-    (str "/etc/cron.daily/20_" (cron-name instance-name :source-transport))
-    :action :create)
-  )
-
-
-(defn install-backup-environment
-  [& {:keys [app-name]}]
-  (create-backup-source-user)
-  (create-source-environment app-name)
-  )
-
-(defn install-backup-app-instance
-  [& {:keys [app-name
-             instance-name
-             backup-lines 
-             source-transport-lines 
-             restore-lines]}]
-  (create-source-backup app-name instance-name backup-lines)
-  (create-source-transport app-name instance-name source-transport-lines)
-  (create-source-restore app-name instance-name restore-lines)
-  )
+(defn configure
+  "collected configuration actions for backup crate."
+  [app-name partial-config]
+  (let [config (merge-config partial-config)]
+    (app/write-scripts config)
+  ))

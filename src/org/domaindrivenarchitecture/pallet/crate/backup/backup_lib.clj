@@ -16,111 +16,45 @@
 
 (ns org.domaindrivenarchitecture.pallet.crate.backup.backup-lib
   (require 
-    [org.domaindrivenarchitecture.pallet.crate.backup.common-lib :as common]))
+    [schema.core :as s]
+    [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as element]))
 
-(defn backup-files-tar
-  [& {:keys [root-dir
-             subdir-to-save
-             app 
-             instance-name
-             file-type]
-      :or {file-type :file-compressed}}]
-  (let [tar-options (case file-type
-                         :file-compressed "cvzf"
-                         :file-plain "cvf")]
+(s/defn backup-files-tar
+  "bash script part to backup as tgz."
+  [backup-name :- s/Str
+   element :- element/BackupElement]
+  (let [tar-options (case (get-in element [:type])
+                      :file-compressed "cvzf"
+                      :file-plain "cvf")]
   ["#backup the files" 
-   (str "cd " root-dir)  
+   (str "cd " (get-in element [:root-dir]))  
    (str "tar " tar-options " /home/dataBackupSource/transport-outgoing/" 
-        (common/backup-file-name instance-name app file-type) " " subdir-to-save)
+        (element/backup-file-name backup-name element) " " (get-in element [:subdir-to-save]))
    (str "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/"
-        (common/backup-file-name instance-name app file-type))
+        (element/backup-file-name backup-name element))
    ""])
   )
 
-(defn backup-files-rsync
-  [& {:keys [root-dir
-             subdir-to-save
-             app 
-             instance-name]
-      }]
-  (let [file-type :rsync]
+(s/defn backup-files-rsync
+  "bash script part to backup with rsync."
+  [backup-name :- s/Str
+   element :- element/BackupElement]
   ["#backup the files" 
-   (str "cd " root-dir) 
-   (str "rsync -Aax " subdir-to-save " /home/dataBackupSource/transport-outgoing/" 
-        (common/backup-file-name instance-name app file-type))
+   (str "cd " (get-in element [:root-dir])) 
+   (str "rsync -Aax " (get-in element [:subdir-to-save]) " /home/dataBackupSource/transport-outgoing/" 
+        (element/backup-file-name backup-name element))
    ""])
-  )
 
-(defn backup-mysql
-  ""
-  [& {:keys [db-user 
-             db-pass 
-             db-name 
-             app 
-             instance-name]
-      }]
+(s/defn backup-mysql
+  "bash script part to backup a mysql db."
+  [backup-name :- s/Str
+   element :- element/BackupElement]
   ["#backup db"
-   (str "mysqldump --no-create-db=true -h localhost -u " db-user " -p" db-pass 
-        " " db-name " > /home/dataBackupSource/transport-outgoing/"
-        (common/backup-file-name instance-name app :mysql))
+   (str "mysqldump --no-create-db=true -h localhost -u " (get-in element [:db-user-name])
+        " -p" (get-in element [:db-user-passwd]) 
+        " " (get-in element [:db-name]) " > /home/dataBackupSource/transport-outgoing/"
+        (element/backup-file-name backup-name element))
    (str "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/"
-        (common/backup-file-name instance-name app :mysql))
+        (element/backup-file-name backup-name element))
    ""]
   )
-
-
-(defn- remove-old-gens
-  ""
-  [app instance-name  gens-stored-on-source-system type]
-  (let [file-name-pattern 
-        (str (common/backup-file-prefix app instance-name type) "_*")]
-    (str "  (ls -t " file-name-pattern "|head -n " gens-stored-on-source-system
-          ";ls " file-name-pattern")|sort|uniq -u|xargs rm -r")
-    )
-  )
-
-(defn backup-transport-script-lines
-  "backup script part responsible for source transport"
-  [& {:keys [app-name 
-             instance-name 
-             gens-stored-on-source-system 
-             files-to-transport]
-      }]
-   {:pre [(not (nil? gens-stored-on-source-system))
-         (not (nil? app-name))
-         (not (nil? instance-name))
-         (not (nil? files-to-transport))
-         (vector? files-to-transport)]}
-  (into []
-        (concat
-          ["# Move transported files to store"
-           "mv /home/dataBackupSource/transport-outgoing/* /home/dataBackupSource/store"
-           ""
-           "# Manage old backup generations"
-           "cd /home/dataBackupSource/store"
-           "# test wether pwd points to expected place"
-           "if [ \"$PWD\" == \"/home/dataBackupSource/store\" ]; then"]
-          (into []
-           (map #(remove-old-gens app-name instance-name 
-                   gens-stored-on-source-system %) files-to-transport))
-          ["fi"
-          ""]
-          ))
-  )
-
-(defn source-transport-script-lines
-  "full blown bash script"
-  [& {:keys [app-name 
-             instance-name 
-             gens-stored-on-source-system 
-             files-to-transport]
-      }]
-  (into []
-        (concat 
-          common/head
-          (backup-transport-script-lines 
-            :app-name app-name 
-            :instance-name instance-name 
-            :gens-stored-on-source-system gens-stored-on-source-system 
-            :files-to-transport files-to-transport)
-          )))

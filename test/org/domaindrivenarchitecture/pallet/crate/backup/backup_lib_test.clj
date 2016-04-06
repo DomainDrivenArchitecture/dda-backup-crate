@@ -18,7 +18,7 @@
   (:require
     [clojure.test :refer :all]
     [pallet.actions :as actions]
-    [org.domaindrivenarchitecture.pallet.crate.backup.backup-lib :as sut]
+    [org.domaindrivenarchitecture.pallet.crate.backup.backup-lib-0-2 :as sut]
     ))
 
 (deftest portal-backup-script-lines 
