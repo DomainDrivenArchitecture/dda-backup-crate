@@ -1,4 +1,4 @@
-(defproject org.domaindrivenarchitecture/dda-backup-crate "0.2.2"
+(defproject org.domaindrivenarchitecture/dda-backup-crate "0.2.3-SNAPSHOT"
   :description "A crate to handle configuration, their dependencies, documentation and validation"
   :url "https://www.domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
@@ -7,9 +7,9 @@
                 [com.palletops/pallet "0.8.11"]
                 [com.palletops/pallet "0.8.10" :classifier "tests"]
                 [com.palletops/stevedore "0.8.0-beta.7"]
-                [org.domaindrivenarchitecture.org/dda-config-crate "0.3.0-SNAPSHOT"]]
+                [org.domaindrivenarchitecture/dda-config-crate "0.3.0"]]
  :repositories [["snapshots" :clojars]
-                ["releases" :clojars]]
+                 ["releases" :clojars]]
  :deploy-repositories [["snapshots" :clojars]
                        ["releases" :clojars]]
  :profiles {:dev
