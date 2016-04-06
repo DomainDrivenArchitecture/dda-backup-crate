@@ -31,9 +31,9 @@
   ["#backup the files" 
    (str "cd " root-dir)  
    (str "tar " tar-options " /home/dataBackupSource/transport-outgoing/" 
-        (common/backup-file-name app instance-name file-type) " " subdir-to-save)
+        (common/backup-file-name instance-name app file-type) " " subdir-to-save)
    (str "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/"
-        (common/backup-file-name app instance-name file-type))
+        (common/backup-file-name instance-name app file-type))
    ""])
   )
 
@@ -47,7 +47,7 @@
   ["#backup the files" 
    (str "cd " root-dir) 
    (str "rsync -Aax " subdir-to-save " /home/dataBackupSource/transport-outgoing/" 
-        (common/backup-file-name app instance-name file-type))
+        (common/backup-file-name instance-name app file-type))
    ""])
   )
 
@@ -62,9 +62,9 @@
   ["#backup db"
    (str "mysqldump --no-create-db=true -h localhost -u " db-user " -p" db-pass 
         " " db-name " > /home/dataBackupSource/transport-outgoing/"
-        (common/backup-file-name app instance-name :mysql))
+        (common/backup-file-name instance-name app :mysql))
    (str "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/"
-        (common/backup-file-name app instance-name :mysql))
+        (common/backup-file-name instance-name app :mysql))
    ""]
   )
 

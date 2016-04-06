@@ -34,7 +34,7 @@
 (deftest backup-file-name
   (testing 
     "backup-file-name"
-    (is (= "owncloud_meissa_file_${timestamp}.dir"
-           (sut/backup-file-name "owncloud" "meissa" :rsync)))
+    (is (= "meissa-server_owncloud_file_${timestamp}.dir"
+           (sut/backup-file-name "meissa-server" "owncloud" :rsync)))
     )  
   )

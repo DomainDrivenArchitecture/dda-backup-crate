@@ -43,8 +43,8 @@
 
 (defn backup-file-name
   ""
-  [app instance-name type]
-  (str (backup-file-prefix app instance-name type) 
+  [instance-name app type]
+  (str (backup-file-prefix instance-name app type) 
        "_${timestamp}." 
        (file-type-extension type))
   )
