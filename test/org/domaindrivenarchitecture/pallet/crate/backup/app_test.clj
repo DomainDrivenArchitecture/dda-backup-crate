@@ -207,4 +207,17 @@
              ""]
            (sut/restore-script-lines (backup/merge-config liferay-config))))
     ))
+
+
+(deftest write-scripts
+  (testing 
+    "test write-script actions"
+    (is (.contains 
+          (tu/extract-nth-action-command
+            (build-actions/build-actions
+              build-actions/ubuntu-session
+              (sut/write-scripts liferay-config))
+              1)
+          "service-name_backup.sh"))
+    ))
  

@@ -33,38 +33,9 @@
   {:name s/Str
    :encrypted-passwd s/Str})
 
-(s/defn create-backup-source-user
-  "create the backup user with directory structure."
-  [user :- User]
-  (let [backup-user-name (st/get-in user [:name])]
-    (actions/user backup-user-name 
-                  :action :create 
-                  :create-home true 
-                  :shell :bash
-                  :password (st/get-in user [:encrypted-passwd]))
-    (actions/directory (str "/home/" backup-user-name "/transport-outgoing")
-                       :action :create
-                       :owner backup-user-name
-                       :group backup-user-name)
-    (actions/directory (str "/home/" backup-user-name "/store")
-                       :action :create
-                       :owner backup-user-name
-                       :group backup-user-name)
-    (actions/directory (str "/home/" backup-user-name "/restore")
-                       :action :create
-                       :owner backup-user-name
-                       :group backup-user-name)
-    ))
-
-(defn create-script-environment
-  "create directory for backup scripts."
-  [script-path]
-  (actions/directory 
-    script-path
-    :action :create
-    :owner "root"
-    :group "root")
-  )
+(def ScriptType
+  "The backup elements"
+  (s/enum :backup :restore :source-transport))
 
 (s/defn backup-element-lines
   ""
@@ -147,49 +118,69 @@
         ))
   ))
 
+(s/defn write-backup-file
+  "Write the backup file."
+  [config 
+   script-type :- ScriptType]
+  (let [cron-name (str (get-in config [:script-path]) (get-in config [:backup-name]) "_" (name script-type))
+        script-name (str cron-name ".sh")
+        script-lines (case script-type
+                       :backup (backup-script-lines config)
+                       :restore (restore-script-lines config)
+                       :source-transport (transport-script-lines config))]
+  (actions/remote-file
+    script-name
+    :mode "700"
+    :overwrite-changes true
+    :literal true
+    :content (clojure.string/join
+               \newline
+               script-lines))
+  (when (not= script-type :restore)
+    (actions/symbolic-link 
+      script-name
+      (str "/etc/cron.daily/10_" cron-name)
+      :action :create))
+  ))
+
+
+(s/defn create-backup-source-user
+  "create the backup user with directory structure."
+  [user :- User]
+  (let [backup-user-name (st/get-in user [:name])]
+    (actions/user backup-user-name 
+                  :action :create 
+                  :create-home true 
+                  :shell :bash
+                  :password (st/get-in user [:encrypted-passwd]))
+    (actions/directory (str "/home/" backup-user-name "/transport-outgoing")
+                       :action :create
+                       :owner backup-user-name
+                       :group backup-user-name)
+    (actions/directory (str "/home/" backup-user-name "/store")
+                       :action :create
+                       :owner backup-user-name
+                       :group backup-user-name)
+    (actions/directory (str "/home/" backup-user-name "/restore")
+                       :action :create
+                       :owner backup-user-name
+                       :group backup-user-name)
+    ))
+
+(defn create-script-environment
+  "create directory for backup scripts."
+  [script-path]
+  (actions/directory 
+    script-path
+    :action :create
+    :owner "root"
+    :group "root")
+  )
 
 (defn write-scripts
   "write the backup scripts to script environment"
   [config]
-  )
-
-(defn create-source-backup
-  [app-name instance-name backup-lines]
-  (actions/remote-file
-    ;(script-path-with-name app-name instance-name :backup)
-    :mode "700"
-    :overwrite-changes true
-    :literal true
-    :content (util/create-file-content 
-               backup-lines))
-  (actions/symbolic-link 
-    ;(script-path-with-name app-name instance-name :backup)
-    ;(str "/etc/cron.daily/10_" (cron-name instance-name :backup))
-    :action :create)
-  )
-
-(defn create-source-restore
-  [app-name instance-name restore-lines]
-  (actions/remote-file
-    ;(script-path-with-name app-name instance-name :restore)  
-    :mode "700"
-    :overwrite-changes true
-    :literal true
-    :content (util/create-file-content 
-               restore-lines))
-  )
-
-(defn create-source-transport
-  [app-name instance-name source-transport-lines]
-  (actions/remote-file
-    ;(script-path-with-name app-name instance-name :source-transport)   
-    :mode "700"
-    :overwrite-changes true
-    :literal true
-    :content (util/create-file-content 
-               source-transport-lines))
-  (actions/symbolic-link 
-    ;(script-path-with-name app-name instance-name :source-transport) 
-    ;(str "/etc/cron.daily/20_" (cron-name instance-name :source-transport))
-    :action :create)
+  (write-backup-file config :backup)
+  (write-backup-file config :source-transport)
+  (write-backup-file config :restore)
   )

@@ -29,10 +29,6 @@
 (def facility
   :dda-backup)
 
-(def ScriptType
-  "The backup elements"
-  (s/enum :backup :restore :source-transport))
-
 (def BackupConfig
   "The configuration for backup crate." 
   {:backup-name s/Str
