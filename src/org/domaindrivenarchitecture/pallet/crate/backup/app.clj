@@ -124,6 +124,7 @@
    script-type :- ScriptType]
   (let [cron-name (str (get-in config [:backup-name]) "_" (name script-type))
         script-name (str cron-name ".sh")
+        script-path (str (get-in config [:script-path]) script-name)
         script-lines (case script-type
                        :backup (backup-script-lines config)
                        :restore (restore-script-lines config)
@@ -133,7 +134,7 @@
                      :source-transport "20_"
                      "")]
   (actions/remote-file
-    (str (get-in config [:script-path]) script-name)
+    script-path
     :mode "700"
     :overwrite-changes true
     :literal true
@@ -142,7 +143,7 @@
                script-lines))
   (when (not= script-type :restore)
     (actions/symbolic-link 
-      script-name
+      script-path
       (str "/etc/cron.daily/" cron-order cron-name)
       :action :create))
   ))
