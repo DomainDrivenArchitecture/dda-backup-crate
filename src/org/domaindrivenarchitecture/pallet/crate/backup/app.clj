@@ -122,14 +122,18 @@
   "Write the backup file."
   [config 
    script-type :- ScriptType]
-  (let [cron-name (str (get-in config [:script-path]) (get-in config [:backup-name]) "_" (name script-type))
+  (let [cron-name (str (get-in config [:backup-name]) "_" (name script-type))
         script-name (str cron-name ".sh")
         script-lines (case script-type
                        :backup (backup-script-lines config)
                        :restore (restore-script-lines config)
-                       :source-transport (transport-script-lines config))]
+                       :source-transport (transport-script-lines config))
+        cron-order (case script-type
+                     :backup "10_"
+                     :source-transport "20_"
+                     "")]
   (actions/remote-file
-    script-name
+    (str (get-in config [:script-path]) script-name)
     :mode "700"
     :overwrite-changes true
     :literal true
@@ -139,7 +143,7 @@
   (when (not= script-type :restore)
     (actions/symbolic-link 
       script-name
-      (str "/etc/cron.daily/10_" cron-name)
+      (str "/etc/cron.daily/" cron-order cron-name)
       :action :create))
   ))
 

@@ -22,6 +22,7 @@
     [pallet.actions :as actions]
     [pallet.build-actions :as build-actions]
     [org.domaindrivenarchitecture.pallet.commons.plan-test-utils :as tu]
+    [org.domaindrivenarchitecture.pallet.crate.backup.app :as app]
     [org.domaindrivenarchitecture.pallet.crate.backup :as sut]
     ))
  
@@ -29,12 +30,12 @@
   (testing 
     "test validity of configuration parts" 
       (is (s/validate
-            sut/ScriptType
+            app/ScriptType
             :backup))
       (is (thrown?
             Exception
             (s/validate
-              sut/ScriptType
+              app/ScriptType
               :no-type)))
       (is (map?
             (sut/merge-config {:backup-name "system-name"
