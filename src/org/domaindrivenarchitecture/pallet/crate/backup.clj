@@ -32,7 +32,7 @@
 (def BackupConfig
   "The configuration for backup crate." 
   {:backup-name s/Str
-   :service-restart s/Str
+   (s/optional-key :service-restart) s/Str
    :script-path s/Str
    :backup-user app/User
    :gens-stored-on-source-system s/Num
@@ -42,8 +42,7 @@
 (s/defn default-backup-config
   "The default backup configuration."
   []
-  {:service-restart "tomcat7"
-   :backup-user {:name "dataBackupSource"
+  {:backup-user {:name "dataBackupSource"
                  :encrypted-passwd "WIwn6jIUt2Rbc"}
    :script-path "/usr/lib/dda-backup/"
    :gens-stored-on-source-system 3})

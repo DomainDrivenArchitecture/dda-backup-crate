@@ -56,10 +56,12 @@
       (concat 
         common-lib/head
         common-lib/export-timestamp
-        (common-lib/stop-app-server service-restart)
+        (when (contains? config :service-restart)
+          (common-lib/stop-app-server service-restart))
         (mapcat #(backup-element-lines backup-name %)
              (get-in config [:elements]))
-        (common-lib/start-app-server service-restart)
+        (when (contains? config :service-restart)
+          (common-lib/start-app-server service-restart))
         ))))
 
 (s/defn transport-element-lines
@@ -112,7 +114,8 @@
         restore-lib/restore-navigate-to-restore-location
         (restore-lib/provide-restore-dumps elements)
         (restore-lib/restore-head-script elements)
-        (common-lib/stop-app-server service-restart)
+        (when (contains? config :service-restart)
+          (common-lib/stop-app-server service-restart))
         (mapcat restore-element-lines elements)
         restore-lib/restore-tail
         ))

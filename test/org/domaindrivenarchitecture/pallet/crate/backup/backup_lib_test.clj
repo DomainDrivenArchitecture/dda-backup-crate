@@ -21,7 +21,7 @@
     [org.domaindrivenarchitecture.pallet.crate.backup.backup-lib-0-2 :as sut]
     ))
 
-(deftest portal-backup-script-lines 
+(deftest transport-lines 
   (testing 
     "manage-source-system-gens"
     (is (= ["#!/bin/bash"

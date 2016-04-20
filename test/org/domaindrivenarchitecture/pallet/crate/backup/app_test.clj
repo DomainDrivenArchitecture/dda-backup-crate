@@ -79,6 +79,13 @@
                 :db-pre-processing (pre-process "fqdn")
                 :db-post-processing (post-process "fqdn" "db-user-name" "db-pass" "db-name")
                 :db-create-options "character set utf8"}]})
+
+(def service-less-config
+   {:backup-name "backup-name"
+    :elements [{:type :file-compressed
+                :name "letsencrypt"
+                :root-dir "/etc/letsencrypt/"
+                :subdir-to-save "accounts csr keys renewal"}]})
  
 (deftest backup-script
   (testing 
@@ -109,6 +116,22 @@
            "service tomcat7 start"
            ""]
            (sut/backup-script-lines (backup/merge-config liferay-config))))
+    ))
+
+(deftest backup-script-without-service
+  (testing 
+    "script content"
+    (is (= ["#!/bin/bash"
+           ""
+           "#timestamp from server to variable"
+           "export timestamp=`date +%Y-%m-%d_%H-%M-%S`"
+           ""
+           "#backup the files"
+           "cd /etc/letsencrypt/"
+           "tar cvzf /home/dataBackupSource/transport-outgoing/backup-name_letsencrypt_file_${timestamp}.tgz accounts csr keys renewal"
+           "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/backup-name_letsencrypt_file_${timestamp}.tgz"
+           ""]
+           (sut/backup-script-lines (backup/merge-config service-less-config))))
     ))
 
 (deftest transport-script
@@ -206,6 +229,47 @@
              "fi"
              ""]
            (sut/restore-script-lines (backup/merge-config liferay-config))))
+    ))
+
+(deftest restore-script-without-service
+  (testing 
+    "script content"
+    (is (= ["#!/bin/bash"
+            ""
+            "if [ -z \"$1\" ]; then"
+            "  echo \"\""
+            "  echo \"usage:\""
+            "  echo \"restore.sh [file_name_prefix]\""
+            "  echo \"  file_name_prefix: mandantory, the file name prefix for the files to restore like 'liferay_pa-prod'.\""
+            "  echo \"\""
+            "  echo \"Example 'restore.sh pa-prod' will use the newest backup-files with the pattern iferay_pa-prod_mysql_* and iferay_pa-prod_file_*\""
+            "  exit 1"
+            "fi"
+            ""
+            "# cd to restore location"
+            "cd /home/dataBackupSource/restore"
+            ""
+            "# Get the dumps"
+            "most_recent_letsencrypt_file_dump=$(ls -d -t1 $1letsencrypt_file_* | head -n1)"
+            ""
+            "echo \"using this inputs:\""
+            "echo \"$most_recent_letsencrypt_file_dump\""
+            ""
+            "if [ \"$most_recent_letsencrypt_file_dump\" ]; then"
+            "echo \"starting restore\""
+            ""         
+            "# ------------- restore file --------------"
+            "echo \"file restore ...\""
+            ""
+            "rm -r /etc/letsencrypt//*"
+            "tar --same-owner --same-permissions -xzf ${most_recent_letsencrypt_file_dump} -C /etc/letsencrypt/"
+            ""
+            "echo \"finished file restore.\""
+            ""
+             "echo \"finished restore successfull, pls. start the appserver.\""
+             "fi"
+             ""]
+           (sut/restore-script-lines (backup/merge-config service-less-config))))
     ))
 
 
