@@ -17,110 +17,50 @@ The backup Crate provides:
   * **store** - the place to store the currently stored local backups.
   * **restore** - the place from which the backup system initiates the restore process.
 * Install backup scripts as backup base system.
-* Enter required cronjobs.
+* manages the required cronjobs.
 
 ## Usageexample
 
 ### Namespaces used
 ```
 (:require
-	[org.domaindrivenarchitecture.pallet.crate.backup :as backup]
-	[org.domaindrivenarchitecture.pallet.crate.backup.common-lib :as common-lib]
-	[org.domaindrivenarchitecture.pallet.crate.backup.backup-lib :as backup-lib]
-	[org.domaindrivenarchitecture.pallet.crate.backup.restore-lib :as restore-lib])
+	[org.domaindrivenarchitecture.pallet.crate.backup :as backup])
 ```
 
-### Individual Backup Adatpter 
+### Individual Backup Configuration
 ```  
-(defn owncloud-source-backup-script-lines
-    ""
-    [instance-name app-name mysql-pwd]]
-    (into [] 
-       (concat 
-        common-lib/head
-        common-lib/export-timestamp
-        [(str "mv /home/dataBackupSource/store/"
-       	    (common-lib/backup-file-prefix app-name instance-name :rsync)
-             	"*."
-              	(common-lib/file-type-extension :rsync)
-               	" /home/dataBackupSource/transport-outgoing/"
-               	(common-lib/backup-file-name app-name instance-name :rsync))
-       	""]
-        (common-lib/stop-app-server "apache2")         
-       	(backup-lib/backup-mysql 
-       	    :db-user "owncloud" 
-            :db-pass mysql-pwd 
-            :db-name "owncloud" 
-            :app app-name
-            :instance-name instance-name)
-        (backup-lib/backup-files-rsync
-            :root-dir "/var/www/" 
-            :subdir-to-save "owncloud"
-            :app app-name 
-            :instance-name instance-name) 
-        (common-lib/start-app-server "apache2"))))
+(def my-config
+  {:backup-name "managed-vm"
+   :script-path "/usr/lib/dda-backup/"
+   :gens-stored-on-source-system 1
+   :elements [{:type :file-compressed
+               :name "user-home"
+               :root-dir "/home/some-user"
+               :subdir-to-save ".ssh .mozilla"}]
+   :backup-user {:name "dataBackupSource"
+                 :encrypted-passwd "someEncryptedPwd"}}
 ```
 
-### Individual Transport Adapter
-```
-(defn owncloud-source-transport-script-lines
-	[instance-name app-name generations]
-  	(into [] 
-       (concat 
-          common-lib/head
-          	(backup-lib/source-transport-script-lines 
-            	:app-name app-name
-            	:instance-name instance-name 
-            	:gens-stored-on-source-system generations 
-            	:files-to-transport [:rsync :mysql]))))
-```
-
-#### Individual Restore Adapter
-```
-(defn owncloud-restore-script-lines
-	[db-pass]
-   		(into [] 
-       		(concat 
-          		common-lib/head
-           		restore-lib/restore-parameters
-           		restore-lib/restore-navigate-to-restore-location
-           		(restore-lib/restore-locate-restore-dumps)
-           		restore-lib/restore-head
-           		(common-lib/prefix
-           		" "
-           		(common-lib/stop-app-server "apache2"))            
-           		restore-lib/restore-db-head
-           		(common-lib/prefix
-       			"  "
-       			(restore-lib/restore-mysql 
-           			:db-user "owncloud" 
-           			:db-pass db-pass 
-           			:db-name "owncloud" ))
-           		restore-lib/restore-db-tail
-           		restore-lib/restore-file-head
-           		(common-lib/prefix
-       			"  " 
-       			(restore-lib/restore-rsync
-           			:restore-target-dir "/var/www/owncloud"))
-            		restore-lib/restore-file-tail
-            		restore-lib/restore-tail)))
-```
+Backs up .ssh and .mozilla in /home/some-user. 
   
 ### Installation
 
 ```  
-(backup/install-backup-app-instance
-           	:app-name app-name 
-           	:instance-name instance-name
-           	:backup-lines 
-           	(owncloud-source-backup-script-lines
-                instance-name app-name db-pass)
-                :source-transport-lines 
-           	(owncloud-source-transport-script-lines 
-                instance-name app-name 1)
-           	:restore-lines
-           	(owncloud-restore-script-lines db-pass))))
+(backup/install "app-name" my-config)
 ```
+
+### Configuraton
+
+```  
+(backup/configure "app-name" my-config)
+```
+
+### Do the restore
+```
+cd /home/dataBackupSource/restore/
+/usr/lib/dda-backup/app-name_restore.sh [prefix for restore files]
+```
+
   
 ## License
 
