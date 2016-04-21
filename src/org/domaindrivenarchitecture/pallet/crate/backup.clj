@@ -22,6 +22,7 @@
      [pallet.stevedore :as stevedore]
      [org.domaindrivenarchitecture.cm.util :as util]
      [org.domaindrivenarchitecture.pallet.crate.config :as config]
+     [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]
      [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as backup-element]
      [org.domaindrivenarchitecture.pallet.crate.backup.app :as app]
      ))
@@ -50,7 +51,7 @@
 (s/defn ^:always-validate merge-config :- BackupConfig
   "merges the partial config with default config & ensures that resulting config is valid."
   [partial-config]
-  (config/deep-merge (default-backup-config) partial-config))
+  (map-utils/deep-merge (default-backup-config) partial-config))
 
 (defn install
   "collected install actions for backup crate."
