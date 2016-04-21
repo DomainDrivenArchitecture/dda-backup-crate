@@ -1,4 +1,4 @@
-(defproject org.domaindrivenarchitecture/dda-backup-crate "0.3.1-SNAPSHOT"
+(defproject org.domaindrivenarchitecture/dda-backup-crate "0.3.1"
   :description "A crate to handle configuration, their dependencies, documentation and validation"
   :url "https://www.domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
