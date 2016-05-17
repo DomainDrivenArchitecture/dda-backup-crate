@@ -14,8 +14,9 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.cm.util
- )
+(ns org.domaindrivenarchitecture.cm.util-0-3)
+
+; Deprecated - see /dda-pallet-commons/src/org/domaindrivenarchitecture/pallet/crate/util.clj instead.
 
 (defn create-file-content
   ""
