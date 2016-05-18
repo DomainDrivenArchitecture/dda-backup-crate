@@ -17,7 +17,7 @@
  :profiles {:dev
             {:dependencies
              [[com.palletops/pallet "0.8.12" :classifier "tests"]
-              [org.domaindrivenarchitecture/dda-pallet-commons "0.1.2" :classifier "tests"]]
+              [org.domaindrivenarchitecture/dda-pallet-commons "0.1.3-SNAPSHOT" :classifier "tests"]]
              :plugins
              [[com.palletops/pallet-lein "0.8.0-alpha.1"]]}
              :leiningen/reply
