@@ -9,18 +9,18 @@
                  [com.palletops/pallet "0.8.12"]
                  [com.palletops/stevedore "0.8.0-beta.7"]
                  [org.domaindrivenarchitecture/dda-config-commons "0.1.4"]
+                 [org.domaindrivenarchitecture/dda-pallet-commons "0.1.3-SNAPSHOT"]
                  [org.domaindrivenarchitecture/dda-config-crate "0.3.4-SNAPSHOT"]]
   :repositories [["snapshots" :clojars]
                  ["releases" :clojars]]
   :deploy-repositories [["snapshots" :clojars]
                         ["releases" :clojars]]
-  :plugins [[lein-sub "0.3.0"]]
   :profiles {:dev
              {:dependencies
               [[com.palletops/pallet "0.8.12" :classifier "tests"]
                [org.domaindrivenarchitecture/dda-pallet-commons "0.1.3-SNAPSHOT" :classifier "tests"]]
               :plugins
-              [[com.palletops/pallet-lein "0.8.0-alpha.1"]]}
+              [[lein-sub "0.3.0"]]}
               :leiningen/reply
                {:dependencies [[org.slf4j/jcl-over-slf4j "1.7.21"]]
                 :exclusions [commons-logging]}}
