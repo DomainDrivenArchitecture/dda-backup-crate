@@ -18,7 +18,7 @@
    (:require
     [pallet.actions :as actions]
     [pallet.stevedore :as stevedore]
-    [org.domaindrivenarchitecture.cm.util :as util]
+    [org.domaindrivenarchitecture.pallet.crate.util :as util]
     ))
 
 (def facility
