@@ -18,31 +18,10 @@
   (:require
     [clojure.test :refer :all]
     [pallet.actions :as actions]
-    [org.domaindrivenarchitecture.pallet.crate.backup.backup-lib-0-2 :as sut]
+    [org.domaindrivenarchitecture.pallet.crate.backup.backup-lib :as sut]
     ))
 
-(deftest transport-lines 
-  (testing 
-    "manage-source-system-gens"
-    (is (= ["#!/bin/bash"
-            ""
-            "# Move transported files to store"
-             "mv /home/dataBackupSource/transport-outgoing/* /home/dataBackupSource/store"
-             ""
-             "# Manage old backup generations"
-             "cd /home/dataBackupSource/store"
-             "# test wether pwd points to expected place"
-            "if [ \"$PWD\" == \"/home/dataBackupSource/store\" ]; then"
-            "  (ls -t portal_prod_file_*|head -n 1;ls portal_prod_file_*)|sort|uniq -u|xargs rm -r"
-            "  (ls -t portal_prod_mysql_*|head -n 1;ls portal_prod_mysql_*)|sort|uniq -u|xargs rm -r"
-            "fi"
-            ""]
-           (sut/source-transport-script-lines
-             :app-name "portal"
-             :instance-name "prod"
-             :gens-stored-on-source-system 1 
-             :files-to-transport [:file-compressed :mysql])))
-    )
+(deftest transport-lines
   (testing 
     "backup mysql"
     (is (= ["#backup db"
@@ -50,13 +29,13 @@
             "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/portal_prod_mysql_${timestamp}.sql"
             ""]
            (sut/backup-mysql
-             :db-user "prod" 
-            :db-pass "pwd"
-            :db-name "lportal" 
-            :app "portal"
-            :instance-name "prod")))
-    )
-  )
+             "portal" 
+             {:type :mysql
+              :name "prod"
+              :db-user-name "prod" 
+              :db-user-passwd "pwd"
+              :db-name "lportal"})))
+    ))
 
 (deftest backup-files-tar 
   (testing 

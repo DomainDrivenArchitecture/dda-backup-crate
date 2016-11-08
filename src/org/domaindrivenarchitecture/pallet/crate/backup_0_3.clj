@@ -14,64 +14,55 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup
+(ns org.domaindrivenarchitecture.pallet.crate.backup-0-3
    (:require
      [schema.core :as s]
      [schema-tools.core :as st]
      [pallet.actions :as actions]
      [pallet.stevedore :as stevedore]
-     [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
-     [org.domaindrivenarchitecture.pallet.core.dda-crate.config :as internal-config]
+     [org.domaindrivenarchitecture.pallet.crate.config-0-3 :as config]
      [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]
      [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as backup-element]
      [org.domaindrivenarchitecture.pallet.crate.backup.app :as app]
      ))
 
+(def facility
+  :dda-backup)
+
 (def BackupConfig
   "The configuration for backup crate." 
   {:backup-name s/Str
+   (s/optional-key :service-restart) s/Str
    :script-path s/Str
    :backup-user app/User
    :gens-stored-on-source-system s/Num
-   (s/optional-key :elements) [backup-element/BackupElement]
-   (s/optional-key :service-restart) s/Str})
+   :elements [backup-element/BackupElement]})
 
-(def default-backup-config
-  {:backup-name "backup"
-   :script-path "/usr/lib/dda-backup/"
-   :backup-user {:name "dataBackupSource"
+
+(s/defn default-backup-config
+  "The default backup configuration."
+  []
+  {:backup-user {:name "dataBackupSource"
                  :encrypted-passwd "WIwn6jIUt2Rbc"}
+   :script-path "/usr/lib/dda-backup/"
    :gens-stored-on-source-system 3})
-
-(def dda-backup-crate 
-  (dda-crate/make-dda-crate
-    :facility :dda-backup
-    :version [0 3 4]
-    :config-default default-backup-config))
 
 (s/defn ^:always-validate merge-config :- BackupConfig
   "merges the partial config with default config & ensures that resulting config is valid."
   [partial-config]
-  (map-utils/deep-merge default-backup-config partial-config))
+  (map-utils/deep-merge (default-backup-config) partial-config))
 
 (defn install
   "collected install actions for backup crate."
-  [partial-config]
+  [app-name partial-config]
   (let [config (merge-config partial-config)]
     (app/create-backup-source-user (st/get-in config [:backup-user])) 
     (app/create-script-environment (st/get-in config [:script-path]))
   ))
-(defmethod dda-crate/dda-install (:facility dda-backup-crate) [dda-crate partial-config]
-    (install partial-config))
 
 (defn configure
   "collected configuration actions for backup crate."
-  [partial-config]
+  [app-name partial-config]
   (let [config (merge-config partial-config)]
     (app/write-scripts config)
   ))
-(defmethod dda-crate/dda-configure (:facility dda-backup-crate) [dda-crate partial-config]
-    (configure partial-config))
-
-(def with-backup
-  (dda-crate/create-server-spec dda-backup-crate))

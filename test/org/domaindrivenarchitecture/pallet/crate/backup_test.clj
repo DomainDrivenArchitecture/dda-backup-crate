@@ -17,7 +17,6 @@
 (ns org.domaindrivenarchitecture.pallet.crate.backup-test
   (:require
     [schema.core :as s]
-    [schema-tools.core :as st]
     [clojure.test :refer :all]
     [pallet.actions :as actions]
     [pallet.build-actions :as build-actions]
@@ -42,7 +41,7 @@
                                :elements []})))
       ))
  
- (def liferay-config
+ (def a-config
    {:backup-name "system-name"
     :elements []})
  
@@ -54,7 +53,7 @@
         (tu/extract-nth-action-command
           (build-actions/build-actions
             build-actions/ubuntu-session         
-            (sut/install "some-app" liferay-config))
+            (sut/install a-config))
             1)
           "dataBackupSource"
           ))

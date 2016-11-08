@@ -17,7 +17,6 @@
 (ns org.domaindrivenarchitecture.pallet.crate.backup.app-test
   (:require
     [schema.core :as s]
-    [schema-tools.core :as st]
     [clojure.test :refer :all]
     [pallet.actions :as actions]
     [pallet.build-actions :as build-actions]
@@ -134,7 +133,7 @@
            (sut/backup-script-lines (backup/merge-config service-less-config))))
     ))
 
-(deftest transport-script
+(deftest test-transport-script-lines
   (testing 
     "script content"
     (is (= ["#!/bin/bash"
