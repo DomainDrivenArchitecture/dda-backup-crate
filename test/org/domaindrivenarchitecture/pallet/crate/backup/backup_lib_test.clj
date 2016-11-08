@@ -46,10 +46,11 @@
              "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/portal_prod_file_${timestamp}.tgz"
              ""]
            (sut/backup-files-tar
+             "portal"
+             {:type :file-compressed
+             :name "prod"
              :root-dir "/var/lib/liferay/data/"
-             :subdir-to-save "document_library"
-             :app "portal"
-             :instance-name "prod")))
+             :subdir-to-save "document_library"})))
     )
   (testing
     "backup files as uncompressed archive"
@@ -59,10 +60,10 @@
              "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/portal_prod_file_${timestamp}.tar"
              ""]
            (sut/backup-files-tar 
+             "portal"
+             {:type :file-plain
+             :name "prod"
              :root-dir "/var/lib/liferay/data/"
-             :subdir-to-save "document_library"
-             :app "portal"
-             :instance-name "prod"
-             :file-type :file-plain)))
+             :subdir-to-save "document_library"})))
     )
   )
