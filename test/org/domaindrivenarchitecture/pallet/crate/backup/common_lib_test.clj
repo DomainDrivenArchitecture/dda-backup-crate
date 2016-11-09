@@ -18,7 +18,7 @@
   (:require
     [clojure.test :refer :all]
     [pallet.actions :as actions]
-    [org.domaindrivenarchitecture.pallet.crate.backup.common-lib-0-2 :as sut]
+    [org.domaindrivenarchitecture.pallet.crate.backup.common-lib :as sut]
     ))
 
 (deftest app-server

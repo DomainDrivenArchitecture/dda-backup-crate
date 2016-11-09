@@ -25,21 +25,27 @@
     [org.domaindrivenarchitecture.pallet.crate.backup :as sut]
     ))
  
- (deftest validation
+(deftest the-whole
   (testing 
-    "test validity of configuration parts" 
-      (is (s/validate
-            app/ScriptType
-            :backup))
-      (is (thrown?
-            Exception
-            (s/validate
-              app/ScriptType
-              :no-type)))
-      (is (map?
-            (sut/merge-config {:backup-name "system-name"
-                               :elements []})))
-      ))
+    "test plan creation" 
+      (is sut/with-backup))
+  ) 
+
+(deftest validation
+ (testing 
+   "test validity of configuration parts" 
+     (is (s/validate
+           app/ScriptType
+           :backup))
+     (is (thrown?
+           Exception
+           (s/validate
+             app/ScriptType
+             :no-type)))
+     (is (map?
+           (sut/merge-config {:backup-name "system-name"
+                              :elements []})))
+     ))
  
  (def a-config
    {:backup-name "system-name"

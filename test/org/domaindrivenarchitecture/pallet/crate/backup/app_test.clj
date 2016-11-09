@@ -216,7 +216,7 @@
              ""
              "mysql -hlocalhost -udb-user-name -pdb-pass -e \"drop database db-name\";"
              "mysql -hlocalhost -udb-user-name -pdb-pass -e \"create database db-namecharacter set utf8\";"
-             "mysql -hlocalhost -udb-user-name -pdb-pass db-name < most_recent_liferay_mysql_dump"
+             "mysql -hlocalhost -udb-user-name -pdb-pass db-name < ${most_recent_liferay_mysql_dump}"
              ""
              "#db-restore postprocessing"
              "mysql -hlocalhost -udb-user-name -pdb-pass -Ddb-name -e \"update Company set webId = 'fqdn', mx = 'fqdn' where companyId = 10132;\""

@@ -114,7 +114,7 @@
     [(str "mysql -hlocalhost -u" db-user-name " -p" db-user-passwd " -e \"drop database " db-name "\";")
      (str "mysql -hlocalhost -u" db-user-name " -p" db-user-passwd " -e \"create database " 
           db-name used-create-options "\";")
-     (str "mysql -hlocalhost -u" db-user-name " -p" db-user-passwd " " db-name " < " (restore-dump-name element))
+     (str "mysql -hlocalhost -u" db-user-name " -p" db-user-passwd " " db-name " < ${" (restore-dump-name element) "}")
      ""
      ]))
 
