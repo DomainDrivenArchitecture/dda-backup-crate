@@ -8,8 +8,8 @@
                  [com.palletops/pallet "0.8.12"]
                  [com.palletops/stevedore "0.8.0-beta.7"]
                  [org.domaindrivenarchitecture/dda-config-commons "0.1.7"]
-                 [org.domaindrivenarchitecture/dda-pallet-commons "0.2.1"]
-                 [org.domaindrivenarchitecture/dda-pallet "0.2.0"]
+                 [org.domaindrivenarchitecture/dda-pallet-commons "0.2.2-SNAPSHOT"]
+                 [org.domaindrivenarchitecture/dda-pallet "0.2.1-SNAPSHOT"]
                  [org.domaindrivenarchitecture/dda-config-crate "0.3.4"]]
   :repositories [["snapshots" :clojars]
                  ["releases" :clojars]]
@@ -18,7 +18,7 @@
   :profiles {:dev
              {:dependencies
               [[com.palletops/pallet "0.8.12" :classifier "tests"]
-               [org.domaindrivenarchitecture/dda-pallet-commons "0.2.1" :classifier "tests"]]
+               [org.domaindrivenarchitecture/dda-pallet-commons "0.2.2-SNAPSHOT" :classifier "tests"]]
               :plugins
               [[lein-sub "0.3.0"]]}
               :leiningen/reply
