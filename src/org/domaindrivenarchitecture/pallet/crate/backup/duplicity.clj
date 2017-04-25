@@ -23,10 +23,10 @@
     ))
 
 (defn install [config]
-  ((actions/package "unzip")
+  (actions/package "unzip")
    (actions/package "rng-tools")
    (actions/package-source "duplicity"
                     :aptitude
                     {:url "ppa:duplicity-team/ppa"})
    (actions/package "duplicity")
-                          ))
+                          )
