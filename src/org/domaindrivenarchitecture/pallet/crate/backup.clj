@@ -62,7 +62,7 @@
     (app/create-backup-source-user (st/get-in config [:backup-user]))
     (app/create-script-environment (st/get-in config [:script-path]))
     (when (contains? config :stack)
-      (if ((get config :stack) = "duplicity")
+      (if (= (get config :stack) "duplicity")
       (duplicity/install config)
       )))
   )
