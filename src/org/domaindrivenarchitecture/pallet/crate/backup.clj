@@ -15,24 +15,25 @@
 ; limitations under the License.
 
 (ns org.domaindrivenarchitecture.pallet.crate.backup
-   (:require
-     [schema.core :as s]
-     [schema-tools.core :as st]
-     [pallet.actions :as actions]
-     [pallet.stevedore :as stevedore]
-     [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
-     [org.domaindrivenarchitecture.pallet.core.dda-crate.config :as internal-config]
-     [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]
-     [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as backup-element]
-     [org.domaindrivenarchitecture.pallet.crate.backup.app :as app]
-     ))
+  (:require
+   [schema.core :as s]
+   [schema-tools.core :as st]
+   [pallet.actions :as actions]
+   [pallet.stevedore :as stevedore]
+   [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
+   [org.domaindrivenarchitecture.pallet.core.dda-crate.config :as internal-config]
+   [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]
+   [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as backup-element]
+   [org.domaindrivenarchitecture.pallet.crate.backup.app :as app]
+   [org.domaindrivenarchitecture.pallet.crate.backup.duplicity :as duplicity]))
 
 (def BackupConfig
-  "The configuration for backup crate." 
+  "The configuration for backup crate."
   {:backup-name s/Str
    :script-path s/Str
    :backup-user app/User
    :gens-stored-on-source-system s/Num
+   (s/optional-key :stack) s/Str
    (s/optional-key :elements) [backup-element/BackupElement]
    (s/optional-key :service-restart) s/Str})
 
@@ -43,11 +44,11 @@
                  :encrypted-passwd "WIwn6jIUt2Rbc"}
    :gens-stored-on-source-system 3})
 
-(def dda-backup-crate 
+(def dda-backup-crate
   (dda-crate/make-dda-crate
-    :facility :dda-backup
-    :version [0 3 4]
-    :config-default default-backup-config))
+   :facility :dda-backup
+   :version [0 3 4]
+   :config-default default-backup-config))
 
 (s/defn ^:always-validate merge-config :- BackupConfig
   "merges the partial config with default config & ensures that resulting config is valid."
@@ -58,20 +59,24 @@
   "collected install actions for backup crate."
   [partial-config]
   (let [config (merge-config partial-config)]
-    (app/create-backup-source-user (st/get-in config [:backup-user])) 
+    (app/create-backup-source-user (st/get-in config [:backup-user]))
     (app/create-script-environment (st/get-in config [:script-path]))
-  ))
+    (when (contains? config :stack)
+      (if ((get config :stack) = "duplicity")
+      (duplicity/install config)
+      )))
+  )
+
 (defmethod dda-crate/dda-install (:facility dda-backup-crate) [dda-crate partial-config]
-    (install partial-config))
+  (install partial-config))
 
 (defn configure
   "collected configuration actions for backup crate."
   [partial-config]
   (let [config (merge-config partial-config)]
-    (app/write-scripts config)
-  ))
+    (app/write-scripts config)))
 (defmethod dda-crate/dda-configure (:facility dda-backup-crate) [dda-crate partial-config]
-    (configure partial-config))
+  (configure partial-config))
 
 (def with-backup
   (dda-crate/create-server-spec dda-backup-crate))

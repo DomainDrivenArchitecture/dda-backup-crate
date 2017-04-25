@@ -18,7 +18,8 @@
   :profiles {:dev
              {:dependencies
               [[com.palletops/pallet "0.8.12" :classifier "tests"]
-               [org.domaindrivenarchitecture/dda-pallet-commons "0.3.0" :classifier "tests"]]
+               [org.domaindrivenarchitecture/dda-pallet-commons "0.3.0" :classifier "tests"]
+               [proto-repl "0.3.1"]]
               :plugins
               [[lein-sub "0.3.0"]]}
               :leiningen/reply
@@ -27,5 +28,3 @@
   :local-repo-classpath true
   :classifiers {:tests {:source-paths ^:replace ["test"]
                         :resource-paths ^:replace []}})
- 
-  
