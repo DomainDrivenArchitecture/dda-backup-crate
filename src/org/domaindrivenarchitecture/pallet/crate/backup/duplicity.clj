@@ -40,7 +40,7 @@
     :group "users"
     :mode "755"
     )
-  (actions/exec-script* "/var/opt/backup/boto-2.43.0/setup.py"))
+  (actions/exec-script* "/usr/bin/python /var/opt/backup/boto-2.43.0/setup.py install"))
 
 (defn configure []
   )
