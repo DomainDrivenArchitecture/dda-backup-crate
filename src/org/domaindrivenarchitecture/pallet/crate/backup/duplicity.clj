@@ -30,6 +30,7 @@
                           {:url "ppa:duplicity-team/ppa"})
   (actions/package "duplicity")
   (actions/package "gnupg2")
+  (acitons/package "python3")
   (actions/remote-directory
     "/var/opt/backup/"
     :action :create
@@ -39,7 +40,7 @@
     :group "users"
     :mode "755"
     )
-  (actions/exec "/var/opt/backup/boto-2.43.0/setup.py"))
+  (actions/exec-script* "/var/opt/backup/boto-2.43.0/setup.py"))
 
 (defn configure []
   )
