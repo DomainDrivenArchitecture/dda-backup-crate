@@ -34,7 +34,7 @@
     "/var/opt/backup/boto-2.43.0"
     :action :create
     :url "https://github.com/boto/boto/archive/2.43.0.zip"
-    :unpack :zip
+    :unpack :unzip
     :owner "root"
     :group "users"
     :mode "777"
