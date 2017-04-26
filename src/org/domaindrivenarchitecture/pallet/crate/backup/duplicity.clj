@@ -21,7 +21,7 @@
    [pallet.actions :as actions]
    [pallet.stevedore :as stevedore]))
 
-(defn install
+(defn install []
   ;TODO: unzip gets installed by tomcat-crate, check for existing installation
   (actions/package "unzip")
   (actions/package "rng-tools")
@@ -40,5 +40,5 @@
     :mode "777"
     ))
 
-(defn configure
+(defn configure []
   )
