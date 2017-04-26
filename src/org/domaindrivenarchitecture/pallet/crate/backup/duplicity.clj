@@ -31,14 +31,15 @@
   (actions/package "duplicity")
   (actions/package "gnupg2")
   (actions/remote-directory
-    "/var/opt/backup/boto-2.43.0"
+    "/var/opt/backup/"
     :action :create
     :url "https://github.com/boto/boto/archive/2.43.0.zip"
     :unpack :unzip
     :owner "root"
     :group "users"
-    :mode "777"
-    ))
+    :mode "755"
+    )
+  (actions/exec "/var/opt/backup/boto-2.43.0/setup.py"))
 
 (defn configure []
   )
