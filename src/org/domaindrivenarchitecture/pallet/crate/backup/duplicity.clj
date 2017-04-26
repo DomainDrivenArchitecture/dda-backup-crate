@@ -38,7 +38,7 @@
    :unpack :unzip
    :owner "root"
    :group "users"
-   :mode "777")
-  (actions/exec-script* "/usr/bin/python /var/opt/backup/boto-2.43.0/setup.py install"))
+   :mode "755")
+  (actions/exec-script* "cd /var/opt/backup/boto-2.43.0/ && /usr/bin/python /var/opt/backup/boto-2.43.0/setup.py install"))
 
 (defn configure [])
