@@ -63,9 +63,7 @@
     (app/create-script-environment (st/get-in config [:script-path]))
     (when (contains? config :stack)
       (if (= (get config :stack) "duplicity")
-      (duplicity/install config)
-      )))
-  )
+        (duplicity/install)))))
 
 (defmethod dda-crate/dda-install (:facility dda-backup-crate) [dda-crate partial-config]
   (install partial-config))
@@ -74,7 +72,11 @@
   "collected configuration actions for backup crate."
   [partial-config]
   (let [config (merge-config partial-config)]
-    (app/write-scripts config)))
+    (app/write-scripts config)
+    (when (contains? config :stack)
+      (if (= (get config :stack) "duplicity")
+        (duplicity/configure)))))
+
 (defmethod dda-crate/dda-configure (:facility dda-backup-crate) [dda-crate partial-config]
   (configure partial-config))
 

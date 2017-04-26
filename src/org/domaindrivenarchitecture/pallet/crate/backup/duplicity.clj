@@ -16,17 +16,29 @@
 
 (ns org.domaindrivenarchitecture.pallet.crate.backup.duplicity
   (:require
-    [schema.core :as s]
-    [schema-tools.core :as st]
-    [pallet.actions :as actions]
-    [pallet.stevedore :as stevedore]
+   [schema.core :as s]
+   [schema-tools.core :as st]
+   [pallet.actions :as actions]
+   [pallet.stevedore :as stevedore]))
+
+(defn install
+  ;TODO: unzip gets installed by tomcat-crate, check for existing installation
+  (actions/package "unzip")
+  (actions/package "rng-tools")
+  (actions/package-source "duplicity"
+                          :aptitude
+                          {:url "ppa:duplicity-team/ppa"})
+  (actions/package "duplicity")
+  (actions/package "gnupg2")
+  (actions/remote-directory
+    "/var/opt/backup/boto-2.43.0"
+    :action :create
+    :url "https://github.com/boto/boto/archive/2.43.0.zip"
+    :unpack :zip
+    :owner "root"
+    :group "users"
+    :mode "777"
     ))
 
-(defn install [config]
-  (actions/package "unzip")
-   (actions/package "rng-tools")
-   (actions/package-source "duplicity"
-                    :aptitude
-                    {:url "ppa:duplicity-team/ppa"})
-   (actions/package "duplicity")
-                          )
+(defn configure
+  )
