@@ -32,15 +32,13 @@
   (actions/package "gnupg2")
   (actions/package "python3")
   (actions/remote-directory
-    "/var/opt/backup/"
-    :action :create
-    :url "https://github.com/boto/boto/archive/2.43.0.zip"
-    :unpack :unzip
-    :owner "root"
-    :group "users"
-    :mode "755"
-    )
+   "/var/opt/backup/"
+   :action :create
+   :url "https://github.com/boto/boto/archive/2.43.0.zip"
+   :unpack :unzip
+   :owner "root"
+   :group "users"
+   :mode "755")
   (actions/exec-script* "/usr/bin/python /var/opt/backup/boto-2.43.0/setup.py install"))
 
-(defn configure []
-  )
+(defn configure [])
