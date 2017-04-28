@@ -45,10 +45,10 @@
 
 (defn configure []
   ;TODO: change to get keys and trust from config
-  (actions/rsync "~/.pallet/9C26059F_pub.key" "/var/opt/backup/" :port 22)
-  (actions/rsync "~/.pallet/9C26059F_priv.key" "/var/opt/backup/" :port 22)
+  (actions/rsync "~/.pallet/9C26059F_pub.key" "/var/opt/backup/" {:port 22})
+  (actions/rsync "~/.pallet/9C26059F_priv.key" "/var/opt/backup/" {:port 22})
   (actions/exec-script* "gpg --import /var/opt/backup/9C26059F_pub.key && gpg --import /var/opt/backup/9C26059F_priv.key" )
-  (actions/rsync "~/.pallet/trust.sh" "/var/opt/backup/" :port 22)
+  (actions/rsync "~/.pallet/trust.sh" "/var/opt/backup/" {:port 22})
   (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh")
 
   )
