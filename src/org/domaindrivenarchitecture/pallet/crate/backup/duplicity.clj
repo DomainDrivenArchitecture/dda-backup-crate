@@ -16,6 +16,7 @@
 
 (ns org.domaindrivenarchitecture.pallet.crate.backup.duplicity
   (:require
+   [clojure.java.io :as io]
    [schema.core :as s]
    [schema-tools.core :as st]
    [pallet.actions :as actions]
@@ -41,4 +42,13 @@
    :mode "755")
   (actions/exec-script* "cd /var/opt/backup/boto-2.43.0/ && /usr/bin/python setup.py install"))
 
-(defn configure [])
+
+(defn configure []
+  ;TODO: change to get keys and trust from config
+  (actions/rsync "~/.pallet/9C26059F_pub.key" "/var/opt/backup/")
+  (actions/rsync "~/.pallet/9C26059F_priv.key" "/var/opt/backup/")
+  (actions/exec-script* "gpg --import /var/opt/backup/9C26059F_pub.key && gpg --import /var/opt/backup/9C26059F_priv.key" )
+  (actions/rsync "~/.pallet/trust.sh" "/var/opt/backup/")
+  (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh")
+
+  )
