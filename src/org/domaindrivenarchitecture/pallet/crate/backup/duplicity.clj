@@ -42,15 +42,13 @@
    :mode "755")
   (actions/exec-script* "cd /var/opt/backup/boto-2.43.0/ && /usr/bin/python setup.py install"))
 
-
 (defn configure []
   ;TODO: change to get keys and trust from config
   (actions/remote-file "/var/opt/backup/9C26059F_pub.key" :local-file "/home/hel/.pallet/9C26059F_pub.key" :owner "root", :group "users" :mode "700"
-  :action :create :force true)
+                       :action :create :force true)
   (actions/remote-file "/var/opt/backup/9C26059F_priv.key" :local-file "/home/hel/.pallet/9C26059F_priv.key" :owner "root", :group "users" :mode "700"
-  :action :create :force true)
-  (actions/exec-script* "gpg --import /var/opt/backup/9C26059F_pub.key && gpg --import /var/opt/backup/9C26059F_priv.key" )
+                       :action :create :force true)
   (actions/remote-file "/var/opt/backup/trust.sh" :local-file "/home/hel/.pallet/trust.sh" :owner "root", :group "users" :mode "700"
-  :action :create :force true)
-  (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh")
-  )
+                       :action :create :force true)
+  (actions/exec-script* "gpg --import /var/opt/backup/9C26059F_pub.key && gpg --import /var/opt/backup/9C26059F_priv.key")
+  (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh"))
