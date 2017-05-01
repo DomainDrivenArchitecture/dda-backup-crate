@@ -50,5 +50,4 @@
                        :action :create :force true)
   (actions/remote-file "/var/opt/backup/trust.sh" :local-file "/home/hel/.pallet/trust.sh" :owner "root", :group "users" :mode "700"
                        :action :create :force true)
-  (actions/exec-script* "gpg --import /var/opt/backup/9C26059F_pub.key && gpg --import /var/opt/backup/9C26059F_priv.key")
-  (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh"))
+  (actions/exec-script* "gpg --import /var/opt/backup/9C26059F_pub.key && gpg --import /var/opt/backup/9C26059F_priv.key && /bin/bash /var/opt/backup/trust.sh"))
