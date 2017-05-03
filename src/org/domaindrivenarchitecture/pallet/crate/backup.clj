@@ -55,7 +55,7 @@
   [partial-config]
   (if (and (contains? partial-config :elements) (= (map :type (get partial-config :elements)) "duplicity"))
     (map-utils/deep-merge default-backup-config partial-config)
-    ((map-utils/deep-merge (map-utils/deep-merge default-backup-config backup-user) partial-config))))
+    (map-utils/deep-merge (map-utils/deep-merge default-backup-config backup-user) partial-config)))
 
 (defn install
   "collected install actions for backup crate."
