@@ -16,14 +16,13 @@
 
 (ns org.domaindrivenarchitecture.pallet.crate.backup.restore-lib-test
   (:require
-    [clojure.test :refer :all]
-    [pallet.actions :as actions]
-    [org.domaindrivenarchitecture.pallet.crate.backup.restore-lib :as sut]
-    ))
+   [clojure.test :refer :all]
+   [pallet.actions :as actions]
+   [org.domaindrivenarchitecture.pallet.crate.backup.restore-lib :as sut]))
 
 (deftest restore-mysql
-  (testing 
-    "restore for owncloud"
+  (testing
+   "restore for owncloud"
     (is (= ["# ------------- restore db --------------"
             "echo \"db restore ...\""
             ""
@@ -34,19 +33,15 @@
             "echo \"finished db restore\""
             ""]
            (sut/restore-mysql-script
-              {:type :mysql
-               :name "name"
-               :db-user-name "owncloud" 
-               :db-user-passwd "owncloud-db-pwd" 
-               :db-name "owncloud"})
-           ))
-    )
-  )
-
+            {:type :mysql
+             :name "name"
+             :db-user-name "owncloud"
+             :db-user-passwd "owncloud-db-pwd"
+             :db-name "owncloud"})))))
 
 (deftest restore-tar
-  (testing 
-    "restore for owncloud"
+  (testing
+   "restore for owncloud"
     (is (= ["# ------------- restore file --------------"
             "echo \"file restore ...\""
             ""
@@ -56,31 +51,73 @@
             "echo \"finished file restore.\""
             ""]
            (sut/restore-tar-script
-             {
-             :type :file-plain
+            {:type :file-plain
              :name "name"
              :subdir-to-save "./"
-             :root-dir "/var/www/owncloud"
-             })
-           ))
-    )  
-  (testing 
-    "restore for liferay"
+             :root-dir "/var/www/owncloud"}))))
+  (testing
+   "restore for liferay"
     (is (= ["# ------------- restore file --------------"
-           "echo \"file restore ...\""
-           ""
-           "rm -r /var/lib/liferay/data/*"
-           "tar -xzf ${most_recent_name_file_dump} -C /var/lib/liferay/data"
-           "chown -R tomcat7:tomcat7 /var/lib/liferay/data"
-           ""
-           "echo \"finished file restore.\""
-           ""]
+            "echo \"file restore ...\""
+            ""
+            "rm -r /var/lib/liferay/data/*"
+            "tar -xzf ${most_recent_name_file_dump} -C /var/lib/liferay/data"
+            "chown -R tomcat7:tomcat7 /var/lib/liferay/data"
+            ""
+            "echo \"finished file restore.\""
+            ""]
            (sut/restore-tar-script
-             {:type :file-compressed
-              :name "name"
-              :root-dir "/var/lib/liferay/data"
-              :subdir-to-save "./"
-              :new-owner "tomcat7"})
-           ))
-    )  
-  )
+            {:type :file-compressed
+             :name "name"
+             :root-dir "/var/lib/liferay/data"
+             :subdir-to-save "./"
+             :new-owner "tomcat7"})))))
+
+(def options-dup [:archive-dir "/var/opt/gitlab/backup-cache"
+                  :verbosity :notice
+                  :s3-use-new-style true
+                  :s3-european-buckets true
+                  :encrypt-key=1A true
+                  :sign-key=1A true
+                  :log-file "/var/log/gitlab/duplicity.log"])
+
+(def prep-script "[[ -d /var/opt/gitlab/backup-cache ]] || mkdir /var/opt/gitlab/backup-cache")
+(def post-script "/bin/tar -xzf /var/opt/gitlab/backups/gitlab_secrets.tgz --directory=/ && /usr/bin/gitlab-ctl stop unicorn && /usr/bin/gitlab-ctl stop sidekiq && /usr/bin/gitlab-rake gitlab:backup:restore && /usr/bin/sudo gitlab-ctl start && /usr/bin/sudo gitlab-rake gitlab:check SANITIZE=true")
+
+(def dup-backup-element {:type :duplicity
+                         :tmp-dir "/var/opt/gitlab/backup-cache"
+                         :passphrase " "
+                         :aws-access-key-id "A1"
+                         :aws-secret-access-key "A1"
+                         :s3-use-sigv4 "True"
+                         :action :full
+                         :options {:backup-options [:dummy :options]
+                                   :restore-options options-dup}
+                         :directory "/var/opt/gitlab/backups"
+                         :url "localhost"
+                         :prep-scripts {:prep-backup-script "dummy-script"
+                                        :prep-restore-script prep-script}
+                         :post-ops {:remove-remote-backup {:days 0
+                                                           :options [:dummy :options]}
+                                    :post-transport-script post-script}})
+
+(deftest restore-duplicity
+  (testing
+   "restore with duplicity"
+    (is (=
+         ["# Transport Backup"
+          "export PASSPHRASE= "
+          "export TMPDIR=/var/opt/gitlab/backup-cache"
+          "export AWS_ACCESS_KEY_ID=A1"
+          "export AWS_SECRET_ACCESS_KEY=A1"
+          "export S3_USE_SIGV4=True"
+          prep-script
+          "/usr/bin/duplicity restore --archive-dir /var/opt/gitlab/backup-cache --verbosity notice --s3-use-new-style --s3-european-buckets --encrypt-key=1A --sign-key=1A --log-file /var/log/gitlab/duplicity.log localhost /var/opt/gitlab/backups"
+          post-script
+          "unset AWS_ACCESS_KEY_ID"
+          "unset AWS_SECRET_ACCESS_KEY"
+          "unset S3_USE_SIGV4"
+          "unset PASSPHRASE"
+          "unset TMPDIR"
+          ""]
+         (sut/restore-duplicity dup-backup-element)))))

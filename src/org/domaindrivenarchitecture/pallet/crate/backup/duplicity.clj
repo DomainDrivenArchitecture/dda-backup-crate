@@ -17,10 +17,12 @@
 (ns org.domaindrivenarchitecture.pallet.crate.backup.duplicity
   (:require
    [clojure.java.io :as io]
+   [clojure.string :as str]
    [schema.core :as s]
    [schema-tools.core :as st]
    [pallet.actions :as actions]
-   [pallet.stevedore :as stevedore]))
+   [pallet.stevedore :as stevedore]
+   [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as element]))
 
 (defn install []
   ;TODO: unzip gets installed by tomcat-crate, check for existing installation
@@ -42,15 +44,73 @@
    :mode "755")
   (actions/exec-script* "cd /var/opt/backup/boto-2.43.0/ && /usr/bin/python setup.py install"))
 
-
 (defn configure []
   ;TODO: change to get keys and trust from config
   (actions/remote-file "/var/opt/backup/9C26059F_pub.key" :local-file "/home/hel/.pallet/9C26059F_pub.key" :owner "root", :group "users" :mode "700"
-  :action :create :force true)
+                       :action :create :force true)
   (actions/remote-file "/var/opt/backup/9C26059F_priv.key" :local-file "/home/hel/.pallet/9C26059F_priv.key" :owner "root", :group "users" :mode "700"
-  :action :create :force true)
-  (actions/exec-script* "gpg --import /var/opt/backup/9C26059F_pub.key && gpg --import /var/opt/backup/9C26059F_priv.key" )
+                       :action :create :force true)
+  (actions/exec-script* "gpg --import /var/opt/backup/9C26059F_pub.key && gpg --import /var/opt/backup/9C26059F_priv.key")
   (actions/remote-file "/var/opt/backup/trust.sh" :local-file "/home/hel/.pallet/trust.sh" :owner "root", :group "users" :mode "700"
-  :action :create :force true)
-  (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh")
-  )
+                       :action :create :force true)
+  (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh"))
+
+(def duplicity-options [(s/enum s/Str s/Bool s/Keyword)])
+
+;TODO: catch options whose delimiter is not empty-space but =
+(s/defn option-parser [options :- duplicity-options]
+  (apply str (keep-indexed (fn [index item]
+                             (if (even? index)
+                               (str " --" (name item))
+                               (if (= item true)
+                                 ""
+                                 (str " " (name item)))))
+                           options)))
+
+(def DuplicityModus (s/enum :backup :restore))
+
+;TODO: implement support for other cloud than aws
+(s/defn duplicity-parser
+  [element :- element/BackupElement
+   modus :- DuplicityModus]
+  (let [aws (contains? element :aws-access-key-id)
+        backup (= modus :backup)]
+    [(if backup
+       "#backup the files"
+       "# Transport Backup")
+     (str "export PASSPHRASE=" (get element :passphrase))
+     (str "export TMPDIR=" (get element :tmp-dir))
+     (when aws (str "export AWS_ACCESS_KEY_ID=" (get element :aws-access-key-id)))
+     (when aws (str "export AWS_SECRET_ACCESS_KEY=" (get element :aws-secret-access-key)))
+     (when aws (str "export S3_USE_SIGV4=" (get element :s3-use-sigv4)))
+     (when (contains? element :prep-scripts)
+       (cond
+         (and (contains? (get element :prep-scripts) :prep-backup-script) backup)
+         (get-in element [:prep-scripts :prep-backup-script])
+         (and (contains? (get element :prep-scripts) :prep-restore-script) (not backup))
+         (get-in element [:prep-scripts :prep-restore-script])))
+     (str "/usr/bin/duplicity "
+          (if backup (name (get element :action))
+              "restore")
+          (when (contains? element :options)
+            (cond
+              (and (contains? (get element :options) :backup-options) backup)
+              (str (option-parser (get-in element [:options :backup-options])) " " (get element :directory) " " (get element :url))
+              (and (contains? (get element :options) :restore-options) (not backup))
+              (str (option-parser (get-in element [:options :restore-options])) " " (get element :url) " " (get element :directory)))))
+     (when (contains? element :post-ops)
+       (cond
+         (and (contains? (get element :post-ops) :remove-remote-backup) backup)
+         (let [remove-options (get-in element [:post-ops :remove-remote-backup])]
+           (str "/usr/bin/duplicity remove-older-than "
+                (get remove-options :days) "D"
+                (option-parser (get remove-options :options))
+                " " (get element :url)))
+         (and (contains? (get element :post-ops) :post-transport-script) (not backup))
+         (get-in element [:post-ops :post-transport-script])))
+     (when aws (str "unset AWS_ACCESS_KEY_ID"))
+     (when aws (str "unset AWS_SECRET_ACCESS_KEY"))
+     (when aws (str "unset S3_USE_SIGV4"))
+     (str "unset PASSPHRASE")
+     (str "unset TMPDIR")
+     ""]))

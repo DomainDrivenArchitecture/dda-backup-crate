@@ -15,9 +15,10 @@
 ; limitations under the License.
 
 (ns org.domaindrivenarchitecture.pallet.crate.backup.backup-lib
-  (require 
-    [schema.core :as s]
-    [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as element]))
+  (require
+   [schema.core :as s]
+   [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as element]
+   [org.domaindrivenarchitecture.pallet.crate.backup.duplicity :as duplicity]))
 
 (s/defn backup-files-tar
   "bash script part to backup as tgz."
@@ -26,22 +27,21 @@
   (let [tar-options (case (get-in element [:type])
                       :file-compressed "cvzf"
                       :file-plain "cvf")]
-  ["#backup the files" 
-   (str "cd " (get-in element [:root-dir]))  
-   (str "tar " tar-options " /home/dataBackupSource/transport-outgoing/" 
-        (element/backup-file-name backup-name element) " " (get-in element [:subdir-to-save]))
-   (str "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/"
-        (element/backup-file-name backup-name element))
-   ""])
-  )
+    ["#backup the files"
+     (str "cd " (get-in element [:root-dir]))
+     (str "tar " tar-options " /home/dataBackupSource/transport-outgoing/"
+          (element/backup-file-name backup-name element) " " (get-in element [:subdir-to-save]))
+     (str "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/"
+          (element/backup-file-name backup-name element))
+     ""]))
 
 (s/defn backup-files-rsync
   "bash script part to backup with rsync."
   [backup-name :- s/Str
    element :- element/BackupElement]
-  ["#backup the files" 
-   (str "cd " (get-in element [:root-dir])) 
-   (str "rsync -Aax " (get-in element [:subdir-to-save]) " /home/dataBackupSource/transport-outgoing/" 
+  ["#backup the files"
+   (str "cd " (get-in element [:root-dir]))
+   (str "rsync -Aax " (get-in element [:subdir-to-save]) " /home/dataBackupSource/transport-outgoing/"
         (element/backup-file-name backup-name element))
    ""])
 
@@ -51,10 +51,15 @@
    element :- element/BackupElement]
   ["#backup db"
    (str "mysqldump --no-create-db=true -h localhost -u " (get-in element [:db-user-name])
-        " -p" (get-in element [:db-user-passwd]) 
+        " -p" (get-in element [:db-user-passwd])
         " " (get-in element [:db-name]) " > /home/dataBackupSource/transport-outgoing/"
         (element/backup-file-name backup-name element))
    (str "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/"
         (element/backup-file-name backup-name element))
-   ""]
-  )
+   ""])
+
+(s/defn backup-files-duplicity
+  "bash script part to backup with duplicity."
+  [element :- element/BackupElement]
+    (duplicity/duplicity-parser element :backup)
+)
