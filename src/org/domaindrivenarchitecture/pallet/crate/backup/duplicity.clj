@@ -55,10 +55,8 @@
                        :action :create :force true)
   (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh"))
 
-(def duplicity-options [(s/enum s/Str s/Bool s/Keyword)])
-
 ;TODO: catch options whose delimiter is not empty-space but =
-(s/defn option-parser [options :- duplicity-options]
+(s/defn ^:always-validate option-parser [options :- element/DuplicityOptions]
   (apply str (keep-indexed (fn [index item]
                              (if (even? index)
                                (str " --" (name item))
@@ -70,7 +68,7 @@
 (def DuplicityModus (s/enum :backup :restore))
 
 ;TODO: implement support for other cloud than aws
-(s/defn duplicity-parser
+(s/defn ^:always-validate duplicity-parser
   [element :- element/BackupElement
    modus :- DuplicityModus]
   (let [aws (contains? element :aws-access-key-id)

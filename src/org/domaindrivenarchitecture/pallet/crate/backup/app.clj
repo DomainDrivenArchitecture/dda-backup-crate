@@ -36,7 +36,7 @@
   "The backup elements"
   (s/enum :backup :restore :source-transport))
 
-(s/defn backup-element-lines
+(s/defn ^:always-validate backup-element-lines
   ""
   [backup-name :- s/Str
    element :- backup-element/BackupElement]
