@@ -71,7 +71,8 @@
     :file-compressed "file"
     :file-plain "file"
     :rsync "file"
-    :mysql "mysql"))
+    :mysql "mysql"
+    :duplicity "file"))
 
 (s/defn element-type-file-extension
   [type :- ElementType]
@@ -79,7 +80,8 @@
     :file-compressed "tgz"
     :file-plain "tar"
     :rsync "dir"
-    :mysql "sql"))
+    :mysql "sql"
+    :duplicity "dir"))
 
 (s/defn backup-file-prefix-pattern :- s/Str
   ""

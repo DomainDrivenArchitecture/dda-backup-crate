@@ -53,14 +53,14 @@
 (s/defn ^:always-validate merge-config :- BackupConfig
   "merges the partial config with default config & ensures that resulting config is valid."
   [partial-config]
-  (if (and (contains? partial-config :elements) (= (map :type (get partial-config :elements)) "duplicity"))
+  (if (and (contains? partial-config :elements) (= ((get partial-config :elements) :type) :duplicity))
     (map-utils/deep-merge default-backup-config partial-config)
     (map-utils/deep-merge (map-utils/deep-merge default-backup-config backup-user) partial-config)))
 
 (defn install
   "collected install actions for backup crate."
   [partial-config]
-  (let [config (merge-config partial-config) dup (= (map :type (get config :elements)) "duplicity")]
+  (let [config (merge-config partial-config) dup (= ((get partial-config :elements) :type) :duplicity)]
     (when dup (duplicity/install))
     (when (not dup) (app/create-backup-source-user (st/get-in config [:backup-user])))
     (when (not dup) (app/create-script-environment (st/get-in config [:script-path])))))
@@ -71,7 +71,7 @@
 (defn configure
   "collected configuration actions for backup crate."
   [partial-config]
-  (let [config (merge-config partial-config) dup (= (map :type (get config :elements)) "duplicity")]
+  (let [config (merge-config partial-config) dup (= ((get partial-config :elements) :type) :duplicity)]
     (app/write-scripts config)
     (when dup
       (duplicity/configure))))
