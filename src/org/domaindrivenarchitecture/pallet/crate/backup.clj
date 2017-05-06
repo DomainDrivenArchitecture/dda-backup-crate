@@ -50,20 +50,27 @@
    :version [0 3 4]
    :config-default default-backup-config))
 
+(defn check-for-dup [partial-config]
+  (and
+   (contains? partial-config :elements)
+   (not (empty? (get partial-config :elements)))
+   (= ((get partial-config :elements) :type) :duplicity)))
+
 (s/defn ^:always-validate merge-config :- BackupConfig
   "merges the partial config with default config & ensures that resulting config is valid."
   [partial-config]
-  (if (and (contains? partial-config :elements) (= ((get partial-config :elements) :type) :duplicity))
+  (if (check-for-dup partial-config)
     (map-utils/deep-merge default-backup-config partial-config)
-    (map-utils/deep-merge (map-utils/deep-merge default-backup-config backup-user) partial-config)))
+    (map-utils/deep-merge (merge default-backup-config backup-user) partial-config)))
 
 (defn install
   "collected install actions for backup crate."
   [partial-config]
-  (let [config (merge-config partial-config) dup (= ((get partial-config :elements) :type) :duplicity)]
-    (when dup (duplicity/install))
-    (when (not dup) (app/create-backup-source-user (st/get-in config [:backup-user])))
-    (when (not dup) (app/create-script-environment (st/get-in config [:script-path])))))
+  (let [config (merge-config partial-config) dup (check-for-dup partial-config)]
+    (if dup
+      (duplicity/install)
+      (do (app/create-backup-source-user (st/get-in config [:backup-user]))
+          (app/create-script-environment (st/get-in config [:script-path]))))))
 
 (defmethod dda-crate/dda-install (:facility dda-backup-crate) [dda-crate partial-config]
   (install partial-config))
@@ -71,7 +78,7 @@
 (defn configure
   "collected configuration actions for backup crate."
   [partial-config]
-  (let [config (merge-config partial-config) dup (= ((get partial-config :elements) :type) :duplicity)]
+  (let [config (merge-config partial-config) dup (check-for-dup partial-config)]
     (app/write-scripts config)
     (when dup
       (duplicity/configure))))
