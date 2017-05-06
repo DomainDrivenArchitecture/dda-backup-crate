@@ -48,13 +48,14 @@
   (dda-crate/make-dda-crate
    :facility :dda-backup
    :version [0 3 4]
-   :config-default default-backup-config))
+   :config-default (merge default-backup-config backup-user)))
 
+;TODO: make crate in case of dup able to handle other parallel backup-elements
 (defn check-for-dup [partial-config]
   (and
    (contains? partial-config :elements)
    (not (empty? (get partial-config :elements)))
-   (= ((get partial-config :elements) :type) :duplicity)))
+   (= (((get partial-config :elements) 0) :type) :duplicity)))
 
 (s/defn ^:always-validate merge-config :- BackupConfig
   "merges the partial config with default config & ensures that resulting config is valid."
