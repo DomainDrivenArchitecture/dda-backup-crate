@@ -25,6 +25,11 @@
 (def DuplicityAction
   (s/enum :full :incr :verify :collection-status :list-current-files :restore :remove-older-than :remove-all-but-n-full :remove-all-inc-of-but-n-full :cleanup))
 
+(def DuplicityOptions
+  "Options are seq of option-keywords and string-param or true"
+  ;TODO: find schema that tests for this specifically (not pair, not one)
+  [(s/either s/Keyword s/Str s/Bool)])
+
 (def BackupElement
   "The backup elements"
   (s/conditional
@@ -51,15 +56,14 @@
     (s/optional-key :aws-secret-access-key) s/Str
     (s/optional-key :s3-use-sigv4) s/Str
     :action DuplicityAction
-    (s/optional-key :options) {(s/optional-key :backup-options) [(s/enum s/Str s/Bool s/Keyword)]
-                               (s/optional-key :restore-options) [(s/enum s/Str s/Bool s/Keyword)]}
+    (s/optional-key :options) {(s/optional-key :backup-options) DuplicityOptions
+                               (s/optional-key :restore-options) DuplicityOptions}
     :directory s/Str
-    (s/optional-key :remove-local-backup) s/Str
     :url s/Str
     (s/optional-key :prep-scripts) {(s/optional-key :prep-backup-script) s/Str
                                     (s/optional-key :prep-restore-script) s/Str}
     (s/optional-key :post-ops) {(s/optional-key :remove-remote-backup) {:days s/Num
-                                                                        :options [(s/enum s/Str s/Bool s/Keyword)]}
+                                                                        :options DuplicityOptions}
                                 (s/optional-key :post-transport-script) s/Str}}))
 (s/defn element-type-name
   [type :- ElementType]
