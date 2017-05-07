@@ -50,24 +50,17 @@
    :version [0 3 4]
    :config-default (merge default-backup-config backup-user)))
 
-;TODO: make crate in case of dup able to handle other parallel backup-elements
-(defn check-for-dup [partial-config]
-  (and
-   (contains? partial-config :elements)
-   (not (empty? (get partial-config :elements)))
-   (= (((get partial-config :elements) 0) :type) :duplicity)))
-
 (s/defn ^:always-validate merge-config :- BackupConfig
   "merges the partial config with default config & ensures that resulting config is valid."
   [partial-config]
-  (if (check-for-dup partial-config)
+  (if (duplicity/check-for-dup partial-config)
     (map-utils/deep-merge default-backup-config partial-config)
     (map-utils/deep-merge (merge default-backup-config backup-user) partial-config)))
 
 (defn install
   "collected install actions for backup crate."
   [partial-config]
-  (let [config (merge-config partial-config) dup (check-for-dup partial-config)]
+  (let [config (merge-config partial-config) dup (duplicity/check-for-dup partial-config)]
     (if dup
       (duplicity/install)
       (do (app/create-backup-source-user (st/get-in config [:backup-user]))
@@ -79,7 +72,7 @@
 (defn configure
   "collected configuration actions for backup crate."
   [partial-config]
-  (let [config (merge-config partial-config) dup (check-for-dup partial-config)]
+  (let [config (merge-config partial-config) dup (duplicity/check-for-dup partial-config)]
     (app/write-scripts config)
     (when dup
       (duplicity/configure))))

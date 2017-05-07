@@ -112,3 +112,10 @@
      (str "unset PASSPHRASE")
      (str "unset TMPDIR")
      ""]))
+
+;TODO: make crate in case of dup able to handle other parallel backup-elements
+(defn check-for-dup [partial-config]
+  (and
+   (contains? partial-config :elements)
+   (not (empty? (get partial-config :elements)))
+   (= (((get partial-config :elements) 0) :type) :duplicity)))
