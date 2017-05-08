@@ -45,7 +45,6 @@
   (actions/exec-script* "cd /var/opt/backup/boto-2.43.0/ && /usr/bin/python setup.py install"))
 
 (defn configure [config]
-  ;TODO: change to get keys and trust from config
   (let [
         trust-script-path (get (get config :elements ) :trust-script-path)
         priv-key-path (get (get config :elements ) :priv-key-path)
