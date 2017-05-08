@@ -109,9 +109,9 @@
         common-lib/head
         (when (contains? config :service-restart)
           (common-lib/stop-app-server service-restart))
-        (mapcat restore-element-lines elements))
+        (mapcat restore-element-lines elements)
        (when (contains? config :service-restart)
-         (common-lib/start-app-server service-restart)))
+         (common-lib/start-app-server service-restart))))
       (into
        []
        (concat
