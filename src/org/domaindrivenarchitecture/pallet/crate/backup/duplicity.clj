@@ -44,11 +44,12 @@
    :mode "755")
   (actions/exec-script* "cd /var/opt/backup/boto-2.43.0/ && /usr/bin/python setup.py install"))
 
+;TODO: make the paths-gets able to handle more than one element
 (defn configure [config]
   (let [
-        trust-script-path (get (get config :elements ) :trust-script-path)
-        priv-key-path (get (get config :elements ) :priv-key-path)
-        pub-key-path (get (get config :elements) :pub-key-path)
+        trust-script-path (get ((get config :elements) 0) :trust-script-path)
+        priv-key-path (get ((get config :elements) 0) :priv-key-path)
+        pub-key-path (get ((get config :elements) 0) :pub-key-path)
         ]
   (actions/remote-file "/var/opt/backup/dup_pub.key" :local-file pub-key-path :owner "root", :group "users" :mode "700"
                        :action :create :force true)
