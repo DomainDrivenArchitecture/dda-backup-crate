@@ -50,6 +50,9 @@
     (s/optional-key :new-owner) s/Str}
    #(= (:type %) :duplicity)
    {:type ElementType
+    :trust-script-path s/Str
+    :priv-key-path s/Str
+    :pub-key-path s/Str
     :tmp-dir s/Str
     :passphrase s/Str
     (s/optional-key :aws-access-key-id) s/Str

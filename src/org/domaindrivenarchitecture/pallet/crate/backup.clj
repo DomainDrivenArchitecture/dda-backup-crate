@@ -75,7 +75,7 @@
   (let [config (merge-config partial-config) dup (duplicity/check-for-dup partial-config)]
     (app/write-scripts config)
     (when dup
-      (duplicity/configure))))
+      (duplicity/configure config))))
 
 (defmethod dda-crate/dda-configure (:facility dda-backup-crate) [dda-crate partial-config]
   (configure partial-config))

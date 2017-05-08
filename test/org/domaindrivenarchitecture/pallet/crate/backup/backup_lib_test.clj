@@ -79,6 +79,9 @@
 
 (def dup-backup-element {:type :duplicity
                          :tmp-dir "/var/opt/gitlab/backup-cache"
+                         :trust-script-path " "
+                         :priv-key-path " "
+                         :pub-key-path " "
                          :passphrase " "
                          :aws-access-key-id "A1"
                          :aws-secret-access-key "A1"

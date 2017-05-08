@@ -44,16 +44,21 @@
    :mode "755")
   (actions/exec-script* "cd /var/opt/backup/boto-2.43.0/ && /usr/bin/python setup.py install"))
 
-(defn configure []
+(defn configure [config]
   ;TODO: change to get keys and trust from config
-  (actions/remote-file "/var/opt/backup/9C26059F_pub.key" :local-file "/home/hel/.pallet/9C26059F_pub.key" :owner "root", :group "users" :mode "700"
+  (let [
+        trust-script-path (get (get config :elements ) :trust-script-path)
+        priv-key-path (get (get config :elements ) :priv-key-path)
+        pub-key-path (get (get config :elements) :pub-key-path)
+        ]
+  (actions/remote-file "/var/opt/backup/dup_pub.key" :local-file pub-key-path :owner "root", :group "users" :mode "700"
                        :action :create :force true)
-  (actions/remote-file "/var/opt/backup/9C26059F_priv.key" :local-file "/home/hel/.pallet/9C26059F_priv.key" :owner "root", :group "users" :mode "700"
+  (actions/remote-file "/var/opt/backup/dup_priv.key" :local-file priv-key-path :owner "root", :group "users" :mode "700"
                        :action :create :force true)
-  (actions/exec-script* "gpg --import /var/opt/backup/9C26059F_pub.key && gpg --import /var/opt/backup/9C26059F_priv.key")
-  (actions/remote-file "/var/opt/backup/trust.sh" :local-file "/home/hel/.pallet/trust.sh" :owner "root", :group "users" :mode "700"
+  (actions/exec-script* "gpg --import /var/opt/backup/dup_pub.key && gpg --import /var/opt/backup/dup_priv.key")
+  (actions/remote-file "/var/opt/backup/trust.sh" :local-file trust-script-path :owner "root", :group "users" :mode "700"
                        :action :create :force true)
-  (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh"))
+  (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh")))
 
 ;TODO: catch options whose delimiter is not empty-space but =
 (s/defn ^:always-validate option-parser [options :- element/DuplicityOptions]

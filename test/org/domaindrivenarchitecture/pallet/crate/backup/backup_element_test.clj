@@ -38,6 +38,9 @@
 
 (def test-element {:type :duplicity
                    :tmp-dir "/var/opt/gitblit/backup-cache"
+                   :trust-script-path " "
+                   :priv-key-path " "
+                   :pub-key-path " "
                    :passphrase " "
                    :aws-access-key-id " "
                    :aws-secret-access-key " "
