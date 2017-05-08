@@ -187,6 +187,6 @@
   "write the backup scripts to script environment"
   [config]
   (write-backup-file config :backup)
-  (when (duplicity/check-for-dup config)
+  (when (not (duplicity/check-for-dup config))
     (write-backup-file config :source-transport))
   (write-backup-file config :restore))
