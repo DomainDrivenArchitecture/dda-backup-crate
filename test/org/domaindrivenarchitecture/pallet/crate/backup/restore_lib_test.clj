@@ -18,6 +18,7 @@
   (:require
    [clojure.test :refer :all]
    [pallet.actions :as actions]
+   [org.domaindrivenarchitecture.pallet.crate.backup.backup-element-test :as backup-element]
    [org.domaindrivenarchitecture.pallet.crate.backup.restore-lib :as sut]))
 
 (deftest restore-mysql
@@ -73,54 +74,23 @@
              :subdir-to-save "./"
              :new-owner "tomcat7"})))))
 
-(def options-dup [:archive-dir "/var/opt/gitlab/backup-cache"
-                  :verbosity :notice
-                  :s3-use-new-style true
-                  :s3-european-buckets true
-                  :encrypt-key=1A true
-                  :sign-key=1A true
-                  :log-file "/var/log/gitlab/duplicity.log"])
-
-(def prep-script "[[ -d /var/opt/gitlab/backup-cache ]] || mkdir /var/opt/gitlab/backup-cache")
-(def post-script "/bin/tar -xzf /var/opt/gitlab/backups/gitlab_secrets.tgz --directory=/ && /usr/bin/gitlab-ctl stop unicorn && /usr/bin/gitlab-ctl stop sidekiq && /usr/bin/gitlab-rake gitlab:backup:restore && /usr/bin/sudo gitlab-ctl start && /usr/bin/sudo gitlab-rake gitlab:check SANITIZE=true")
-
-(def dup-backup-element {:type :duplicity
-                         :tmp-dir "/var/opt/gitlab/backup-cache"
-                         :passphrase " "
-                         :trust-script-path " "
-                         :priv-key-path " "
-                         :pub-key-path " "
-                         :aws-access-key-id "A1"
-                         :aws-secret-access-key "A1"
-                         :s3-use-sigv4 "True"
-                         :action :full
-                         :options {:backup-options [:dummy :options]
-                                   :restore-options options-dup}
-                         :directory "/var/opt/gitlab/backups"
-                         :url "localhost"
-                         :prep-scripts {:prep-backup-script "dummy-script"
-                                        :prep-restore-script prep-script}
-                         :post-ops {:remove-remote-backup {:days 0
-                                                           :options [:dummy :options]}
-                                    :post-transport-script post-script}})
-
 (deftest restore-duplicity
   (testing
    "restore with duplicity"
     (is (=
          ["# Transport Backup"
           "export PASSPHRASE= "
-          "export TMPDIR=/var/opt/gitlab/backup-cache"
+          "export TMPDIR=/var/opt/gitblit/backup-cache"
           "export AWS_ACCESS_KEY_ID=A1"
           "export AWS_SECRET_ACCESS_KEY=A1"
           "export S3_USE_SIGV4=True"
-          prep-script
-          "/usr/bin/duplicity restore --archive-dir /var/opt/gitlab/backup-cache --verbosity notice --s3-use-new-style --s3-european-buckets --encrypt-key=1A --sign-key=1A --log-file /var/log/gitlab/duplicity.log localhost /var/opt/gitlab/backups"
-          post-script
+          backup-element/prep-restore-script
+          "/usr/bin/duplicity restore --archive-dir /var/opt/gitblit/backup-cache --verbosity notice --s3-use-new-style --s3-european-buckets --encrypt-key=1A --sign-key=1A --log-file /var/log/gitblit/duplicity.log localhost /var/opt/gitblit/backups"
+          backup-element/post-transport-script
           "unset AWS_ACCESS_KEY_ID"
           "unset AWS_SECRET_ACCESS_KEY"
           "unset S3_USE_SIGV4"
           "unset PASSPHRASE"
           "unset TMPDIR"
           ""]
-         (sut/restore-duplicity dup-backup-element)))))
+         (sut/restore-duplicity backup-element/test-element)))))

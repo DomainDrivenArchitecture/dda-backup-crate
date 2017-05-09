@@ -24,17 +24,29 @@
    [org.domaindrivenarchitecture.pallet.crate.backup :as backup]
    [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as sut]))
 
+(def check-or-make-cache-folder "[[ -d /var/opt/gitblit/backup-cache ]] || mkdir /var/opt/gitblit/backup-cache")
+
+(def remove-old-backups "rm -rf /var/opt/gitblit/backups/*")
+(def tar-data "/bin/tar -czf /var/opt/gitblit/backups/current_backup /var/lib/tomcat7/webapps/gitblit")
+(def tar-secrets  "/bin/tar -czf  /var/opt/gitblit/backups/current_secrets /etc/ssh/ssh_host_*")
+(def prep-backup-script (str check-or-make-cache-folder " && " remove-old-backups " && " tar-data " && " tar-secrets))
+
+(def prep-restore-script check-or-make-cache-folder)
+
+(def unpack-data "/bin/tar -xzf /var/opt/gitblit/backups/current_backup --directory=/")
+(def unpack-secrets "/bin/tar -xzf /var/opt/gitblit/backups/current_secrets --directory=/")
+(def post-transport-script (str unpack-data " && " unpack-secrets))
+
 (def min-options-dup [:archive-dir "/var/opt/gitblit/backup-cache"
                       :verbosity :notice
                       :s3-use-new-style true
-                      :s3-european-buckets true])
-
+                      :s3-european-buckets true
+                      :encrypt-key=1A true
+                      :sign-key=1A true])
+(def logfile [:log-file "/var/log/gitblit/duplicity.log"])
 (def add-dup-op-backup [:asynchronous-upload true
-                        :volsize=1500 true
-                        :log-file "/var/log/gitblit/duplicity.log"])
-
-(def add-dup-op-delete-old [:log-file "/var/log/gitblit/duplicity.log"
-                            :force true])
+                        :volsize=1500 true])
+(def add-dup-op-delete-old [:force true])
 
 (def test-element {:type :duplicity
                    :tmp-dir "/var/opt/gitblit/backup-cache"
@@ -42,19 +54,19 @@
                    :priv-key-path " "
                    :pub-key-path " "
                    :passphrase " "
-                   :aws-access-key-id " "
-                   :aws-secret-access-key " "
+                   :aws-access-key-id "A1"
+                   :aws-secret-access-key "A1"
                    :s3-use-sigv4 "True"
                    :action :full
-                   :options {:backup-options (into [] (concat min-options-dup add-dup-op-backup))
-                             :restore-options min-options-dup}
+                   :options {:backup-options (into [] (concat min-options-dup add-dup-op-backup logfile))
+                             :restore-options (into [] (concat min-options-dup logfile))}
                    :directory "/var/opt/gitblit/backups"
-                   :url " "
-                   :prep-scripts {:prep-backup-script " "
-                                  :prep-restore-script " "}
+                   :url "localhost"
+                   :prep-scripts {:prep-backup-script prep-backup-script
+                                  :prep-restore-script prep-restore-script}
                    :post-ops {:remove-remote-backup {:days 21
-                                                     :options (into [] (concat min-options-dup add-dup-op-delete-old))}
-                              :post-transport-script " "}})
+                                                     :options (into [] (concat min-options-dup logfile add-dup-op-delete-old))}
+                              :post-transport-script post-transport-script}})
 
 (deftest backup-element-dup-test
   "Testing "

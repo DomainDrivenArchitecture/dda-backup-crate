@@ -18,6 +18,7 @@
   (:require
    [clojure.test :refer :all]
    [schema.core :as s]
+   [org.domaindrivenarchitecture.pallet.crate.backup.backup-element-test :as backup-element]
    [org.domaindrivenarchitecture.pallet.crate.backup.backup-lib :as sut]))
 
 (deftest transport-lines
@@ -63,55 +64,21 @@
              :root-dir "/var/lib/liferay/data/"
              :subdir-to-save "document_library"})))))
 
-(def options-dup [:archive-dir "/var/opt/gitlab/backup-cache"
-                  :verbosity :notice
-                  :s3-use-new-style true
-                  :s3-european-buckets true
-                  :encrypt-key=1A true
-                  :sign-key=1A true])
-
-(def add-dup-op-backup [:asynchronous-upload true
-                        :volsize=1500 true
-                        :log-file "/var/log/gitlab/duplicity.log"])
-
-(def add-dup-op-delete-old [:log-file "/var/log/gitlab/duplicity.log"
-                            :force true])
-
-(def dup-backup-element {:type :duplicity
-                         :tmp-dir "/var/opt/gitlab/backup-cache"
-                         :trust-script-path " "
-                         :priv-key-path " "
-                         :pub-key-path " "
-                         :passphrase " "
-                         :aws-access-key-id "A1"
-                         :aws-secret-access-key "A1"
-                         :s3-use-sigv4 "True"
-                         :action :full
-                         :options {:backup-options (into [] (concat options-dup add-dup-op-backup))
-                                   :restore-options [:dummy :options]}
-                         :directory "/var/opt/gitlab/backups"
-                         :url "localhost"
-                         :prep-scripts {:prep-backup-script "rm -rf /var/opt/gitlab/backups/* && /bin/tar -czf /var/opt/gitlab/backups/gitlab_secrets /etc/ssh/ssh_host_* /etc/gitlab/gitlab-secrets.json /etc/ssh/authorized_keys/git && /usr/bin/gitlab-rake gitlab:backup:create SKIP=artifacts"
-                                        :prep-restore-script "dummy-script"}
-                         :post-ops {:remove-remote-backup {:days 21
-                                                           :options (into [] (concat options-dup add-dup-op-delete-old))}
-                                    :post-transport-script "dummy-script"}})
-
 (deftest backup-files-duplicity
   (testing "backup files by using duplicity"
     (is (= ["#backup the files"
             "export PASSPHRASE= "
-            "export TMPDIR=/var/opt/gitlab/backup-cache"
+            "export TMPDIR=/var/opt/gitblit/backup-cache"
             "export AWS_ACCESS_KEY_ID=A1"
             "export AWS_SECRET_ACCESS_KEY=A1"
             "export S3_USE_SIGV4=True"
-            "rm -rf /var/opt/gitlab/backups/* && /bin/tar -czf /var/opt/gitlab/backups/gitlab_secrets /etc/ssh/ssh_host_* /etc/gitlab/gitlab-secrets.json /etc/ssh/authorized_keys/git && /usr/bin/gitlab-rake gitlab:backup:create SKIP=artifacts"
-            "/usr/bin/duplicity full --archive-dir /var/opt/gitlab/backup-cache --verbosity notice --s3-use-new-style --s3-european-buckets --encrypt-key=1A --sign-key=1A --asynchronous-upload --volsize=1500 --log-file /var/log/gitlab/duplicity.log /var/opt/gitlab/backups localhost"
-            "/usr/bin/duplicity remove-older-than 21D --archive-dir /var/opt/gitlab/backup-cache --verbosity notice --s3-use-new-style --s3-european-buckets --encrypt-key=1A --sign-key=1A --log-file /var/log/gitlab/duplicity.log --force localhost"
+            backup-element/prep-backup-script
+            "/usr/bin/duplicity full --archive-dir /var/opt/gitblit/backup-cache --verbosity notice --s3-use-new-style --s3-european-buckets --encrypt-key=1A --sign-key=1A --asynchronous-upload --volsize=1500 --log-file /var/log/gitblit/duplicity.log /var/opt/gitblit/backups localhost"
+            "/usr/bin/duplicity remove-older-than 21D --archive-dir /var/opt/gitblit/backup-cache --verbosity notice --s3-use-new-style --s3-european-buckets --encrypt-key=1A --sign-key=1A --log-file /var/log/gitblit/duplicity.log --force localhost"
             "unset AWS_ACCESS_KEY_ID"
             "unset AWS_SECRET_ACCESS_KEY"
             "unset S3_USE_SIGV4"
             "unset PASSPHRASE"
             "unset TMPDIR"
             ""]
-           (sut/backup-files-duplicity dup-backup-element)))))
+           (sut/backup-files-duplicity backup-element/test-element)))))
