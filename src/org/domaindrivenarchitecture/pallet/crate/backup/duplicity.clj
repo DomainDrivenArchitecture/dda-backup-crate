@@ -46,19 +46,17 @@
 
 ;TODO: make the paths-gets able to handle more than one element
 (defn configure [config]
-  (let [
-        trust-script-path (get ((get config :elements) 0) :trust-script-path)
+  (let [trust-script-path (get ((get config :elements) 0) :trust-script-path)
         priv-key-path (get ((get config :elements) 0) :priv-key-path)
-        pub-key-path (get ((get config :elements) 0) :pub-key-path)
-        ]
-  (actions/remote-file "/var/opt/backup/dup_pub.key" :local-file pub-key-path :owner "root", :group "users" :mode "700"
-                       :action :create :force true)
-  (actions/remote-file "/var/opt/backup/dup_priv.key" :local-file priv-key-path :owner "root", :group "users" :mode "700"
-                       :action :create :force true)
-  (actions/exec-script* "gpg --import /var/opt/backup/dup_pub.key && gpg --import /var/opt/backup/dup_priv.key")
-  (actions/remote-file "/var/opt/backup/trust.sh" :local-file trust-script-path :owner "root", :group "users" :mode "700"
-                       :action :create :force true)
-  (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh")))
+        pub-key-path (get ((get config :elements) 0) :pub-key-path)]
+    (actions/remote-file "/var/opt/backup/dup_pub.key" :local-file pub-key-path :owner "root", :group "users" :mode "700"
+                         :action :create :force true)
+    (actions/remote-file "/var/opt/backup/dup_priv.key" :local-file priv-key-path :owner "root", :group "users" :mode "700"
+                         :action :create :force true)
+    (actions/exec-script* "gpg --import /var/opt/backup/dup_pub.key && gpg --import /var/opt/backup/dup_priv.key")
+    (actions/remote-file "/var/opt/backup/trust.sh" :local-file trust-script-path :owner "root", :group "users" :mode "700"
+                         :action :create :force true)
+    (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh")))
 
 ;TODO: catch options whose delimiter is not empty-space but =
 (s/defn ^:always-validate option-parser [options :- element/DuplicityOptions]
@@ -71,6 +69,35 @@
                            options)))
 
 (def DuplicityModus (s/enum :backup :restore))
+
+(defn prep-dup-script [element backup]
+  (cond
+    (and (contains? (get element :prep-scripts) :prep-backup-script) backup)
+    (get-in element [:prep-scripts :prep-backup-script])
+    (and (contains? (get element :prep-scripts) :prep-restore-script) (not backup))
+    (get-in element [:prep-scripts :prep-restore-script])))
+
+(defn main-dup-script [element backup]
+  (str "/usr/bin/duplicity "
+       (if backup (name (get element :action))
+           "restore")
+       (when (contains? element :options)
+         (cond
+           (and (contains? (get element :options) :backup-options) backup)
+           (str (option-parser (get-in element [:options :backup-options])) " " (get element :directory) " " (get element :url))
+           (and (contains? (get element :options) :restore-options) (not backup))
+           (str (option-parser (get-in element [:options :restore-options])) " " (get element :url) " " (get element :directory))))))
+
+(defn post-dup-script [element backup]
+  (cond
+    (and (contains? (get element :post-ops) :remove-remote-backup) backup)
+    (let [remove-options (get-in element [:post-ops :remove-remote-backup])]
+      (str "/usr/bin/duplicity remove-older-than "
+           (get remove-options :days) "D"
+           (option-parser (get remove-options :options))
+           " " (get element :url)))
+    (and (contains? (get element :post-ops) :post-transport-script) (not backup))
+    (get-in element [:post-ops :post-transport-script])))
 
 ;TODO: implement support for other cloud than aws
 (s/defn ^:always-validate duplicity-parser
@@ -87,30 +114,10 @@
      (when aws (str "export AWS_SECRET_ACCESS_KEY=" (get element :aws-secret-access-key)))
      (when aws (str "export S3_USE_SIGV4=" (get element :s3-use-sigv4)))
      (when (contains? element :prep-scripts)
-       (cond
-         (and (contains? (get element :prep-scripts) :prep-backup-script) backup)
-         (get-in element [:prep-scripts :prep-backup-script])
-         (and (contains? (get element :prep-scripts) :prep-restore-script) (not backup))
-         (get-in element [:prep-scripts :prep-restore-script])))
-     (str "/usr/bin/duplicity "
-          (if backup (name (get element :action))
-              "restore")
-          (when (contains? element :options)
-            (cond
-              (and (contains? (get element :options) :backup-options) backup)
-              (str (option-parser (get-in element [:options :backup-options])) " " (get element :directory) " " (get element :url))
-              (and (contains? (get element :options) :restore-options) (not backup))
-              (str (option-parser (get-in element [:options :restore-options])) " " (get element :url) " " (get element :directory)))))
+       (prep-dup-script element backup))
+     (main-dup-script element backup)
      (when (contains? element :post-ops)
-       (cond
-         (and (contains? (get element :post-ops) :remove-remote-backup) backup)
-         (let [remove-options (get-in element [:post-ops :remove-remote-backup])]
-           (str "/usr/bin/duplicity remove-older-than "
-                (get remove-options :days) "D"
-                (option-parser (get remove-options :options))
-                " " (get element :url)))
-         (and (contains? (get element :post-ops) :post-transport-script) (not backup))
-         (get-in element [:post-ops :post-transport-script])))
+       (post-dup-script element backup))
      (when aws (str "unset AWS_ACCESS_KEY_ID"))
      (when aws (str "unset AWS_SECRET_ACCESS_KEY"))
      (when aws (str "unset S3_USE_SIGV4"))
@@ -118,7 +125,7 @@
      (str "unset TMPDIR")
      ""]))
 
-;TODO: make crate in case of dup able to handle other parallel backup-elements
+;TODO: make crate able to handle other parallel backup-elements with dup
 (defn check-for-dup [partial-config]
   (and
    (contains? partial-config :elements)
