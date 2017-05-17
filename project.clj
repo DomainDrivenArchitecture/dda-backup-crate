@@ -1,4 +1,4 @@
-(defproject org.domaindrivenarchitecture/dda-backup-crate "0.4.2-SNAPSHOT"
+(defproject dda/dda-backup-crate "0.5.0-SNAPSHOT"
   :description "A crate to handle configuration, their dependencies, documentation and validation"
   :url "https://www.domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
@@ -22,7 +22,7 @@
                [proto-repl "0.3.1"]]
               :plugins
               [[lein-sub "0.3.0"]]}
-              :leiningen/reply
+             :leiningen/reply
                {:dependencies [[org.slf4j/jcl-over-slf4j "1.7.24"]]
                 :exclusions [commons-logging]}}
   :local-repo-classpath true
