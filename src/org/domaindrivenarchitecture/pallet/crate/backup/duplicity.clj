@@ -32,6 +32,7 @@
                           :aptitude
                           {:url "ppa:duplicity-team/ppa"})
   (actions/package "duplicity")
+  (actions/package "gnupg2")
   (actions/package "python3")
   (actions/remote-directory
    "/var/opt/backup/"
@@ -52,7 +53,7 @@
                          :action :create :force true)
     (actions/remote-file "/var/opt/backup/dup_priv.key" :local-file priv-key-path :owner "root", :group "users" :mode "700"
                          :action :create :force true)
-    (actions/exec-script* "gpg --import /var/opt/backup/dup_pub.key && gpg --import /var/opt/backup/dup_priv.key")
+    (actions/exec-script* "gpg2 --import /var/opt/backup/dup_pub.key && gpg2 --import /var/opt/backup/dup_priv.key")
     (actions/remote-file "/var/opt/backup/trust.sh" :local-file trust-script-path :owner "root", :group "users" :mode "700"
                          :action :create :force true)
     (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh")))
@@ -80,6 +81,7 @@
   (str "/usr/bin/duplicity "
        (if backup (name (get element :action))
            "restore")
+       (str " --gpg-binary gpg2")
        (when (contains? element :options)
          (cond
            (and (contains? (get element :options) :backup-options) backup)
