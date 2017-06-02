@@ -25,7 +25,6 @@
    [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as element]))
 
 (defn install []
-  ;TODO: unzip gets installed by tomcat-crate, check for existing installation
   (actions/package "unzip")
   (actions/package "rng-tools")
   (actions/package-source "duplicity"

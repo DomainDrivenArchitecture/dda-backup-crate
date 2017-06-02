@@ -41,8 +41,8 @@ The backup Crate provides:
                  :encrypted-passwd "someEncryptedPwd"}}
 ```
 
-Backs up .ssh and .mozilla in /home/some-user. 
-  
+Backs up .ssh and .mozilla in /home/some-user.
+
 ### Installation
 
 ```  
@@ -61,7 +61,10 @@ cd /home/dataBackupSource/restore/
 /usr/lib/dda-backup/app-name_restore.sh [prefix for restore files]
 ```
 
-  
+## Using Duplicity
+Concerning duplicity-ppa, in the case of "Package source : FAIL"
+the second try will work.
+
 ## License
 
 Author: Michael Jerger, Tobias Scherer, Thomas Jakob

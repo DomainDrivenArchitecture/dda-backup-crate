@@ -27,6 +27,7 @@
    [org.domaindrivenarchitecture.pallet.crate.backup.app :as app]
    [org.domaindrivenarchitecture.pallet.crate.backup.duplicity :as duplicity]))
 
+;TODO: in the case of duplicity only one backup-element is supported, change to multiple
 (def BackupConfig
   "The configuration for backup crate."
   {:backup-name s/Str
