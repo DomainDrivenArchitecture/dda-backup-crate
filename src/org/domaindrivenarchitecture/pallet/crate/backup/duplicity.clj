@@ -32,7 +32,6 @@
                           :aptitude
                           {:url "ppa:duplicity-team/ppa"})
   (actions/package "duplicity")
-  (actions/package "gnupg2")
   (actions/package "python3")
   (actions/remote-directory
    "/var/opt/backup/"
