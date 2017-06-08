@@ -47,12 +47,16 @@
 (defn configure [config]
   (let [trust-script-path (get ((get config :elements) 0) :trust-script-path)
         priv-key-path (get ((get config :elements) 0) :priv-key-path)
-        pub-key-path (get ((get config :elements) 0) :pub-key-path)]
+        pub-key-path (get ((get config :elements) 0) :pub-key-path)
+        passphrase (get((get config :elements) 0) :passphrase)]
     (actions/remote-file "/var/opt/backup/dup_pub.key" :local-file pub-key-path :owner "root", :group "users" :mode "700"
                          :action :create :force true)
     (actions/remote-file "/var/opt/backup/dup_priv.key" :local-file priv-key-path :owner "root", :group "users" :mode "700"
                          :action :create :force true)
-    (actions/exec-script* "gpg2 --import /var/opt/backup/dup_pub.key && gpg2 --import /var/opt/backup/dup_priv.key")
+    (actions/directory "~/.gnupg" :action :create :owner "root", :group "users" :mode "700")
+    (actions/exec-script* "cd ~/.gnupg && echo \"allow-loopback-pinentry\"  >> gpg-agent.conf")
+    (actions/exec-script* "gpgconf --kill gpg-agent")
+    (actions/exec-script* (str "gpg2 --import /var/opt/backup/dup_pub.key && (echo " passphrase " | sudo -S gpg2 --pinentry-mode loopback --batch --passphrase-fd 0 --import /var/opt/backup/dup_priv.key)"))
     (actions/remote-file "/var/opt/backup/trust.sh" :local-file trust-script-path :owner "root", :group "users" :mode "700"
                          :action :create :force true)
     (actions/exec-script* "/bin/bash /var/opt/backup/trust.sh")))
@@ -94,6 +98,7 @@
     (let [remove-options (get-in element [:post-ops :remove-remote-backup])]
       (str "/usr/bin/duplicity remove-older-than "
            (get remove-options :days) "D"
+           (str " --gpg-binary gpg2")
            (option-parser (get remove-options :options))
            " " (get element :url)))
     (and (contains? (get element :post-ops) :post-transport-script) (not backup))
