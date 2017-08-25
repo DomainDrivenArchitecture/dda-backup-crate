@@ -22,7 +22,7 @@
    [pallet.stevedore :as stevedore]
    [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
    [org.domaindrivenarchitecture.pallet.core.dda-crate.config :as internal-config]
-   [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]
+   [dda.config.commons.map-utils :as map-utils]
    [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as backup-element]
    [org.domaindrivenarchitecture.pallet.crate.backup.app :as app]
    [org.domaindrivenarchitecture.pallet.crate.backup.duplicity :as duplicity]))

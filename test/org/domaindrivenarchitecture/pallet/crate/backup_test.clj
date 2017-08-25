@@ -20,7 +20,7 @@
     [clojure.test :refer :all]
     [pallet.actions :as actions]
     [pallet.build-actions :as build-actions]
-    [org.domaindrivenarchitecture.pallet.commons.plan-test-utils :as tu]
+    [dda.pallet.commons.plan-test-utils :as tu]
     [org.domaindrivenarchitecture.pallet.crate.backup.app :as app]
     [org.domaindrivenarchitecture.pallet.crate.backup :as sut]
     ))
