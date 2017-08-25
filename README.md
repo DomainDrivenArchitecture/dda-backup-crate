@@ -1,5 +1,6 @@
 # dda-backup-crate
-
+[![Clojars Project](https://img.shields.io/clojars/v/dda/dda-backup-crate.svg)](https://clojars.org/dda/dda-backup-crate)
+[![Build Status](https://travis-ci.org/DomainDrivenArchitecture/dda-backup-crate.svg?branch=master)](https://travis-ci.org/DomainDrivenArchitecture/dda-backup-crate)
 
 ## [dda-backup-crate](https://github.com/DomainDrivenArchitecture/dda-backup-crate)
 The backup crate provides installation & configuration application backups. Specific adapters has to be defined.
