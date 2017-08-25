@@ -7,10 +7,9 @@
                  [prismatic/schema "1.1.6"]
                  [com.palletops/pallet "0.8.12"]
                  [com.palletops/stevedore "0.8.0-beta.7"]
-                 [org.domaindrivenarchitecture/dda-config-commons "0.1.7"]
-                 [org.domaindrivenarchitecture/dda-pallet-commons "0.3.2"]
-                 [org.domaindrivenarchitecture/dda-pallet "0.4.0-SNAPSHOT"]
-                 [org.domaindrivenarchitecture/dda-config-crate "0.3.4"]]
+                 [dda/dda-config-commons "0.2.2"]
+                 [dda/dda-pallet-commons "0.4.2-SNAPSHOT"]
+                 [dda/dda-pallet "0.5.4-SNAPSHOT"]]
   :repositories [["snapshots" :clojars]
                  ["releases" :clojars]]
   :deploy-repositories [["snapshots" :clojars]
@@ -18,7 +17,7 @@
   :profiles {:dev
              {:dependencies
               [[com.palletops/pallet "0.8.12" :classifier "tests"]
-               [org.domaindrivenarchitecture/dda-pallet-commons "0.3.2" :classifier "tests"]
+               [dda/dda-pallet-commons "0.4.2-SNAPSHOT" :classifier "tests"]
                [proto-repl "0.3.1"]]
               :plugins
               [[lein-sub "0.3.0"]]}

@@ -24,16 +24,16 @@
     [org.domaindrivenarchitecture.pallet.crate.backup.app :as app]
     [org.domaindrivenarchitecture.pallet.crate.backup :as sut]
     ))
- 
+
 (deftest the-whole
-  (testing 
-    "test plan creation" 
+  (testing
+    "test plan creation"
       (is sut/with-backup))
-  ) 
+  )
 
 (deftest validation
- (testing 
-   "test validity of configuration parts" 
+ (testing
+   "test validity of configuration parts"
      (is (s/validate
            app/ScriptType
            :backup))
@@ -46,19 +46,19 @@
            (sut/merge-config {:backup-name "system-name"
                               :elements []})))
      ))
- 
+
  (def a-config
    {:backup-name "system-name"
     :elements []})
- 
+
  (deftest install
-  (testing 
-    "test the default release definition" 
-    (is 
-      (.contains 
+  (testing
+    "test the default release definition"
+    (is
+      (.contains
         (tu/extract-nth-action-command
           (build-actions/build-actions
-            build-actions/ubuntu-session         
+            build-actions/ubuntu-session
             (sut/install a-config))
             1)
           "dataBackupSource"
