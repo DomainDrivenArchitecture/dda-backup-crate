@@ -15,9 +15,13 @@
   :deploy-repositories [["snapshots" :clojars]
                         ["releases" :clojars]]
   :profiles {:dev
-             {:dependencies
-              [[com.palletops/pallet "0.8.12" :classifier "tests"]
+             {:source-paths ["integration"]
+              :dependencies
+              [[org.domaindrivenarchitecture/pallet-aws "0.2.8.2"]
+               [com.palletops/pallet "0.8.12" :classifier "tests"]
                [dda/dda-pallet-commons "0.4.2-SNAPSHOT" :classifier "tests"]
+               [ch.qos.logback/logback-classic "1.2.3"]
+               [org.slf4j/jcl-over-slf4j "1.8.0-alpha2"]
                ]
               :plugins
               [[lein-sub "0.3.0"]]}
@@ -25,5 +29,5 @@
                {:dependencies [[org.slf4j/jcl-over-slf4j "1.8.0-alpha2"]]
                 :exclusions [commons-logging]}}
   :local-repo-classpath true
-  :classifiers {:tests {:source-paths ^:replace ["test"]
-                        :resource-paths ^:replace []}})
+  :classifiers {:tests {:source-paths ^:replace ["test" "integration"]
+                        :resource-paths ^:replace ["dev-resources"]}})

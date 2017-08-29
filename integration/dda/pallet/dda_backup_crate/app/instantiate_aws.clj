@@ -16,27 +16,28 @@
 
 (ns dda.pallet.dda-backup-crate.app.instantiate-aws
   (:require
-    [clojure.inspector :as inspector]
-    [pallet.repl :as pr]
-    [dda.pallet.commons.encrypted-credentials :as crypto]
-    [dda.pallet.commons.session-tools :as session-tools]
-    [dda.pallet.commons.pallet-schema :as ps]
-    [dda.cm.operation :as operation]
-    [dda.cm.aws :as cloud-target]
-    [dda.pallet.dda-backup-crate.app :as app]))
+   [clojure.inspector :as inspector]
+   [pallet.repl :as pr]
+   [dda.pallet.commons.encrypted-credentials :as crypto]
+   [dda.pallet.commons.session-tools :as session-tools]
+   [dda.pallet.commons.pallet-schema :as ps]
+   [dda.cm.operation :as operation]
+   [dda.cm.aws :as cloud-target]
+   [dda.pallet.dda-backup-crate.app :as app]))
 
-(def domain-config {:netstat {:sshd {:port "22"}}
-                    :file '({:path "/root"}
-                            {:path "/etc"}
-                            {:path "/absent" :exist? false})
-                    :netcat '({:host "www.google.com" :port 80}
-                              {:host "www.google.c" :port 80 :reachable? false})})
+(def domain-config {:backup-name "ssh"
+                    :script-path "/usr/lib/dda-backup/"
+                    :gens-stored-on-source-system 3
+                    :elements [{:type :file-compressed
+                                :name "ssh"
+                                :root-dir "/etc/"
+                                :subdir-to-save "ssh"}]})
 
 (defn integrated-group-spec [count]
   (merge
-    (app/backup-group-spec (app/app-configuration domain-config))
-    (cloud-target/node-spec "id_rsa")
-    {:count count}))
+   (app/backup-group-spec (app/app-configuration domain-config))
+   (cloud-target/node-spec "id_rsa")
+   {:count count}))
 
 (defn converge-install
   ([count]

@@ -31,12 +31,13 @@
   {:login "initial"
    :password "test1234"})
 
-(def domain-config {:netstat {:sshd {:port "22"}}
-                    :file '({:path "/root"}
-                            {:path "/etc"}
-                            {:path "/absent" :exist? false})
-                    :netcat '({:host "www.google.com" :port 80}
-                              {:host "www.google.c" :port 80 :reachable? false})})
+(def domain-config {:backup-name "ssh"
+                    :script-path "/usr/lib/dda-backup/"
+                    :gens-stored-on-source-system 3
+                    :elements [{:type :file-compressed
+                                :name "ssh"
+                                :root-dir "/etc/"
+                                :subdir-to-save "ssh"}]})
 
 (defn provider []
   (existing/provider provisioning-ip "node-id" "dda-backup-group"))
