@@ -14,7 +14,7 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup.duplicity
+(ns dda.pallet.dda-backup-crate.infra.duplicity.duplicity
   (:require
    [clojure.java.io :as io]
    [clojure.string :as str]
@@ -22,7 +22,7 @@
    [schema-tools.core :as st]
    [pallet.actions :as actions]
    [pallet.stevedore :as stevedore]
-   [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as element]))
+   [dda.pallet.dda-backup-crate.infra.core.backup-element :as element]))
 
 (defn install []
   (actions/package "unzip")

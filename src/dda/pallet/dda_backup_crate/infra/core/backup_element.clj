@@ -14,7 +14,7 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup.backup-element
+(ns dda.pallet.dda-backup-crate.infra.core.backup-element
   (:require
    [schema.core :as s]))
 

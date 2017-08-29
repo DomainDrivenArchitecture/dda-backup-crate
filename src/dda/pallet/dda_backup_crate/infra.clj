@@ -8,13 +8,12 @@
 ;
 ; http://www.apache.org/licenses/LICENSE-2.0
 ;
-; Unless required by applicable law or agreed to in writing, software
+; Unless required by backuplicable law or agreed to in writing, software
 ; distributed under the License is distributed on an "AS IS" BASIS,
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
-
-(ns org.domaindrivenarchitecture.pallet.crate.backup
+(ns dda.pallet.dda-backup-crate.infra
   (:require
    [schema.core :as s]
    [schema-tools.core :as st]
@@ -23,16 +22,19 @@
    [dda.pallet.core.dda-crate :as dda-crate]
    [dda.pallet.core.dda-crate.config :as internal-config]
    [dda.config.commons.map-utils :as map-utils]
-   [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as backup-element]
-   [org.domaindrivenarchitecture.pallet.crate.backup.app :as app]
-   [org.domaindrivenarchitecture.pallet.crate.backup.duplicity :as duplicity]))
+   [dda.pallet.dda-backup-crate.infra.core.backup-element :as backup-element]
+   [dda.pallet.dda-backup-crate.infra.core.backup :as backup]
+   [dda.pallet.dda-backup-crate.infra.duplicity.duplicity :as duplicity]))
+
+(def facility :dda-backup)
+(def version  [0 3 4])
 
 ;TODO: in the case of duplicity only one backup-element is supported, change to multiple
 (def BackupConfig
   "The configuration for backup crate."
   {:backup-name s/Str
    :script-path s/Str
-   (s/optional-key :backup-user) app/User
+   (s/optional-key :backup-user) backup/User
    :gens-stored-on-source-system s/Num
    (s/optional-key :elements) [backup-element/BackupElement]
    (s/optional-key :service-restart) s/Str})
@@ -47,8 +49,8 @@
 
 (def dda-backup-crate
   (dda-crate/make-dda-crate
-   :facility :dda-backup
-   :version [0 3 4]
+   :facility facility
+   :version version
    :config-default (merge default-backup-config backup-user)))
 
 (s/defn ^:always-validate merge-config :- BackupConfig
@@ -64,8 +66,8 @@
   (let [config (merge-config partial-config) dup (duplicity/check-for-dup partial-config)]
     (if dup
       (duplicity/install)
-      (do (app/create-backup-source-user (st/get-in config [:backup-user]))
-          (app/create-script-environment (st/get-in config [:script-path]))))))
+      (do (backup/create-backup-source-user (st/get-in config [:backup-user]))
+          (backup/create-script-environment (st/get-in config [:script-path]))))))
 
 (defmethod dda-crate/dda-install (:facility dda-backup-crate) [dda-crate partial-config]
   (install partial-config))
@@ -74,12 +76,13 @@
   "collected configuration actions for backup crate."
   [partial-config]
   (let [config (merge-config partial-config) dup (duplicity/check-for-dup partial-config)]
-    (app/write-scripts config)
+    (backup/write-scripts config)
     (when dup
       (duplicity/configure config))))
 
 (defmethod dda-crate/dda-configure (:facility dda-backup-crate) [dda-crate partial-config]
   (configure partial-config))
+
 
 (def with-backup
   (dda-crate/create-server-spec dda-backup-crate))

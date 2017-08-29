@@ -15,12 +15,12 @@
 ; limitations under the License.
 
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup.restore-lib
+(ns dda.pallet.dda-backup-crate.infra.lib.restore-lib
   (require
    [schema.core :as s]
-   [org.domaindrivenarchitecture.pallet.crate.backup.common-lib :as common]
-   [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as element]
-   [org.domaindrivenarchitecture.pallet.crate.backup.duplicity :as duplicity]))
+   [dda.pallet.dda-backup-crate.infra.lib.common-lib :as common]
+   [dda.pallet.dda-backup-crate.infra.core.backup-element :as element]
+   [dda.pallet.dda-backup-crate.infra.duplicity.duplicity :as duplicity]))
 
 (def restore-parameters
   ["if [ -z \"$1\" ]; then"

@@ -14,11 +14,11 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup.backup-lib
+(ns dda.pallet.dda-backup-crate.infra.lib.backup-lib
   (require
    [schema.core :as s]
-   [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as element]
-   [org.domaindrivenarchitecture.pallet.crate.backup.duplicity :as duplicity]))
+   [dda.pallet.dda-backup-crate.infra.core.backup-element :as element]
+   [dda.pallet.dda-backup-crate.infra.duplicity.duplicity :as duplicity]))
 
 (s/defn backup-files-tar
   "bash script part to backup as tgz."

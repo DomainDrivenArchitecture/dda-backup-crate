@@ -14,12 +14,12 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup.restore-lib-test
+(ns dda.pallet.dda-backup-crate.infra.lib.restore-lib-test
   (:require
    [clojure.test :refer :all]
    [pallet.actions :as actions]
-   [org.domaindrivenarchitecture.pallet.crate.backup.backup-element-test :as backup-element]
-   [org.domaindrivenarchitecture.pallet.crate.backup.restore-lib :as sut]))
+   [dda.pallet.dda-backup-crate.infra.core.backup-element-test :as backup-element]
+   [dda.pallet.dda-backup-crate.infra.lib.restore-lib :as sut]))
 
 (deftest restore-mysql
   (testing
@@ -85,7 +85,7 @@
           "export AWS_SECRET_ACCESS_KEY=A1"
           "export S3_USE_SIGV4=True"
           backup-element/prep-restore-script
-          "/usr/bin/duplicity restore --archive-dir /var/opt/gitblit/backup-cache --verbosity notice --s3-use-new-style --s3-european-buckets --encrypt-key=1A --sign-key=1A --log-file /var/log/gitblit/duplicity.log localhost /var/opt/gitblit/backups"
+          "/usr/bin/duplicity restore --gpg-binary gpg2 --archive-dir /var/opt/gitblit/backup-cache --verbosity notice --s3-use-new-style --s3-european-buckets --encrypt-key=1A --sign-key=1A --log-file /var/log/gitblit/duplicity.log localhost /var/opt/gitblit/backups"
           backup-element/post-transport-script
           "unset AWS_ACCESS_KEY_ID"
           "unset AWS_SECRET_ACCESS_KEY"

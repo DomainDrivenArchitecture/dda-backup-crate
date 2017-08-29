@@ -14,15 +14,15 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup-test
+(ns dda.pallet.dda-backup-crate.infra.infra-test
   (:require
     [schema.core :as s]
     [clojure.test :refer :all]
     [pallet.actions :as actions]
     [pallet.build-actions :as build-actions]
     [dda.pallet.commons.plan-test-utils :as tu]
-    [org.domaindrivenarchitecture.pallet.crate.backup.app :as app]
-    [org.domaindrivenarchitecture.pallet.crate.backup :as sut]
+    [dda.pallet.dda-backup-crate.infra.core.backup :as backup]
+    [dda.pallet.dda-backup-crate.infra :as sut]
     ))
 
 (deftest the-whole
@@ -35,12 +35,12 @@
  (testing
    "test validity of configuration parts"
      (is (s/validate
-           app/ScriptType
+           backup/ScriptType
            :backup))
      (is (thrown?
            Exception
            (s/validate
-             app/ScriptType
+             backup/ScriptType
              :no-type)))
      (is (map?
            (sut/merge-config {:backup-name "system-name"

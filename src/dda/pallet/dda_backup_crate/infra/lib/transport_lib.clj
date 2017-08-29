@@ -14,9 +14,9 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup.transport-lib
-  (require 
-    [org.domaindrivenarchitecture.pallet.crate.backup.common-lib :as common]))
+(ns dda.pallet.dda-backup-crate.infra.lib.transport-lib
+  (require
+    [dda.pallet.dda-backup-crate.infra.lib.common-lib :as common]))
 
 (def pwd-test
   ["# Move transported files to store"

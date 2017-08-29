@@ -14,21 +14,21 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup.app-test
+(ns dda.pallet.dda-backup-crate.infra.core.backup-test
   (:require
     [schema.core :as s]
     [clojure.test :refer :all]
     [pallet.actions :as actions]
     [pallet.build-actions :as build-actions]
     [dda.pallet.commons.plan-test-utils :as tu]
-    [org.domaindrivenarchitecture.pallet.crate.backup :as backup]
-    [org.domaindrivenarchitecture.pallet.crate.backup.app :as sut]
+    [dda.pallet.dda-backup-crate.infra :as backup]
+    [dda.pallet.dda-backup-crate.infra.core.backup :as sut]
     ))
- 
+
 (defn pre-process
   [fqdn]
   ["# replace location in portal config"
-   (str 
+   (str
      "sedHttps=\"s/<name>cdn.host.https<\\/name>"
      "<value>https:\\/\\/" fqdn "<\\/value>/"
      "<name>cdn.host.https<\\/name><value>https:\\/\\/"
@@ -46,13 +46,13 @@
 (defn post-process
   [fqdn db-user-name db-pass db-name]
   ["#db-restore postprocessing"
-   (str "mysql -hlocalhost -u" db-user-name " -p" db-pass 
-        " -D" db-name 
+   (str "mysql -hlocalhost -u" db-user-name " -p" db-pass
+        " -D" db-name
         " -e \"update Company set webId = '"
         fqdn "', mx = '"
         fqdn "' where companyId = 10132;\"")
-   (str "mysql -hlocalhost -u" db-user-name " -p" db-pass 
-        " -D" db-name 
+   (str "mysql -hlocalhost -u" db-user-name " -p" db-pass
+        " -D" db-name
         " -e \"update VirtualHost set hostname = '"
         fqdn "' where virtualHostId = 35337;\"")
    ""]
@@ -72,7 +72,7 @@
                 :new-owner "tomcat7"}
                {:type :mysql
                 :name "liferay"
-                :db-user-name "db-user-name" 
+                :db-user-name "db-user-name"
                 :db-user-passwd "db-pass"
                 :db-name "db-name"
                 :db-pre-processing (pre-process "fqdn")
@@ -85,9 +85,9 @@
                 :name "letsencrypt"
                 :root-dir "/etc/letsencrypt/"
                 :subdir-to-save "accounts csr keys renewal"}]})
- 
+
 (deftest backup-script
-  (testing 
+  (testing
     "script content"
     (is (= ["#!/bin/bash"
            ""
@@ -118,7 +118,7 @@
     ))
 
 (deftest backup-script-without-service
-  (testing 
+  (testing
     "script content"
     (is (= ["#!/bin/bash"
            ""
@@ -134,7 +134,7 @@
     ))
 
 (deftest test-transport-script-lines
-  (testing 
+  (testing
     "script content"
     (is (= ["#!/bin/bash"
              ""
@@ -154,7 +154,7 @@
     ))
 
 (deftest restore-script
-  (testing 
+  (testing
     "script content"
     (is (= ["#!/bin/bash"
             ""
@@ -186,7 +186,7 @@
             ""
             "#stop appserver"
             "service tomcat7 stop"
-            ""            
+            ""
             "# ------------- restore file --------------"
             "echo \"file restore ...\""
             ""
@@ -231,7 +231,7 @@
     ))
 
 (deftest restore-script-without-service
-  (testing 
+  (testing
     "script content"
     (is (= ["#!/bin/bash"
             ""
@@ -256,7 +256,7 @@
             ""
             "if [ \"$most_recent_letsencrypt_file_dump\" ]; then"
             "echo \"starting restore\""
-            ""         
+            ""
             "# ------------- restore file --------------"
             "echo \"file restore ...\""
             ""
@@ -273,9 +273,9 @@
 
 
 (deftest write-scripts
-  (testing 
+  (testing
     "test write-script actions"
-    (is (.contains 
+    (is (.contains
           (tu/extract-nth-action-command
             (build-actions/build-actions
               build-actions/ubuntu-session
@@ -283,4 +283,3 @@
               1)
           "service-name_backup.sh"))
     ))
- 

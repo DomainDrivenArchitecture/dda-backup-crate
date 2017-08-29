@@ -14,19 +14,19 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup.common-lib-test
+(ns dda.pallet.dda-backup-crate.infra.lib.common-lib-test
   (:require
     [clojure.test :refer :all]
     [pallet.actions :as actions]
-    [org.domaindrivenarchitecture.pallet.crate.backup.common-lib :as sut]
+    [dda.pallet.dda-backup-crate.infra.lib.common-lib :as sut]
     ))
 
 (deftest app-server
-  (testing 
+  (testing
     "stop app server"
     (is (= ["#stop appserver"
             "service tomcat7 stop"
             ""]
            (sut/stop-app-server "tomcat7")))
-    )  
+    )
   )

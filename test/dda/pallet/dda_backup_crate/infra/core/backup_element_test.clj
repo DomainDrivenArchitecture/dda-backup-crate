@@ -14,15 +14,14 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup.backup-element-test
+(ns dda.pallet.dda-backup-crate.infra.core.backup-element-test
   (:require
    [schema.core :as s]
    [clojure.test :refer :all]
    [pallet.actions :as actions]
    [pallet.build-actions :as build-actions]
    [dda.pallet.commons.plan-test-utils :as tu]
-   [org.domaindrivenarchitecture.pallet.crate.backup :as backup]
-   [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as sut]))
+   [dda.pallet.dda-backup-crate.infra.core.backup-element :as sut]))
 
 (def check-or-make-cache-folder "[[ -d /var/opt/gitblit/backup-cache ]] || mkdir /var/opt/gitblit/backup-cache")
 

@@ -8,24 +8,24 @@
 ;
 ; http://www.apache.org/licenses/LICENSE-2.0
 ;
-; Unless required by applicable law or agreed to in writing, software
+; Unless required by backuplicable law or agreed to in writing, software
 ; distributed under the License is distributed on an "AS IS" BASIS,
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup.app
+(ns dda.pallet.dda-backup-crate.infra.core.backup
   (:require
    [schema.core :as s]
    [schema-tools.core :as st]
    [pallet.actions :as actions]
    [pallet.stevedore :as stevedore]
-   [org.domaindrivenarchitecture.pallet.crate.backup.backup-element :as backup-element]
-   [org.domaindrivenarchitecture.pallet.crate.backup.common-lib :as common-lib]
-   [org.domaindrivenarchitecture.pallet.crate.backup.backup-lib :as backup-lib]
-   [org.domaindrivenarchitecture.pallet.crate.backup.transport-lib :as transport-lib]
-   [org.domaindrivenarchitecture.pallet.crate.backup.restore-lib :as restore-lib]
-   [org.domaindrivenarchitecture.pallet.crate.backup.duplicity :as duplicity]))
+   [dda.pallet.dda-backup-crate.infra.core.backup-element :as backup-element]
+   [dda.pallet.dda-backup-crate.infra.lib.common-lib :as common-lib]
+   [dda.pallet.dda-backup-crate.infra.lib.backup-lib :as backup-lib]
+   [dda.pallet.dda-backup-crate.infra.lib.transport-lib :as transport-lib]
+   [dda.pallet.dda-backup-crate.infra.lib.restore-lib :as restore-lib]
+   [dda.pallet.dda-backup-crate.infra.duplicity.duplicity :as duplicity]))
 
 (def User
   "User configuration"

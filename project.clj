@@ -18,7 +18,7 @@
              {:dependencies
               [[com.palletops/pallet "0.8.12" :classifier "tests"]
                [dda/dda-pallet-commons "0.4.2-SNAPSHOT" :classifier "tests"]
-               [proto-repl "0.3.1"]]
+               ]
               :plugins
               [[lein-sub "0.3.0"]]}
              :leiningen/reply

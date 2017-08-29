@@ -15,7 +15,7 @@
 ; limitations under the License.
 
 
-(ns org.domaindrivenarchitecture.pallet.crate.backup.common-lib)
+(ns dda.pallet.dda-backup-crate.infra.lib.common-lib)
 
 (defn prefix
   "prefixes each string contained in lines with indent."
@@ -26,16 +26,16 @@
     {:pre [(list? result)]}
     (if (empty? lines)
       (into [] result)
-      (recur 
+      (recur
         indent
         (pop lines)
-        (conj result 
+        (conj result
               (str indent
                    (peek lines)))
               )
       ))
   )
-  
+
 
 (def head
   ["#!/bin/bash"
