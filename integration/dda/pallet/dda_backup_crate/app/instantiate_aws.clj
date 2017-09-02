@@ -23,15 +23,7 @@
    [dda.pallet.commons.pallet-schema :as ps]
    [dda.cm.operation :as operation]
    [dda.cm.aws :as cloud-target]
-   [dda.config.commons.user-env :as user-env]
    [dda.pallet.dda-backup-crate.app :as app]))
-
-(def ssh-pub-key
-  (user-env/read-ssh-pub-key-to-config))
-
-(def user-config
-   {:dataBackupSource {:encrypted-password  "WIwn6jIUt2Rbc"
-                :authorized-keys [ssh-pub-key]}})
 
 (def domain-config {:backup-name "ssh"
                     :script-path "/usr/lib/dda-backup/"
@@ -43,7 +35,7 @@
 
 (defn integrated-group-spec [count]
   (merge
-   (app/backup-group-spec (app/app-configuration user-config domain-config))
+   (app/backup-group-spec (app/app-configuration domain-config))
    (cloud-target/node-spec "id_rsa")
    {:count count}))
 

@@ -20,6 +20,7 @@
    [dda.cm.group :as group]
    [dda.pallet.core.dda-crate :as dda-crate]
    [dda.config.commons.map-utils :as mu]
+   [dda.config.commons.user-env :as user-env]
    [dda.pallet.dda-user-crate.app :as user]
    [dda.pallet.dda-config-crate.infra :as config-crate]
    [dda.pallet.dda-backup-crate.infra :as infra]
@@ -39,18 +40,23 @@
   [config :- infra/BackupConfig
    group-key :- s/Keyword]
   {:group-specific-config
-     {group-key config}})
+   {group-key config}})
 
+(def ssh-pub-key
+  (user-env/read-ssh-pub-key-to-config))
+
+(def default-user-config {:dataBackupSource {:encrypted-password  "WIwn6jIUt2Rbc"
+                          :authorized-keys [ssh-pub-key]}})
 (defn app-configuration
-  [user-config domain-config & {:keys [group-key] :or {group-key :dda-backup-group}}]
+  [domain-config & {:keys [user-config group-key] :or {user-config default-user-config group-key :dda-backup-group}}]
   (s/validate domain/BackupDomainConfig domain-config)
   (mu/deep-merge
-    (user/app-configuration user-config :group-key group-key)
-  (create-app-configuration (domain/infra-configuration user-config domain-config) group-key)))
+   (user/app-configuration user-config :group-key group-key)
+   (create-app-configuration (domain/infra-configuration user-config domain-config) group-key)))
 
 (s/defn ^:always-validate backup-group-spec
   [app-config :- BackupAppConfig]
   (group/group-spec
-    app-config [(config-crate/with-config app-config)
-                user/with-user
-                with-backup]))
+   app-config [(config-crate/with-config app-config)
+               user/with-user
+               with-backup]))

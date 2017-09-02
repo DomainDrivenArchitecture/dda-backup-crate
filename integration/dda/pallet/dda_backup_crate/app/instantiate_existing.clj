@@ -22,7 +22,6 @@
    [dda.pallet.commons.pallet-schema :as ps]
    [dda.cm.operation :as operation]
    [dda.cm.existing :as existing]
-   [dda.config.commons.user-env :as user-env]
    [dda.pallet.dda-backup-crate.app :as app]))
 
 (def provisioning-ip
@@ -31,13 +30,6 @@
 (def provisioning-user
   {:login "initial"
    :password "test1234"})
-
-(def ssh-pub-key
-  (user-env/read-ssh-pub-key-to-config))
-
-(def user-config
-   {:dataBackupSource {:encrypted-password  "WIwn6jIUt2Rbc"
-                :authorized-keys [ssh-pub-key]}})
 
 (def domain-config {:backup-name "ssh"
                     :script-path "/usr/lib/dda-backup/"
@@ -52,7 +44,7 @@
 
 (defn integrated-group-spec []
   (merge
-   (app/backup-group-spec (app/app-configuration user-config domain-config))
+   (app/backup-group-spec (app/app-configuration domain-config))
    (existing/node-spec provisioning-user)))
 
 (defn apply-install []
