@@ -1,5 +1,5 @@
 (defproject dda/dda-backup-crate "0.6.0-SNAPSHOT"
-  :description "A crate to handle configuration, their dependencies, documentation and validation"
+  :description "A crate to handle backups"
   :url "https://www.domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0.html"}
@@ -22,8 +22,8 @@
                [com.palletops/pallet "0.8.12" :classifier "tests"]
                [dda/dda-pallet-commons "0.4.2-SNAPSHOT" :classifier "tests"]
                [ch.qos.logback/logback-classic "1.2.3"]
-               [org.slf4j/jcl-over-slf4j "1.8.0-alpha2"]
-               ]
+               [org.slf4j/jcl-over-slf4j "1.8.0-alpha2"]]
+
               :plugins
               [[lein-sub "0.3.0"]]}
              :leiningen/reply
