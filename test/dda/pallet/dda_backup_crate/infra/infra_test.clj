@@ -44,11 +44,15 @@
              :no-type)))
      (is (map?
            (sut/merge-config {:backup-name "system-name"
+                              :backup-user {:name "dataBackupSource"
+                                            :encrypted-passwd "WIwn6jIUt2Rbc"}
                               :elements []})))
      ))
 
  (def a-config
    {:backup-name "system-name"
+    :backup-user {:name "dataBackupSource"
+                  :encrypted-passwd "WIwn6jIUt2Rbc"}
     :elements []})
 
  (deftest install

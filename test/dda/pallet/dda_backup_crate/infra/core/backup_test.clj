@@ -58,8 +58,12 @@
    ""]
   )
 
+(def backup-user {:name "dataBackupSource"
+                  :encrypted-passwd "WIwn6jIUt2Rbc"})
+
 (def liferay-config
    {:backup-name "service-name"
+    :backup-user backup-user
     :service-restart "tomcat7"
     :elements [{:type :file-compressed
                 :name "letsencrypt"
@@ -81,6 +85,7 @@
 
 (def service-less-config
    {:backup-name "backup-name"
+    :backup-user backup-user
     :elements [{:type :file-compressed
                 :name "letsencrypt"
                 :root-dir "/etc/letsencrypt/"
