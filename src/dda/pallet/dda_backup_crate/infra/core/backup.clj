@@ -154,15 +154,10 @@
        (str "/etc/cron.daily/" cron-order cron-name)
        :action :create))))
 
-(s/defn create-backup-source-user
+(s/defn create-backup-directory
   "create the backup user with directory structure."
   [user :- User]
   (let [backup-user-name (st/get-in user [:name])]
-    (actions/user backup-user-name
-                  :action :create
-                  :create-home true
-                  :shell :bash
-                  :password (st/get-in user [:encrypted-passwd]))
     (actions/directory (str "/home/" backup-user-name "/transport-outgoing")
                        :action :create
                        :owner backup-user-name

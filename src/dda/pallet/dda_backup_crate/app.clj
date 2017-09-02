@@ -19,6 +19,8 @@
    [schema.core :as s]
    [dda.cm.group :as group]
    [dda.pallet.core.dda-crate :as dda-crate]
+   [dda.config.commons.map-utils :as mu]
+   [dda.pallet.dda-user-crate.app :as user]
    [dda.pallet.dda-config-crate.infra :as config-crate]
    [dda.pallet.dda-backup-crate.infra :as infra]
    [dda.pallet.dda-backup-crate.domain :as domain]))
@@ -29,7 +31,9 @@
 
 (def BackupAppConfig
   {:group-specific-config
-   {s/Keyword InfraResult}})
+   {s/Keyword (merge
+               InfraResult
+               user/InfraResult)}})
 
 (s/defn ^:allways-validate create-app-configuration :- BackupAppConfig
   [config :- infra/BackupConfig
@@ -38,12 +42,15 @@
      {group-key config}})
 
 (defn app-configuration
-  [domain-config & {:keys [group-key] :or {group-key :dda-backup-group}}]
+  [user-config domain-config & {:keys [group-key] :or {group-key :dda-backup-group}}]
   (s/validate domain/BackupDomainConfig domain-config)
-  (create-app-configuration (domain/infra-configuration domain-config) group-key))
+  (mu/deep-merge
+    (user/app-configuration user-config :group-key group-key)
+  (create-app-configuration (domain/infra-configuration user-config domain-config) group-key)))
 
 (s/defn ^:always-validate backup-group-spec
   [app-config :- BackupAppConfig]
   (group/group-spec
     app-config [(config-crate/with-config app-config)
+                user/with-user
                 with-backup]))

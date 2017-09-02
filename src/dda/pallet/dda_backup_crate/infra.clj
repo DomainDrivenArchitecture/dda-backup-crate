@@ -30,35 +30,32 @@
 (def version  [0 3 4])
 
 ;TODO: in the case of duplicity only one backup-element is supported, change to multiple
-(def BackupConfig
-  "The configuration for backup crate."
+(def BasicBackupConfig
   {:backup-name s/Str
    :script-path s/Str
-   (s/optional-key :backup-user) backup/User
    :gens-stored-on-source-system s/Num
    (s/optional-key :elements) [backup-element/BackupElement]
    (s/optional-key :service-restart) s/Str})
+
+(def BackupConfig
+  "The configuration for backup crate."
+  (merge {:backup-user backup/User} BasicBackupConfig))
 
 (def default-backup-config
   {:backup-name "backup"
    :script-path "/usr/lib/dda-backup/"
    :gens-stored-on-source-system 3})
 
-(def backup-user {:backup-user {:name "dataBackupSource"
-                                :encrypted-passwd "WIwn6jIUt2Rbc"}})
-
 (def dda-backup-crate
   (dda-crate/make-dda-crate
    :facility facility
    :version version
-   :config-default (merge default-backup-config backup-user)))
+   :config-default default-backup-config))
 
 (s/defn ^:always-validate merge-config :- BackupConfig
   "merges the partial config with default config & ensures that resulting config is valid."
   [partial-config]
-  (if (duplicity/check-for-dup partial-config)
-    (map-utils/deep-merge default-backup-config partial-config)
-    (map-utils/deep-merge (merge default-backup-config backup-user) partial-config)))
+  (map-utils/deep-merge default-backup-config partial-config))
 
 (defn install
   "collected install actions for backup crate."
@@ -66,7 +63,7 @@
   (let [config (merge-config partial-config) dup (duplicity/check-for-dup partial-config)]
     (if dup
       (duplicity/install)
-      (do (backup/create-backup-source-user (st/get-in config [:backup-user]))
+      (do (backup/create-backup-directory (st/get-in config [:backup-user]))
           (backup/create-script-environment (st/get-in config [:script-path]))))))
 
 (defmethod dda-crate/dda-install (:facility dda-backup-crate) [dda-crate partial-config]
@@ -82,7 +79,6 @@
 
 (defmethod dda-crate/dda-configure (:facility dda-backup-crate) [dda-crate partial-config]
   (configure partial-config))
-
 
 (def with-backup
   (dda-crate/create-server-spec dda-backup-crate))

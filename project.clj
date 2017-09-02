@@ -7,6 +7,7 @@
                  [prismatic/schema "1.1.6"]
                  [com.palletops/pallet "0.8.12"]
                  [com.palletops/stevedore "0.8.0-beta.7"]
+                 [dda/dda-user-crate "0.6.0"]
                  [dda/dda-config-commons "0.2.2"]
                  [dda/dda-pallet-commons "0.4.2-SNAPSHOT"]
                  [dda/dda-pallet "0.5.4-SNAPSHOT"]]

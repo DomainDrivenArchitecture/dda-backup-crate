@@ -17,13 +17,20 @@
 (ns dda.pallet.dda-backup-crate.domain
   (:require
    [schema.core :as s]
+   [dda.pallet.dda-user-crate.domain :as user]
    [dda.config.commons.map-utils :as map-utils]
    [dda.pallet.dda-backup-crate.infra :as infra]))
 
-(def BackupDomainConfig infra/BackupConfig)
+(def BackupDomainConfig infra/BasicBackupConfig)
 
 (def InfraResult {infra/facility infra/BackupConfig})
 
 (s/defn ^:allways-validate infra-configuration :- InfraResult
- [domain-config :- BackupDomainConfig]
-  {infra/facility domain-config})
+  [user-config :- user/UserDomainConfig
+   domain-config :- BackupDomainConfig]
+  (let [first (first user-config)
+        user (name (key first))
+        psswd (:encrypted-password (val first))
+        backup-user {:backup-user {:name user
+                     :encrypted-passwd psswd}}]
+    {infra/facility (merge backup-user domain-config)}))
