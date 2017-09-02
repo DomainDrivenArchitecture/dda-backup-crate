@@ -19,18 +19,7 @@
     </encoder>
   </appender>
 
-  <appender name="WIREFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>logs/jclouds-wire.log</file>
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>logs/old/jclouds-wire.%d{yyyy-MM-dd}.log</fileNamePattern>
-      <maxHistory>3</maxHistory>
-    </rollingPolicy>
-    <encoder>
-      <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
-    </encoder>
-  </appender>
-
-  <appender name="PALLETFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="PALLETFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>logs/pallet.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
       <fileNamePattern>logs/old/pallet.%d{yyyy-MM-dd}.log</fileNamePattern>
@@ -41,33 +30,6 @@
     </encoder>
   </appender>
 
-  <appender name="VMFESTFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>logs/vmfest.log</file>
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>logs/old/vmfest.%d{yyyy-MM-dd}.log</fileNamePattern>
-      <maxHistory>3</maxHistory>
-    </rollingPolicy>
-    <encoder>
-      <pattern>%date %level [%thread] %logger{10} %msg%n</pattern>
-    </encoder>
-  </appender>
-
-  <logger name="jclouds.headers" level="INFO">
-    <appender-ref ref="WIREFILE" />
-  </logger>
-
-  <logger name="jclouds.wire" level="INFO">
-    <appender-ref ref="WIREFILE" />
-  </logger>
-
-  <logger name="jclouds.compute" level="INFO">
-    <appender-ref ref="COMPUTEFILE" />
-  </logger>
-
-  <logger name="jclouds.ssh" level="INFO">
-    <appender-ref ref="COMPUTEFILE" />
-  </logger>
-
   <logger name="clj-ssh.ssh" level="INFO">
     <!-- Set this to TRACE to debug ssh keys -->
     <appender-ref ref="COMPUTEFILE" />
@@ -77,11 +39,7 @@
     <appender-ref ref="PALLETFILE" />
   </logger>
 
-  <logger name="vmfest" level="DEBUG">
-    <appender-ref ref="VMFESTFILE" />
-  </logger>
-
-  <root level="DEBUG">
+  <root level="INFO">
     <appender-ref ref="CONSOLE" />
   </root>
 
@@ -102,5 +60,6 @@
   <logger name="pallet.ssh.execute" level="DEBUG"/>
   <logger name="pallet.transport" level="DEBUG"/>
   <logger name="org.domaindrivenarchitecture.pallet" level="DEBUG"/>
+  <logger name="dda" level="DEBUG"/>
 
 </configuration>
