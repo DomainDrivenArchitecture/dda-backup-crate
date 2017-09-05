@@ -28,13 +28,14 @@
 
 (def with-backup infra/with-backup)
 
-(def InfraResult domain/InfraResult)
+(def InfraResult
+  (merge
+   user/InfraResult
+   domain/InfraResult))
 
 (def BackupAppConfig
   {:group-specific-config
-   {s/Keyword (merge
-               InfraResult
-               user/InfraResult)}})
+   {s/Keyword InfraResult}})
 
 (s/defn ^:allways-validate create-app-configuration :- BackupAppConfig
   [config :- infra/BackupConfig

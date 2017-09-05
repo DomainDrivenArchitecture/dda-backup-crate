@@ -32,5 +32,5 @@
         user (name (key first))
         psswd (:encrypted-password (val first))
         backup-user {:backup-user {:name user
-                     :encrypted-passwd psswd}}]
+                                   :encrypted-passwd psswd}}]
     {infra/facility (merge backup-user domain-config)}))
