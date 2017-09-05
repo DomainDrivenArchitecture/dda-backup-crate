@@ -46,7 +46,7 @@
   (user-env/read-ssh-pub-key-to-config))
 
 (def default-user-config {:dataBackupSource {:encrypted-password  "WIwn6jIUt2Rbc"
-                          :authorized-keys [ssh-pub-key]}})
+                                             :authorized-keys [ssh-pub-key]}})
 (defn app-configuration
   [domain-config & {:keys [user-config group-key] :or {user-config default-user-config group-key :dda-backup-group}}]
   (s/validate domain/BackupDomainConfig domain-config)
