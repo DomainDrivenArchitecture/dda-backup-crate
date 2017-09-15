@@ -20,9 +20,9 @@
 
 (def pwd-test
   ["# Move transported files to store"
-   "mv /home/dataBackupSource/transport-outgoing/* /home/dataBackupSource/store"
+   "mv /var/backup/transport-outgoing/* /var/backup/store"
    ""
    "# Manage old backup generations"
-   "cd /home/dataBackupSource/store"
+   "cd /var/backup/store"
    "# test wether pwd points to expected place"
-   "if [ \"$PWD\" == \"/home/dataBackupSource/store\" ]; then"])
+   "if [ \"$PWD\" == \"/var/backup/store\" ]; then"])

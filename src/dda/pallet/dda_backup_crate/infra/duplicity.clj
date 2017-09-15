@@ -14,7 +14,7 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.dda-backup-crate.infra.duplicity.duplicity
+(ns dda.pallet.dda-backup-crate.infra.duplicity
   (:require
    [clojure.java.io :as io]
    [clojure.string :as str]
@@ -31,19 +31,17 @@
                           :aptitude
                           {:url "ppa:duplicity-team/ppa"})
   (actions/package "duplicity")
-  (actions/package "gnupg2")
   (actions/package "python3")
   (actions/remote-directory
-   "/var/opt/backup/"
+   "/var/lib/boto-2.43-0/"
    :action :create
    :url "https://github.com/boto/boto/archive/2.43.0.zip"
    :unpack :unzip
    :owner "root"
    :group "users"
    :mode "755")
-  (actions/exec-script* "cd /var/opt/backup/boto-2.43.0/ && /usr/bin/python setup.py install"))
+  (actions/exec-script* "cd /var/lib/boto-2.43.0/ && /usr/bin/python setup.py install"))
 
-;TODO: make the paths-gets able to handle more than one element
 (defn configure [config]
   (let [trust-script-path (get ((get config :elements) 0) :trust-script-path)
         priv-key-path (get ((get config :elements) 0) :priv-key-path)

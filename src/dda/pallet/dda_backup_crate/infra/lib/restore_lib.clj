@@ -19,8 +19,7 @@
   (require
    [schema.core :as s]
    [dda.pallet.dda-backup-crate.infra.lib.common-lib :as common]
-   [dda.pallet.dda-backup-crate.infra.core.backup-element :as element]
-   [dda.pallet.dda-backup-crate.infra.duplicity.duplicity :as duplicity]))
+   [dda.pallet.dda-backup-crate.infra.schema :as schema]))
 
 (def restore-parameters
   ["if [ -z \"$1\" ]; then"
@@ -41,20 +40,22 @@
 
 (s/defn restore-dump-name
   "Get the newest file for restore."
-  [element :- element/BackupElement]
-  (str "most_recent_" (get-in element [:name]) "_" (element/element-type-name (get-in element [:type])) "_dump"))
+  [backup-element :- schema/BackupElement]
+  (let [{:keys [name type-name]} backup-element]
+    (str "most_recent_" name "_" type-name "_dump")))
 
 (s/defn get-restore-dump
   "Get the newest file for restore."
-  [element :- element/BackupElement]
-  [(str (restore-dump-name element)
-        "=$(ls -d -t1 $1"
-        (element/backup-file-prefix-pattern element)
-        "_* | head -n1)")])
+  [backup-element :- schema/BackupElement]
+  (let [{:keys [backup-file-prefix-pattern]} backup-element]
+    [(str (restore-dump-name element)
+          "=$(ls -d -t1 $1"
+          backup-file-prefix-pattern
+          "_* | head -n1)")]))
 
 (s/defn echo-restore-dump
   "Echo used file for restore."
-  [element :- element/BackupElement]
+  [element :- schema/BackupElement]
   [(str "echo \"$"
         (restore-dump-name element)
         "\"")])
@@ -73,7 +74,7 @@
     [""])))
 
 (s/defn restore-head-element
-  [element :- element/BackupElement]
+  [element :- schema/BackupElement]
   (str "[ \"$" (restore-dump-name element) "\" ]"))
 
 (defn restore-head-script
@@ -102,32 +103,28 @@
 
 (s/defn restore-mysql-dump :- [s/Str]
   "lines for restoring a mysql dump"
-  [element :- element/BackupElement]
-  (let [db-user-name (get-in element [:db-user-name])
-        db-user-passwd (get-in element [:db-user-passwd])
-        db-name (get-in element [:db-name])
-        used-create-options (if (contains? element :db-create-options)
-                              (get-in element [:db-create-options])
-                              "")]
+  [element :- schema/BackupElement]
+  (let [{:keys [db-user-name db-user-passwd db-name db-create-options]
+         :or {db-create-options ""}} element]
     [(str "mysql -hlocalhost -u" db-user-name " -p" db-user-passwd " -e \"drop database " db-name "\";")
      (str "mysql -hlocalhost -u" db-user-name " -p" db-user-passwd " -e \"create database "
-          db-name used-create-options "\";")
+          db-name db-create-options "\";")
      (str "mysql -hlocalhost -u" db-user-name " -p" db-user-passwd " " db-name " < ${" (restore-dump-name element) "}")
      ""]))
 
 (s/defn restore-mysql-script :- [s/Str]
   "The script for restoring mysql."
-  [element :- element/BackupElement]
-  (let []
+  [element :- schema/BackupElement]
+  (let [{:keys [db-pre-processing db-post-processing]} element]
     (into
      []
      (concat
       restore-db-head
       (when (contains? element :db-pre-processing)
-        (get-in element [:db-pre-processing]))
+        db-pre-processing)
       (restore-mysql-dump element)
       (when (contains? element :db-post-processing)
-        (get-in element [:db-post-processing]))
+        db-post-processing)
       restore-db-tail))))
 
 (def restore-file-head
@@ -141,31 +138,31 @@
 
 (s/defn restore-tar-dump :- [s/Str]
   "restore files from a tar dump."
-  [element :- element/BackupElement]
-  (let [restore-target-dir (get-in element [:root-dir])
+  [element :- schema/BackupElement]
+  (let [{:keys [root-dir new-owner type]} element
         chown (if (contains? element :new-owner)
-                [(str "chown -R " (get-in element [:new-owner])
-                      ":" (get-in element [:new-owner])
-                      " " restore-target-dir)]
+                [(str "chown -R " new-owner
+                      ":" new-owner
+                      " " root-dir)]
                 [])
         tar-own-options (if (contains? element :new-owner)
                           ""
                           "--same-owner --same-permissions ")
-        tar-compress-option (if (= (get-in element [:type]) :file-compressed)
+        tar-compress-option (if (= type :file-compressed)
                               "z"
                               "")]
     (into
      []
      (concat
         ;TODO: Use NonRootDirectory type here!
-      [(str "rm -r " restore-target-dir "/*")
-       (str "tar " tar-own-options "-x" tar-compress-option "f ${" (restore-dump-name element) "} -C " restore-target-dir)]
+      [(str "rm -r " root-dir "/*")
+       (str "tar " tar-own-options "-x" tar-compress-option "f ${" (restore-dump-name element) "} -C " root-dir)]
       chown
       [""]))))
 
 (s/defn restore-tar-script :- [s/Str]
   "The script for restoring a tar file."
-  [element :- element/BackupElement]
+  [element :- schema/BackupElement]
   (into
    []
    (concat
@@ -189,6 +186,3 @@
            [(str "chown -R " new-owner ":" new-owner " " restore-target-dir)]
            [])
          [""])))
-
-(s/defn restore-duplicity [element :- element/BackupElement]
-  (duplicity/duplicity-parser element :restore))

@@ -31,29 +31,19 @@
 (def InfraResult
   (merge
    user/InfraResult
-   domain/InfraResult))
+   infra/InfraResult))
 
 (def BackupAppConfig
   {:group-specific-config
    {s/Keyword InfraResult}})
 
 (s/defn ^:allways-validate create-app-configuration :- BackupAppConfig
-  [config :- infra/BackupConfig
-   group-key :- s/Keyword]
-  {:group-specific-config
-   {group-key config}})
-
-(def ssh-pub-key
-  (user-env/read-ssh-pub-key-to-config))
-
-(def default-user-config {:dataBackupSource {:encrypted-password  "WIwn6jIUt2Rbc"
-                                             :authorized-keys [ssh-pub-key]}})
-(defn app-configuration
-  [domain-config & {:keys [user-config group-key] :or {user-config default-user-config group-key :dda-backup-group}}]
-  (s/validate domain/BackupDomainConfig domain-config)
-  (mu/deep-merge
-   (user/app-configuration user-config :group-key group-key)
-   (create-app-configuration (domain/infra-configuration user-config domain-config) group-key)))
+  [domain-config :- domain/BackupConfig
+   & options]
+  (let [{:keys [group-key]
+         :or  {group-key :dda-backup-group}} options]
+    {:group-specific-config
+      {group-key (domain/infra-configuration domain-config)}}))
 
 (s/defn ^:always-validate backup-group-spec
   [app-config :- BackupAppConfig]

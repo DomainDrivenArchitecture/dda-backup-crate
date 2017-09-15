@@ -17,49 +17,52 @@
 (ns dda.pallet.dda-backup-crate.infra.lib.backup-lib
   (require
    [schema.core :as s]
-   [dda.pallet.dda-backup-crate.infra.core.backup-element :as element]
+   [dda.pallet.dda-backup-crate.infra.schema :as schema]
    [dda.pallet.dda-backup-crate.infra.duplicity.duplicity :as duplicity]))
 
 (s/defn backup-files-tar
   "bash script part to backup as tgz."
   [backup-name :- s/Str
-   element :- element/BackupElement]
-  (let [tar-options (case (get-in element [:type])
+   local-management :- schema/LocalManagement
+   backup-element :- schema/BackupElement]
+  (let [{:keys [type backup-script-name root-dir subdir-to-save]} backup-element
+        {:keys [backup-store-folder] local-management}
+        tar-options (case type
                       :file-compressed "cvzf"
                       :file-plain "cvf")]
     ["#backup the files"
-     (str "cd " (get-in element [:root-dir]))
-     (str "tar " tar-options " /home/dataBackupSource/transport-outgoing/"
-          (element/backup-file-name backup-name element) " " (get-in element [:subdir-to-save]))
-     (str "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/"
-          (element/backup-file-name backup-name element))
+     (str "cd " root-dir)
+     (str "tar " tar-options " " backup-store-folder "/transport-outgoing/"
+          backup-script-name " " subdir-to-save)
+     (str "chown dataBackupSource:dataBackupSource " backup-store-folder "/transport-outgoing/"
+          backup-script-name)
      ""]))
 
 (s/defn backup-files-rsync
   "bash script part to backup with rsync."
   [backup-name :- s/Str
-   element :- element/BackupElement]
-  ["#backup the files"
-   (str "cd " (get-in element [:root-dir]))
-   (str "rsync -Aax " (get-in element [:subdir-to-save]) " /home/dataBackupSource/transport-outgoing/"
-        (element/backup-file-name backup-name element))
-   ""])
+   local-management :- schema/LocalManagement
+   backup-element :- schema/BackupElement
+   (let [{:keys [backup-script-name root-dir subdir-to-save]} backup-element
+         {:keys [backup-store-folder] local-management}]
+     ["#backup the files"
+      (str "cd " root-dir)
+      (str "rsync -Aax " subdir-to-save " " backup-store-folder "/transport-outgoing/"
+           backup-script-name)
+      ""])])
 
 (s/defn backup-mysql
   "bash script part to backup a mysql db."
   [backup-name :- s/Str
-   element :- element/BackupElement]
-  ["#backup db"
-   (str "mysqldump --no-create-db=true -h localhost -u " (get-in element [:db-user-name])
-        " -p" (get-in element [:db-user-passwd])
-        " " (get-in element [:db-name]) " > /home/dataBackupSource/transport-outgoing/"
-        (element/backup-file-name backup-name element))
-   (str "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/"
-        (element/backup-file-name backup-name element))
-   ""])
-
-(s/defn backup-files-duplicity
-  "bash script part to backup with duplicity."
-  [element :- element/BackupElement]
-    (duplicity/duplicity-parser element :backup)
-)
+   local-management :- schema/LocalManagement
+   backup-element :- schema/BackupElement
+   (let [{:keys [backup-script-name db-user-name db-user-passwd db-name]} backup-element
+         {:keys [backup-store-folder] local-management}]
+     ["#backup db"
+      (str "mysqldump --no-create-db=true -h localhost -u " db-user-name
+           " -p" db-user-passwd
+           " " db-name " > " backup-store-folder "/transport-outgoing/"
+           backup-script-name)
+      (str "chown dataBackupSource:dataBackupSource " backup-store-folder "/transport-outgoing/"
+           backup-script-name)
+      ""])])

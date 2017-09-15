@@ -17,20 +17,37 @@
 (ns dda.pallet.dda-backup-crate.domain
   (:require
    [schema.core :as s]
-   [dda.pallet.dda-user-crate.domain :as user]
    [dda.config.commons.map-utils :as map-utils]
+   [dda.pallet.dda-user-crate.domain :as user]
+   [dda.pallet.dda-backup-crate.domain.schema :as schema]
+   [dda.pallet.dda-backup-crate.domain.file-convention :as file]
    [dda.pallet.dda-backup-crate.infra :as infra]))
 
-(def BackupDomainConfig infra/BasicBackupConfig)
+(def BackupConfig schema/BackupConfig)
 
-(def InfraResult {infra/facility infra/BackupConfig})
+(def default-user-config {:dataBackupSource {:encrypted-password  "WIwn6jIUt2Rbc"}})
+
+(s/defn infra-config
+  [config :- BackupConfig]
+  (let [{:keys [backup-user]} config
+        name "ssh"]
+    {:backup-name name
+     :backup-script-path "/usr/lib/dda-backup/"
+     :backup-user (key (first backup-user))
+     :local-management {:backup-store-folder "/var/backup"
+                        :gens-stored-on-source-system 3}
+     :transport-management {:ssh-pull nil}
+     :backup-elements [{:type :file-compressed
+                        :backup-script-name (file/backup-file-name name :file-plain)
+                        :backup-file-prefix-pattern (file/backup-file-prefix-pattern name :file-plain)
+                        :type-name (file/element-type-name :file-plain)
+                        :name "ssh"
+                        :root-dir "/etc/"
+                        :subdir-to-save "ssh"}]}))
 
 (s/defn ^:allways-validate infra-configuration :- InfraResult
-  [user-config :- user/UserDomainConfig
-   domain-config :- BackupDomainConfig]
-  (let [first (first user-config)
-        user (name (key first))
-        psswd (:encrypted-password (val first))
-        backup-user {:backup-user {:name user
-                                   :encrypted-passwd psswd}}]
-    {infra/facility (merge backup-user domain-config)}))
+  [config :- BackupConfig]
+  (let [{:keys [backup-user]} config]
+    (merge
+     (user/infra-configuration backup-user)
+     {infra/facility (infra-config config)})))

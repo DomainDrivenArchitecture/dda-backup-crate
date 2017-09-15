@@ -14,42 +14,30 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.dda-backup-crate.infra.core.backup
+(ns dda.pallet.dda-backup-crate.infra.script
   (:require
    [schema.core :as s]
    [schema-tools.core :as st]
    [pallet.actions :as actions]
    [pallet.stevedore :as stevedore]
-   [dda.pallet.dda-backup-crate.infra.core.backup-element :as backup-element]
+   [dda.pallet.dda-backup-crate.infra.schema :as schema]
    [dda.pallet.dda-backup-crate.infra.lib.common-lib :as common-lib]
    [dda.pallet.dda-backup-crate.infra.lib.backup-lib :as backup-lib]
    [dda.pallet.dda-backup-crate.infra.lib.transport-lib :as transport-lib]
-   [dda.pallet.dda-backup-crate.infra.lib.restore-lib :as restore-lib]
-   [dda.pallet.dda-backup-crate.infra.duplicity.duplicity :as duplicity]))
+   [dda.pallet.dda-backup-crate.infra.lib.restore-lib :as restore-lib]))
 
-(def User
-  "User configuration"
-  {:name s/Str
-   :encrypted-passwd s/Str})
-
-(def ScriptType
-  "The backup elements"
-  (s/enum :backup :restore :source-transport))
-
-(s/defn ^:always-validate backup-element-lines
+(s/defn backup-element-lines
   ""
   [backup-name :- s/Str
-   element :- backup-element/BackupElement]
+   element :- schema/BackupElement]
   (case (st/get-in element [:type])
     :file-compressed (backup-lib/backup-files-tar backup-name element)
-    :mysql (backup-lib/backup-mysql backup-name element)
-    :duplicity (backup-lib/backup-files-duplicity element)))
+    :mysql (backup-lib/backup-mysql backup-name element)))
 
 (defn backup-script-lines
   "create the backup script for defined elements."
   [config]
-  (let [service-restart (get-in config [:service-restart])
-        backup-name (get-in config [:backup-name])]
+  (let [{:keys [service-restart backup-name elements]} config]
     (into
      []
      (concat
@@ -57,8 +45,7 @@
       common-lib/export-timestamp
       (when (contains? config :service-restart)
         (common-lib/stop-app-server service-restart))
-      (mapcat #(backup-element-lines backup-name %)
-              (get-in config [:elements]))
+      (mapcat #(backup-element-lines backup-name %) elements)
       (when (contains? config :service-restart)
         (common-lib/start-app-server service-restart))))))
 
@@ -66,30 +53,29 @@
   ""
   [backup-name :- s/Str
    gens-stored-on-source-system :- s/Num
-   element :- backup-element/BackupElement]
+   element :- schema/BackupElement]
   (let [file-name-pattern
-        (str (backup-element/backup-file-prefix backup-name element) "_*")]
+        (str (file-convention/backup-file-prefix backup-name element) "_*")]
     [(str "  (ls -t " file-name-pattern "|head -n " gens-stored-on-source-system
           ";ls " file-name-pattern ")|sort|uniq -u|xargs rm -r")]))
 
 (defn transport-script-lines
   "create the transportation script"
   [config]
-  (let [backup-name (get-in config [:backup-name])
-        gens-stored-on-source-system (get-in config [:gens-stored-on-source-system])]
+  (let [{:keys [backup-name local-management elements]} config
+        gens-stored-on-source-system (get-in local-management [:gens-stored-on-source-system])]
     (into
      []
      (concat
       common-lib/head
       transport-lib/pwd-test
-      (mapcat #(transport-element-lines backup-name gens-stored-on-source-system %)
-              (st/get-in config [:elements]))
+      (mapcat #(transport-element-lines backup-name gens-stored-on-source-system %) elements)
       ["fi"
        ""]))))
 
 (s/defn restore-element-lines
   ""
-  [element :- backup-element/BackupElement]
+  [element :- schema/BackupElement]
   (case (st/get-in element [:type])
     :file-compressed (restore-lib/restore-tar-script element)
     :mysql (restore-lib/restore-mysql-script element)
@@ -98,11 +84,8 @@
 (defn restore-script-lines
   "create the restore script"
   [config]
-  (let [service-restart (get-in config [:service-restart])
-        backup-name (get-in config [:backup-name])
-        elements (get-in config [:elements])
-        dup (duplicity/check-for-dup config)]
-    (if dup
+  (let [{:keys [service-restart backup-name  elements transport-management]} config]
+    (if (contains? transport-management :duplicity-push)
       (into
        []
        (concat
@@ -110,8 +93,8 @@
         (when (contains? config :service-restart)
           (common-lib/stop-app-server service-restart))
         (mapcat restore-element-lines elements)
-       (when (contains? config :service-restart)
-         (common-lib/start-app-server service-restart))))
+        (when (contains? config :service-restart)
+          (common-lib/start-app-server service-restart))))
       (into
        []
        (concat
@@ -127,11 +110,12 @@
 
 (s/defn write-backup-file
   "Write the backup file."
-  [config
+  [config :- schema/BackupConfig
    script-type :- ScriptType]
-  (let [cron-name (str (get-in config [:backup-name]) "_" (name script-type))
+  (let [{:keys [backup-name script-path]} config
+        cron-name (str backup-name "_" (name script-type))
         script-name (str cron-name ".sh")
-        script-path (str (get-in config [:script-path]) script-name)
+        script-path (str script-path script-name)
         script-lines (case script-type
                        :backup (backup-script-lines config)
                        :restore (restore-script-lines config)
@@ -156,17 +140,18 @@
 
 (s/defn create-backup-directory
   "create the backup user with directory structure."
-  [user :- User]
-  (let [backup-user-name (st/get-in user [:name])]
-    (actions/directory (str "/home/" backup-user-name "/transport-outgoing")
+  [user :- s/Keyword
+   backup-store-folder :- s/Str]
+  (let [backup-user-name (name user)]
+    (actions/directory (str backup-store-folder "/transport-outgoing")
                        :action :create
                        :owner backup-user-name
                        :group backup-user-name)
-    (actions/directory (str "/home/" backup-user-name "/store")
+    (actions/directory (str backup-store-folder "/store")
                        :action :create
                        :owner backup-user-name
                        :group backup-user-name)
-    (actions/directory (str "/home/" backup-user-name "/restore")
+    (actions/directory (str backup-store-folder "/restore")
                        :action :create
                        :owner backup-user-name
                        :group backup-user-name)))
@@ -184,6 +169,5 @@
   "write the backup scripts to script environment"
   [config]
   (write-backup-file config :backup)
-  (when (not (duplicity/check-for-dup config))
-    (write-backup-file config :source-transport))
+  (write-backup-file config :source-transport)
   (write-backup-file config :restore))

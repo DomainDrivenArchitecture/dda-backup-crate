@@ -20,22 +20,18 @@
 (defn prefix
   "prefixes each string contained in lines with indent."
   ([indent lines]
-    (prefix indent lines ())
-  )
-  ([indent lines result]
-    {:pre [(list? result)]}
-    (if (empty? lines)
-      (into [] result)
-      (recur
-        indent
-        (pop lines)
-        (conj result
-              (str indent
-                   (peek lines)))
-              )
-      ))
-  )
+   (prefix indent lines ()))
 
+  ([indent lines result]
+   {:pre [(list? result)]}
+   (if (empty? lines)
+     (into [] result)
+     (recur
+       indent
+       (pop lines)
+       (conj result
+             (str indent
+                  (peek lines)))))))
 
 (def head
   ["#!/bin/bash"
