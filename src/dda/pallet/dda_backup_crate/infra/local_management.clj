@@ -23,9 +23,8 @@
 (s/defn create-backup-directory
   "create the backup user with directory structure."
   [user :- s/Keyword
-   local-management :- schema/LocalManagement]
-  (let [backup-user-name (name user)
-        {:keys [backup-store-folder]} local-management]
+   backup-store-folder :- s/Str]
+  (let [backup-user-name (name user)]
     (actions/directory (str backup-store-folder "/transport-outgoing")
                        :action :create
                        :owner backup-user-name
@@ -38,3 +37,12 @@
                        :action :create
                        :owner backup-user-name
                        :group backup-user-name)))
+
+(s/defn create-script-environment
+  "create directory for backup scripts."
+  [script-path :- s/Str]
+  (actions/directory
+   script-path
+   :action :create
+   :owner "root"
+   :group "root"))

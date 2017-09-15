@@ -17,16 +17,15 @@
 (ns dda.pallet.dda-backup-crate.infra.lib.backup-lib
   (require
    [schema.core :as s]
-   [dda.pallet.dda-backup-crate.infra.schema :as schema]
-   [dda.pallet.dda-backup-crate.infra.duplicity.duplicity :as duplicity]))
+   [dda.pallet.dda-backup-crate.infra.schema :as schema]))
 
 (s/defn backup-files-tar
   "bash script part to backup as tgz."
   [backup-name :- s/Str
-   local-management :- schema/LocalManagement
+   backup-store-folder :- s/Str
+   user-name :- s/Str
    backup-element :- schema/BackupElement]
   (let [{:keys [type backup-script-name root-dir subdir-to-save]} backup-element
-        {:keys [backup-store-folder] local-management}
         tar-options (case type
                       :file-compressed "cvzf"
                       :file-plain "cvf")]
@@ -34,35 +33,34 @@
      (str "cd " root-dir)
      (str "tar " tar-options " " backup-store-folder "/transport-outgoing/"
           backup-script-name " " subdir-to-save)
-     (str "chown dataBackupSource:dataBackupSource " backup-store-folder "/transport-outgoing/"
+     (str "chown " user-name ":" user-name " " backup-store-folder "/transport-outgoing/"
           backup-script-name)
      ""]))
 
 (s/defn backup-files-rsync
   "bash script part to backup with rsync."
   [backup-name :- s/Str
-   local-management :- schema/LocalManagement
-   backup-element :- schema/BackupElement
-   (let [{:keys [backup-script-name root-dir subdir-to-save]} backup-element
-         {:keys [backup-store-folder] local-management}]
+   backup-store-folder :- s/Str
+   backup-element :- schema/BackupElement]
+  (let [{:keys [backup-script-name root-dir subdir-to-save]} backup-element]
      ["#backup the files"
       (str "cd " root-dir)
       (str "rsync -Aax " subdir-to-save " " backup-store-folder "/transport-outgoing/"
            backup-script-name)
-      ""])])
+      ""]))
 
 (s/defn backup-mysql
   "bash script part to backup a mysql db."
   [backup-name :- s/Str
-   local-management :- schema/LocalManagement
-   backup-element :- schema/BackupElement
-   (let [{:keys [backup-script-name db-user-name db-user-passwd db-name]} backup-element
-         {:keys [backup-store-folder] local-management}]
+   backup-store-folder :- s/Str
+   user-name :- s/Str
+   backup-element :- schema/BackupElement]
+  (let [{:keys [backup-script-name db-user-name db-user-passwd db-name]} backup-element]
      ["#backup db"
       (str "mysqldump --no-create-db=true -h localhost -u " db-user-name
            " -p" db-user-passwd
            " " db-name " > " backup-store-folder "/transport-outgoing/"
            backup-script-name)
-      (str "chown dataBackupSource:dataBackupSource " backup-store-folder "/transport-outgoing/"
+      (str "chown " user-name ":" user-name " " backup-store-folder "/transport-outgoing/"
            backup-script-name)
-      ""])])
+      ""]))

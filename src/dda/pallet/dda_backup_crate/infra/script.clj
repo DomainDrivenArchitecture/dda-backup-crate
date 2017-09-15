@@ -26,28 +26,7 @@
    [dda.pallet.dda-backup-crate.infra.lib.transport-lib :as transport-lib]
    [dda.pallet.dda-backup-crate.infra.lib.restore-lib :as restore-lib]))
 
-(s/defn backup-element-lines
-  ""
-  [backup-name :- s/Str
-   element :- schema/BackupElement]
-  (case (st/get-in element [:type])
-    :file-compressed (backup-lib/backup-files-tar backup-name element)
-    :mysql (backup-lib/backup-mysql backup-name element)))
 
-(defn backup-script-lines
-  "create the backup script for defined elements."
-  [config]
-  (let [{:keys [service-restart backup-name elements]} config]
-    (into
-     []
-     (concat
-      common-lib/head
-      common-lib/export-timestamp
-      (when (contains? config :service-restart)
-        (common-lib/stop-app-server service-restart))
-      (mapcat #(backup-element-lines backup-name %) elements)
-      (when (contains? config :service-restart)
-        (common-lib/start-app-server service-restart))))))
 
 (s/defn transport-element-lines
   ""
@@ -137,33 +116,6 @@
        script-path
        (str "/etc/cron.daily/" cron-order cron-name)
        :action :create))))
-
-(s/defn create-backup-directory
-  "create the backup user with directory structure."
-  [user :- s/Keyword
-   backup-store-folder :- s/Str]
-  (let [backup-user-name (name user)]
-    (actions/directory (str backup-store-folder "/transport-outgoing")
-                       :action :create
-                       :owner backup-user-name
-                       :group backup-user-name)
-    (actions/directory (str backup-store-folder "/store")
-                       :action :create
-                       :owner backup-user-name
-                       :group backup-user-name)
-    (actions/directory (str backup-store-folder "/restore")
-                       :action :create
-                       :owner backup-user-name
-                       :group backup-user-name)))
-
-(defn create-script-environment
-  "create directory for backup scripts."
-  [script-path]
-  (actions/directory
-   script-path
-   :action :create
-   :owner "root"
-   :group "root"))
 
 (defn write-scripts
   "write the backup scripts to script environment"

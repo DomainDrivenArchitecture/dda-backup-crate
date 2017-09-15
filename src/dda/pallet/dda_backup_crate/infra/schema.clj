@@ -64,8 +64,7 @@
      (s/optional-key :new-owner) s/Str})))
 
 (def LocalManagement
-  {:backup-store-folder s/Str
-   :gens-stored-on-source-system s/Num})
+  {:gens-stored-on-source-system s/Num})
 
 (def TransportManagement
   {(s/optional-key :ssh-pull) s/Any
@@ -81,6 +80,7 @@
 (def BackupConfig
   {:backup-name s/Str
    :backup-script-path s/Str
+   :backup-store-folder s/Str
    :backup-user s/Keyword
    (s/optional-key :service-restart) s/Str
    :local-management LocalManagement

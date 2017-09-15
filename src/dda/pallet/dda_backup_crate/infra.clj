@@ -18,6 +18,7 @@
    [schema.core :as s]
    [dda.pallet.core.dda-crate :as dda-crate]
    [dda.pallet.dda-backup-crate.infra.schema :as schema]
+   [dda.pallet.dda-backup-crate.infra.backup-elements :as elements]
    [dda.pallet.dda-backup-crate.infra.local-management :as local]))
 
 (def facility :dda-backup)
@@ -36,17 +37,22 @@
 (s/defn ^:always-validate install
   "collected install actions for backup crate."
   [config :- BackupConfig]
-  (let [{:keys [backup-user script-path transport-management local-management]} config]
-    (local/create-backup-directory backup-user local-management)))
-    ;(backup/create-script-environment script-path)
+  (let [{:keys [backup-user backup-script-path backup-store-folder
+                transport-management local-management]} config]
+    (local/create-backup-directory backup-user backup-store-folder)
+    (local/create-script-environment backup-script-path)))
     ;(when (contains? transport-management :duplicity-push)
     ;  (duplicity/install))))
 
 (s/defn ^:always-validate configure
   "collected configuration actions for backup crate."
   [config :- BackupConfig]
-  (let [{:keys [transport-management]} config]))
-    ;(scripts/write-scripts config)
+  (let [{:keys [backup-name backup-script-path
+                backup-store-folder service-restart
+                backup-user backup-elements]} config]
+    (elements/write-file backup-name :backup backup-script-path "10_"
+                         (elements/backup-script-lines backup-name backup-store-folder
+                                                       service-restart (name backup-user) backup-elements))))
     ;(when (contains? transport-management :duplicity-push)
     ;  (duplicity/configure config)))
 

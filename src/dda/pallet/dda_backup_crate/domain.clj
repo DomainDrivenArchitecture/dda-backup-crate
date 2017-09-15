@@ -25,6 +25,8 @@
 
 (def BackupConfig schema/BackupConfig)
 
+(def InfraResult infra/InfraResult)
+
 (def default-user-config {:dataBackupSource {:encrypted-password  "WIwn6jIUt2Rbc"}})
 
 (s/defn infra-config
@@ -33,9 +35,9 @@
         name "ssh"]
     {:backup-name name
      :backup-script-path "/usr/lib/dda-backup/"
+     :backup-store-folder "/var/backups"
      :backup-user (key (first backup-user))
-     :local-management {:backup-store-folder "/var/backup"
-                        :gens-stored-on-source-system 3}
+     :local-management {:gens-stored-on-source-system 3}
      :transport-management {:ssh-pull nil}
      :backup-elements [{:type :file-compressed
                         :backup-script-name (file/backup-file-name name :file-plain)
