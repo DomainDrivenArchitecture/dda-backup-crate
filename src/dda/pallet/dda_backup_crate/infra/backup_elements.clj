@@ -22,7 +22,9 @@
    [pallet.stevedore :as stevedore]
    [dda.pallet.dda-backup-crate.infra.schema :as schema]
    [dda.pallet.dda-backup-crate.infra.lib.common-lib :as common-lib]
-   [dda.pallet.dda-backup-crate.infra.lib.backup-lib :as backup-lib]))
+   [dda.pallet.dda-backup-crate.infra.lib.backup-lib :as backup-lib]
+   [dda.pallet.dda-backup-crate.infra.lib.transport-lib :as transport-lib]
+   [dda.pallet.dda-backup-crate.infra.lib.restore-lib :as restore-lib]))
 
 (s/defn write-file
   "Write the backup file."
@@ -74,3 +76,52 @@
     (mapcat #(backup-element-lines backup-name backup-store-folder user-name %) elements)
     (when (some? service-restart)
       (common-lib/start-app-server service-restart)))))
+
+(s/defn transport-element-lines
+  ""
+  [gens-stored-on-source-system :- s/Num
+   element :- schema/BackupElement]
+  (let [{:keys [backup-file-prefix-pattern]} element]
+    [(str "  (ls -t "  backup-file-prefix-pattern "|head -n " gens-stored-on-source-system
+          ";ls "  backup-file-prefix-pattern ")|sort|uniq -u|xargs rm -r")]))
+
+(s/defn transport-script-lines
+  "create the transportation script"
+  [local-management :- [schema/LocalManagement]
+   elements :- [schema/BackupElement]]
+  (let [{:keys [gens-stored-on-source-system]} local-management]
+    (into
+     []
+     (concat
+      common-lib/head
+      transport-lib/pwd-test
+      (mapcat #(transport-element-lines gens-stored-on-source-system %) elements)
+      ["fi"
+       ""]))))
+
+(s/defn restore-element-lines
+  [element :- schema/BackupElement]
+  (case (:type element)
+    :file-compressed (restore-lib/restore-tar-script element)
+    :mysql (restore-lib/restore-mysql-script element)))
+
+(s/defn restore-script-lines
+  "create the restore script"
+  [service-restart :- s/Str
+   transport-management :- schema/TransportManagement
+   elements :- [schema/BackupElement]]
+  (into
+   []
+   (concat
+    common-lib/head
+    restore-lib/restore-parameters
+    restore-lib/restore-navigate-to-restore-location
+    (when (contains? transport-management :duplicity-push))
+      ;transport duplicity
+    (when (contains? transport-management :ssh-pull)
+      (restore-lib/provide-restore-dumps elements))
+    (restore-lib/restore-head-script elements)
+    (when (some? service-restart)
+      (common-lib/stop-app-server service-restart))
+    (mapcat restore-element-lines elements)
+    restore-lib/restore-tail)))

@@ -47,13 +47,18 @@
 (s/defn ^:always-validate configure
   "collected configuration actions for backup crate."
   [config :- BackupConfig]
-  (let [{:keys [backup-name backup-script-path
-                backup-store-folder service-restart
-                backup-user backup-elements]} config]
+  (let [{:keys [backup-name backup-script-path backup-store-folder
+                service-restart backup-user backup-elements
+                transport-management local-management]} config]
     (elements/write-file backup-name :backup backup-script-path "10_"
                          (elements/backup-script-lines backup-name backup-store-folder
-                                                       service-restart (name backup-user) backup-elements))))
-    ;(when (contains? transport-management :duplicity-push)
+                                                       service-restart (name backup-user)
+                                                       backup-elements))
+    (elements/write-file backup-name :restore backup-script-path nil
+                         (elements/restore-script-lines service-restart transport-management    backup-elements))
+    (elements/write-file backup-name :source-transport backup-script-path "20_"
+                         (elements/transport-script-lines local-management backup-elements))))
+        ;(when (contains? transport-management :duplicity-push)
     ;  (duplicity/configure config)))
 
 (defmethod dda-crate/dda-install facility [dda-crate config]

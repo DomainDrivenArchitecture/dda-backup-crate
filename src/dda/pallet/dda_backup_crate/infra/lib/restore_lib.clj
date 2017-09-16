@@ -48,7 +48,7 @@
   "Get the newest file for restore."
   [backup-element :- schema/BackupElement]
   (let [{:keys [backup-file-prefix-pattern]} backup-element]
-    [(str (restore-dump-name element)
+    [(str (restore-dump-name backup-element)
           "=$(ls -d -t1 $1"
           backup-file-prefix-pattern
           "_* | head -n1)")]))
