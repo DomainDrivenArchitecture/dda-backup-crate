@@ -38,7 +38,14 @@
      :backup-store-folder "/var/backups"
      :backup-user (key (first backup-user))
      :local-management {:gens-stored-on-source-system 3}
-     :transport-management {:ssh-pull nil}
+     :transport-management {:duplicity-push {:tmp-dir "/tmp"
+                                             :passphrase "passphrase"
+                                             :gpg-key-id ""
+                                             :days-stored-on-backup 21
+                                             :target-s3 {:aws-access-key-id ""
+                                                         :aws-secret-access-key ""
+                                                         :s3-use-sigv4 ""
+                                                         :url ""}}}
      :backup-elements [{:type :file-compressed
                         :backup-script-name (file/backup-file-name name :file-plain)
                         :backup-file-prefix-pattern (file/backup-file-prefix-pattern name :file-plain)

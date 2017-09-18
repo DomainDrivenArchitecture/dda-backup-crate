@@ -66,16 +66,19 @@
 (def LocalManagement
   {:gens-stored-on-source-system s/Num})
 
+(def TransportDuplicity
+  {:tmp-dir s/Str
+   :passphrase s/Str
+   :gpg-key-id s/Str
+   :days-stored-on-backup s/Num
+   (s/optional-key :target-s3) {:aws-access-key-id s/Str
+                                :aws-secret-access-key s/Str
+                                :s3-use-sigv4 s/Str
+                                :url s/Str}})
+
 (def TransportManagement
   {(s/optional-key :ssh-pull) s/Any
-   (s/optional-key :duplicity-push)
-   {:tmp-dir s/Str
-    :passphrase s/Str
-    :gpg-key-id s/Str
-    (s/optional-key :target-s3) {:aws-access-key-id s/Str
-                                 :aws-secret-access-key s/Str
-                                 :s3-use-sigv4 s/Str
-                                 :url s/Str}}})
+   (s/optional-key :duplicity-push) TransportDuplicity})
 
 (def BackupConfig
   {:backup-name s/Str

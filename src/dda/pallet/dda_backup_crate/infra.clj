@@ -19,7 +19,8 @@
    [dda.pallet.core.dda-crate :as dda-crate]
    [dda.pallet.dda-backup-crate.infra.schema :as schema]
    [dda.pallet.dda-backup-crate.infra.backup-elements :as elements]
-   [dda.pallet.dda-backup-crate.infra.local-management :as local]))
+   [dda.pallet.dda-backup-crate.infra.local-management :as local]
+   [dda.pallet.dda-backup-crate.infra.transport-management :as transport]))
 
 (def facility :dda-backup)
 (def version  [0 3 4])
@@ -34,15 +35,22 @@
    :version version
    :config-default {}))
 
+(s/defn ^:always-validate init
+  "init package-sources & update packages."
+  [config :- BackupConfig]
+  (let [{:keys [transport-management]} config]
+    (when (contains? transport-management :duplicity-push)
+      (transport/init))))
+
 (s/defn ^:always-validate install
   "collected install actions for backup crate."
   [config :- BackupConfig]
   (let [{:keys [backup-user backup-script-path backup-store-folder
                 transport-management local-management]} config]
     (local/create-backup-directory backup-user backup-store-folder)
-    (local/create-script-environment backup-script-path)))
-    ;(when (contains? transport-management :duplicity-push)
-    ;  (duplicity/install))))
+    (local/create-script-environment backup-script-path)
+    (when (contains? transport-management :duplicity-push)
+      (transport/install))))
 
 (s/defn ^:always-validate configure
   "collected configuration actions for backup crate."
@@ -57,9 +65,12 @@
     (elements/write-file backup-name :restore backup-script-path nil
                          (elements/restore-script-lines service-restart transport-management    backup-elements))
     (elements/write-file backup-name :source-transport backup-script-path "20_"
-                         (elements/transport-script-lines local-management backup-elements))))
-        ;(when (contains? transport-management :duplicity-push)
-    ;  (duplicity/configure config)))
+                         (elements/transport-script-lines local-management backup-elements))
+    (when (contains? transport-management :duplicity-push)
+      (transport/configure-duplicity backup-user (:duplicity-push transport-management)))))
+
+(defmethod dda-crate/dda-init facility [dda-crate config]
+  (init config))
 
 (defmethod dda-crate/dda-install facility [dda-crate config]
   (install config))

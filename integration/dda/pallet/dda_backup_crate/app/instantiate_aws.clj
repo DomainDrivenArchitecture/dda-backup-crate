@@ -86,16 +86,16 @@ orVoJcs081M33hIFGyiETDanGni2zMlrf5Roy5LO8b5OW/zCgC/z
   (user-env/read-ssh-pub-key-to-config))
 
 (def user-config
-  {:backup {:encrypted-password "kpwejjj0r04u09rg90rfj"
-            :authorized-keys [ssh-pub-key]
-            :gpg {:trusted-key {:public-key snakeoil-gpg-public-key
-                                :private-key snakeoil-gpg-private-key
-                                :passphrase "passphrase"}}}})
+  {:dda-backup {:encrypted-password "kpwejjj0r04u09rg90rfj"
+                :authorized-keys [ssh-pub-key]
+                :gpg {:trusted-key {:public-key snakeoil-gpg-public-key
+                                    :private-key snakeoil-gpg-private-key
+                                    :passphrase "passphrase"}}}})
 
 (def ssh-domain-config
   {:backup-name "ssh"
    :backup-user user-config
-   :gens-stored-on-source-system 3
+   :local-management {:gens-stored-on-source-system 3}
    :elements [{:type :file-compressed
                :name "ssh"
                :root-dir "/etc/"
@@ -103,8 +103,13 @@ orVoJcs081M33hIFGyiETDanGni2zMlrf5Roy5LO8b5OW/zCgC/z
 
 (def duplicity-domain-config
   {:backup-name "duplicity"
-   :local-management {:gens-stored-on-source-system 3}
-   :transport {:duplicity {}}
+   :backup-user user-config
+   :local-management {:gens-stored-on-source-system 1}
+   :transport {:duplicity-push
+               {:gpg-key-id ""
+                :aws-access-key-id ""
+                :aws-secret-access-key ""
+                :bucket-name ""}}
    :backup-elements
    [{:type :file-compressed
      :name "ssh"

@@ -5,6 +5,7 @@
             :url "https://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [prismatic/schema "1.1.6"]
+                 [selmer "1.11.1"]
                  [com.palletops/pallet "0.8.12"]
                  [com.palletops/stevedore "0.8.0-beta.7"]
                  [dda/dda-user-crate "0.6.1-SNAPSHOT"]
@@ -23,12 +24,11 @@
                [dda/dda-pallet-commons "0.4.2-SNAPSHOT" :classifier "tests"]
                [ch.qos.logback/logback-classic "1.2.3"]
                [org.slf4j/jcl-over-slf4j "1.8.0-alpha2"]]
-
               :plugins
               [[lein-sub "0.3.0"]]}
              :leiningen/reply
-               {:dependencies [[org.slf4j/jcl-over-slf4j "1.8.0-alpha2"]]
-                :exclusions [commons-logging]}}
+             {:dependencies [[org.slf4j/jcl-over-slf4j "1.8.0-alpha2"]]
+              :exclusions [commons-logging]}}
   :local-repo-classpath true
   :classifiers {:tests {:source-paths ^:replace ["test" "integration"]
                         :resource-paths ^:replace ["dev-resources"]}})
