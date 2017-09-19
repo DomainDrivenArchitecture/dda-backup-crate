@@ -74,7 +74,7 @@
    (s/optional-key :target-s3) {:aws-access-key-id s/Str
                                 :aws-secret-access-key s/Str
                                 :s3-use-sigv4 s/Str
-                                :url s/Str}})
+                                :bucket-name s/Str}})
 
 (def TransportManagement
   {(s/optional-key :ssh-pull) s/Any
@@ -83,7 +83,9 @@
 (def BackupConfig
   {:backup-name s/Str
    :backup-script-path s/Str
+   :backup-transport-folder s/Str
    :backup-store-folder s/Str
+   :backup-restore-folder s/Str
    :backup-user s/Keyword
    (s/optional-key :service-restart) s/Str
    :local-management LocalManagement

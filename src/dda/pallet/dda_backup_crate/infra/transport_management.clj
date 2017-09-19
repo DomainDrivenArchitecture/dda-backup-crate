@@ -44,10 +44,17 @@
 
 (s/defn configure-duplicity [user :- s/Keyword
                              transport-duplicity :- schema/TransportDuplicity]
-  (let [user-name (name user)]
+  (let [user-name (name user)
+        {:keys [bucket-name]} transport-duplicity]
     (actions/remote-file
-     (str "/home/" user-name "/credentials")
+     (str "/home/" user-name "/.credentials")
      :owner user-name
      :group user-name
      :mode "600"
-     :content (selmer/render-file "credentials.template" transport-duplicity))))
+     :content (selmer/render-file "credentials.template" transport-duplicity))
+    (actions/remote-file
+      (str "/home/" user-name "/.env"
+       :owner user-name
+       :group user-name
+       :mode "644"
+       :content (selmer/render-file "env.template" {:bucket-name bucket-name})))))

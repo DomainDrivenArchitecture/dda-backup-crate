@@ -35,7 +35,9 @@
         name "ssh"]
     {:backup-name name
      :backup-script-path "/usr/lib/dda-backup/"
-     :backup-store-folder "/var/backups"
+     :backup-transport-folder "/var/backups/transport-outgoing"
+     :backup-store-folder "/var/backups/store"
+     :backup-restore-folder "/var/backups/restore"
      :backup-user (key (first backup-user))
      :local-management {:gens-stored-on-source-system 3}
      :transport-management {:duplicity-push {:tmp-dir "/tmp"

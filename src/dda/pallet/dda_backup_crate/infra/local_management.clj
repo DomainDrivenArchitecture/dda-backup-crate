@@ -23,17 +23,19 @@
 (s/defn create-backup-directory
   "create the backup user with directory structure."
   [user :- s/Keyword
-   backup-store-folder :- s/Str]
+   backup-transport-folder :- s/Str
+   backup-store-folder :- s/Str
+   backup-restore-folder :- s/Str]
   (let [backup-user-name (name user)]
-    (actions/directory (str backup-store-folder "/transport-outgoing")
+    (actions/directory backup-transport-folder
                        :action :create
                        :owner backup-user-name
                        :group backup-user-name)
-    (actions/directory (str backup-store-folder "/store")
+    (actions/directory backup-store-folder
                        :action :create
                        :owner backup-user-name
                        :group backup-user-name)
-    (actions/directory (str backup-store-folder "/restore")
+    (actions/directory backup-store-folder
                        :action :create
                        :owner backup-user-name
                        :group backup-user-name)))

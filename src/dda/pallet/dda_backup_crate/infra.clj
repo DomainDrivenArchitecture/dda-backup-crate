@@ -45,9 +45,11 @@
 (s/defn ^:always-validate install
   "collected install actions for backup crate."
   [config :- BackupConfig]
-  (let [{:keys [backup-user backup-script-path backup-store-folder
+  (let [{:keys [backup-user backup-script-path backup-transport-folder
+                backup-store-folder backup-restore-folder
                 transport-management local-management]} config]
-    (local/create-backup-directory backup-user backup-store-folder)
+    (local/create-backup-directory backup-user backup-transport-folder
+                  backup-store-folder backup-restore-folder)
     (local/create-script-environment backup-script-path)
     (when (contains? transport-management :duplicity-push)
       (transport/install))))
@@ -55,17 +57,16 @@
 (s/defn ^:always-validate configure
   "collected configuration actions for backup crate."
   [config :- BackupConfig]
-  (let [{:keys [backup-name backup-script-path backup-store-folder
+  (let [{:keys [backup-name backup-script-path backup-transport-folder
+                backup-store-folder backup-restore-folder
                 service-restart backup-user backup-elements
                 transport-management local-management]} config]
     (elements/write-file backup-name :backup backup-script-path "10_"
-                         (elements/backup-script-lines backup-name backup-store-folder
-                                                       service-restart (name backup-user)
-                                                       backup-elements))
+                         (elements/backup-script-lines backup-name backup-transport-folder service-restart (name backup-user backup-elements)))
     (elements/write-file backup-name :restore backup-script-path nil
-                         (elements/restore-script-lines service-restart transport-management    backup-elements))
+                         (elements/restore-script-lines backup-restore-folder service-restart transport-management    backup-elements))
     (elements/write-file backup-name :source-transport backup-script-path "20_"
-                         (elements/transport-script-lines local-management backup-elements))
+                         (elements/transport-script-lines backup-transport-folder backup-store-folder local-management backup-elements))
     (when (contains? transport-management :duplicity-push)
       (transport/configure-duplicity backup-user (:duplicity-push transport-management)))))
 

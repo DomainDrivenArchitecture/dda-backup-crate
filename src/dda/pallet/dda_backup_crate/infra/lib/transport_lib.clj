@@ -16,13 +16,15 @@
 
 (ns dda.pallet.dda-backup-crate.infra.lib.transport-lib
   (require
-    [dda.pallet.dda-backup-crate.infra.lib.common-lib :as common]))
+   [schema.core :as s]))
 
-(def pwd-test
+(s/defn pwd-test
+  [backup-transport-folder :- s/Str
+   backup-store-folder :- s/Str]
   ["# Move transported files to store"
-   "mv /var/backup/transport-outgoing/* /var/backup/store"
+   (str "mv " backup-transport-folder "/* " backup-store-folder)
    ""
    "# Manage old backup generations"
-   "cd /var/backup/store"
+   (str "cd " backup-store-folder)
    "# test wether pwd points to expected place"
-   "if [ \"$PWD\" == \"/var/backup/store\" ]; then"])
+   (str "if [ \"$PWD\" == \"" backup-store-folder "\" ]; then")])

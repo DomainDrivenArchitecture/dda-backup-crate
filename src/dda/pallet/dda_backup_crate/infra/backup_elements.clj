@@ -87,14 +87,16 @@
 
 (s/defn transport-script-lines
   "create the transportation script"
-  [local-management :- [schema/LocalManagement]
+  [backup-transport-folder :- s/Str
+   backup-store-folder :- s/Str
+   local-management :- [schema/LocalManagement]
    elements :- [schema/BackupElement]]
   (let [{:keys [gens-stored-on-source-system]} local-management]
     (into
      []
      (concat
       common-lib/head
-      transport-lib/pwd-test
+      (transport-lib/pwd-test backup-transport-folder backup-store-folder)
       (mapcat #(transport-element-lines gens-stored-on-source-system %) elements)
       ["fi"
        ""]))))
@@ -107,7 +109,8 @@
 
 (s/defn restore-script-lines
   "create the restore script"
-  [service-restart :- s/Str
+  [backup-restore-folder :- s/Str
+   service-restart :- s/Str
    transport-management :- schema/TransportManagement
    elements :- [schema/BackupElement]]
   (into
@@ -115,7 +118,7 @@
    (concat
     common-lib/head
     restore-lib/restore-parameters
-    restore-lib/restore-navigate-to-restore-location
+    (restore-lib/restore-navigate-to-restore-location backup-restore-folder)
     (when (contains? transport-management :duplicity-push))
       ;transport duplicity
     (when (contains? transport-management :ssh-pull)

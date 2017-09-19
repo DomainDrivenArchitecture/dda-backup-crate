@@ -22,7 +22,7 @@
 (s/defn backup-files-tar
   "bash script part to backup as tgz."
   [backup-name :- s/Str
-   backup-store-folder :- s/Str
+   backup-transport-folder :- s/Str
    user-name :- s/Str
    backup-element :- schema/BackupElement]
   (let [{:keys [type backup-script-name root-dir subdir-to-save]} backup-element
@@ -31,36 +31,36 @@
                       :file-plain "cvf")]
     ["#backup the files"
      (str "cd " root-dir)
-     (str "tar " tar-options " " backup-store-folder "/transport-outgoing/"
+     (str "tar " tar-options " " backup-transport-folder "/"
           backup-script-name " " subdir-to-save)
-     (str "chown " user-name ":" user-name " " backup-store-folder "/transport-outgoing/"
+     (str "chown " user-name ":" user-name " " backup-transport-folder "/"
           backup-script-name)
      ""]))
 
 (s/defn backup-files-rsync
   "bash script part to backup with rsync."
   [backup-name :- s/Str
-   backup-store-folder :- s/Str
+   backup-transport-folder :- s/Str
    backup-element :- schema/BackupElement]
   (let [{:keys [backup-script-name root-dir subdir-to-save]} backup-element]
      ["#backup the files"
       (str "cd " root-dir)
-      (str "rsync -Aax " subdir-to-save " " backup-store-folder "/transport-outgoing/"
+      (str "rsync -Aax " subdir-to-save " " backup-transport-folder "/"
            backup-script-name)
       ""]))
 
 (s/defn backup-mysql
   "bash script part to backup a mysql db."
   [backup-name :- s/Str
-   backup-store-folder :- s/Str
+   backup-transport-folder :- s/Str
    user-name :- s/Str
    backup-element :- schema/BackupElement]
   (let [{:keys [backup-script-name db-user-name db-user-passwd db-name]} backup-element]
      ["#backup db"
       (str "mysqldump --no-create-db=true -h localhost -u " db-user-name
            " -p" db-user-passwd
-           " " db-name " > " backup-store-folder "/transport-outgoing/"
+           " " db-name " > " backup-transport-folder "/"
            backup-script-name)
-      (str "chown " user-name ":" user-name " " backup-store-folder "/transport-outgoing/"
+      (str "chown " user-name ":" user-name " " backup-transport-folder "/"
            backup-script-name)
       ""]))

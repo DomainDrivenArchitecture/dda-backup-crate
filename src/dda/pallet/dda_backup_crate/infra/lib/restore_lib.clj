@@ -18,7 +18,6 @@
 (ns dda.pallet.dda-backup-crate.infra.lib.restore-lib
   (require
    [schema.core :as s]
-   [dda.pallet.dda-backup-crate.infra.lib.common-lib :as common]
    [dda.pallet.dda-backup-crate.infra.schema :as schema]))
 
 (def restore-parameters
@@ -33,9 +32,10 @@
    "fi"
    ""])
 
-(def restore-navigate-to-restore-location
+(s/defn restore-navigate-to-restore-location
+  [backup-restore-folder :- s/Str]
   ["# cd to restore location"
-   "cd /home/dataBackupSource/restore"
+   (str "cd " backup-restore-folder)
    ""])
 
 (s/defn restore-dump-name
