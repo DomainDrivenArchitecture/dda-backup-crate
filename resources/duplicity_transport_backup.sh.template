@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Make GPG explicitly aware of our private key,
+# since we'll be running this via cron as root
+BACKUP_TRANSPORT_FOLDER={{backup-transport-folder}}
+USER_ENV='/home/{{backup-user-name}}'
+LOG_LOCATION='/var/log/backup-transport.log'
+PATH=/usr/local/bin:/usr/bin:/bin
+
+# Load our credentials
+source "$USER_ENV/.credentials"
+
+# Load environent
+source "$USER_ENV/.env"
+
+export PASSPHRASE
+export AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY
+export S3_USE_SIGV4="True"
+export TMPDIR='{{tmp-dir}}'
+
+# Backup-Transport
+/usr/bin/duplicity full \
+    --archive-dir "$TMPDIR" \
+    --verbosity notice \
+    --s3-use-new-style \
+    --s3-european-buckets \
+    --encrypt-key="$GPG_KEY_ID" \
+    --sign-key="$GPG_KEY_ID" \
+    --asynchronous-upload \
+    --volsize=1500 \
+    --log-file "$LOG_LOCATION" \
+    "$BACKUP_TRANSPORT_FOLDER" \
+    "$BUCKET_URL"
+
+/usr/bin/duplicity remove-older-than 21D \
+    --archive-dir "$TMPDIR" \
+    --verbosity notice \
+    --s3-use-new-style \
+    --s3-european-buckets \
+    --encrypt-key="$GPG_KEY_ID" \
+    --sign-key="$GPG_KEY_ID" \
+    --log-file "$LOG_LOCATION" \
+    --force \
+    "$BUCKET_URL"
+
+export -n PASSPHRASE
+export -n AWS_ACCESS_KEY_ID
+export -n AWS_SECRET_ACCESS_KEY
+export -n S3_USE_SIGV4
+export -n TMPDIR

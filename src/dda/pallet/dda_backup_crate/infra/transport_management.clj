@@ -43,9 +43,11 @@
   (actions/exec-script* "cd /tmp/boto-2.48.0/ && /usr/bin/python setup.py install"))
 
 (s/defn configure-duplicity [user :- s/Keyword
+                             backup-script-path :- s/Str
+                             backup-transport-folder s/Str
                              transport-duplicity :- schema/TransportDuplicity]
   (let [user-name (name user)
-        {:keys [bucket-name]} transport-duplicity]
+        {:keys [bucket-name tmp-dir]} transport-duplicity]
     (actions/remote-file
      (str "/home/" user-name "/.credentials")
      :owner user-name
@@ -57,4 +59,13 @@
        :owner user-name
        :group user-name
        :mode "644"
-       :content (selmer/render-file "env.template" {:bucket-name bucket-name})))))
+       :content (selmer/render-file "env.template" {:bucket-name bucket-name})))
+    (actions/remote-file
+      (str backup-script-path "/duplicity_backup_transport.sh"
+       :owner root
+       :group user-name
+       :mode "554"
+       :content (selmer/render-file "duplicity_backup_transport.sh.template"
+                                    {:backup-user-name user-name
+                                     :backup-transport-folder backup-transport-folder
+                                     :tmp-dir tmp-dir})))))
