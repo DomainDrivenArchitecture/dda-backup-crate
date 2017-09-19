@@ -33,21 +33,21 @@
   (actions/package "duplicity")
   (actions/package "python3")
   (actions/remote-directory
-   "/tmp/"
+   "/tmp/boto-install"
    :action :create
    :url "https://github.com/boto/boto/archive/2.48.0.zip"
    :unpack :unzip
    :owner "root"
    :group "users"
    :mode "755")
-  (actions/exec-script* "cd /tmp/boto-2.48.0/ && /usr/bin/python setup.py install"))
+  (actions/exec-script* "cd /tmp/boto-install/boto-2.48.0/ && /usr/bin/python setup.py install"))
 
 (s/defn configure-duplicity [user :- s/Keyword
                              backup-script-path :- s/Str
-                             backup-transport-folder s/Str
+                             backup-transport-folder :- s/Str
                              transport-duplicity :- schema/TransportDuplicity]
   (let [user-name (name user)
-        {:keys [bucket-name tmp-dir]} transport-duplicity]
+        {:keys [target-s3 tmp-dir]} transport-duplicity]
     (actions/remote-file
      (str "/home/" user-name "/.credentials")
      :owner user-name
@@ -55,17 +55,26 @@
      :mode "600"
      :content (selmer/render-file "credentials.template" transport-duplicity))
     (actions/remote-file
-      (str "/home/" user-name "/.env"
-       :owner user-name
-       :group user-name
-       :mode "644"
-       :content (selmer/render-file "env.template" {:bucket-name bucket-name})))
+      (str "/home/" user-name "/.env")
+      :owner user-name
+      :group user-name
+      :mode "644"
+      :content (selmer/render-file "env.template" target-s3))
     (actions/remote-file
-      (str backup-script-path "/duplicity_backup_transport.sh"
-       :owner root
-       :group user-name
-       :mode "554"
-       :content (selmer/render-file "duplicity_backup_transport.sh.template"
-                                    {:backup-user-name user-name
-                                     :backup-transport-folder backup-transport-folder
-                                     :tmp-dir tmp-dir})))))
+      (str backup-script-path "/duplicity_backup_transport.sh")
+      :owner "root"
+      :group user-name
+      :mode "554"
+      :content (selmer/render-file "duplicity_transport_backup.sh.template"
+                                   {:backup-user-name user-name
+                                    :backup-transport-folder backup-transport-folder
+                                    :tmp-dir tmp-dir}))
+    (actions/remote-file
+      (str backup-script-path "/duplicity_restore_transport.sh")
+      :owner "root"
+      :group user-name
+      :mode "554"
+      :content (selmer/render-file "duplicity_transport_restore.sh.template"
+                                   {:backup-user-name user-name
+                                    :backup-restore-folder backup-restore-folder
+                                    :tmp-dir tmp-dir}))))

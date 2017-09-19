@@ -24,7 +24,8 @@
    [dda.pallet.dda-backup-crate.infra.lib.common-lib :as common-lib]
    [dda.pallet.dda-backup-crate.infra.lib.backup-lib :as backup-lib]
    [dda.pallet.dda-backup-crate.infra.lib.transport-lib :as transport-lib]
-   [dda.pallet.dda-backup-crate.infra.lib.restore-lib :as restore-lib]))
+   [dda.pallet.dda-backup-crate.infra.lib.restore-lib :as restore-lib]
+   [dda.pallet.dda-backup-crate.infra.lib.duplicity-lib :as duplicity-lib]))
 
 (s/defn write-file
   "Write the backup file."
@@ -87,7 +88,9 @@
 
 (s/defn transport-script-lines
   "create the transportation script"
-  [backup-transport-folder :- s/Str
+  [duplicity? :- s/Bool
+   backup-script-path :- s/Str
+   backup-transport-folder :- s/Str
    backup-store-folder :- s/Str
    local-management :- [schema/LocalManagement]
    elements :- [schema/BackupElement]]
@@ -96,7 +99,9 @@
      []
      (concat
       common-lib/head
-      (transport-lib/pwd-test backup-transport-folder backup-store-folder)
+      (when duplicity?
+        (duplicity-lib/transport-backup backup-script-path))
+      (transport-lib/move-local backup-transport-folder backup-store-folder)
       (mapcat #(transport-element-lines gens-stored-on-source-system %) elements)
       ["fi"
        ""]))))
@@ -109,7 +114,9 @@
 
 (s/defn restore-script-lines
   "create the restore script"
-  [backup-restore-folder :- s/Str
+  [duplicity? :- s/Bool
+   backup-script-path :- s/Str
+   backup-restore-folder :- s/Str
    service-restart :- s/Str
    transport-management :- schema/TransportManagement
    elements :- [schema/BackupElement]]
@@ -117,7 +124,9 @@
    []
    (concat
     common-lib/head
-    restore-lib/restore-parameters
+    restore-lib/restore-usage
+    (when duplicity?
+      (duplicity-lib/transport-restore backup-script-path))
     (restore-lib/restore-navigate-to-restore-location backup-restore-folder)
     (when (contains? transport-management :duplicity-push))
       ;transport duplicity

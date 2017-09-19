@@ -14,17 +14,14 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.dda-backup-crate.infra.lib.transport-lib
+(ns dda.pallet.dda-backup-crate.infra.lib.duplicity-lib
   (require
    [schema.core :as s]))
 
-(s/defn move-local
-  [backup-transport-folder :- s/Str
-   backup-store-folder :- s/Str]
-  ["# Move transported files to store"
-   (str "mv " backup-transport-folder "/* " backup-store-folder)
-   ""
-   "# Manage old backup generations"
-   (str "cd " backup-store-folder)
-   "# test wether pwd points to expected place"
-   (str "if [ \"$PWD\" == \"" backup-store-folder "\" ]; then")])
+(s/defn transport-backup
+  [backup-script-path :- s/Str]
+  [(str backup-script-path "/duplicity_backup_transport.sh")])
+
+(s/defn transport-restore
+  [backup-script-path :- s/Str]
+  [(str backup-script-path "/duplicity_restore_transport.sh")])

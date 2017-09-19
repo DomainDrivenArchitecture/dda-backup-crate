@@ -60,15 +60,17 @@
   (let [{:keys [backup-name backup-script-path backup-transport-folder
                 backup-store-folder backup-restore-folder
                 service-restart backup-user backup-elements
-                transport-management local-management]} config]
+                transport-management local-management]} config
+        duplicity? (contains? transport-management :duplicity-push)]
     (elements/write-file backup-name :backup backup-script-path "10_"
-                         (elements/backup-script-lines backup-name backup-transport-folder service-restart (name backup-user backup-elements)))
+                         (elements/backup-script-lines backup-name backup-transport-folder service-restart (name backup-user) backup-elements))
     (elements/write-file backup-name :restore backup-script-path nil
-                         (elements/restore-script-lines backup-restore-folder service-restart transport-management    backup-elements))
+                         (elements/restore-script-lines duplicity? backup-script-path backup-restore-folder service-restart transport-management backup-elements))
     (elements/write-file backup-name :source-transport backup-script-path "20_"
-                         (elements/transport-script-lines backup-transport-folder backup-store-folder local-management backup-elements))
-    (when (contains? transport-management :duplicity-push)
-      (transport/configure-duplicity backup-user (:duplicity-push transport-management)))))
+                         (elements/transport-script-lines duplicity? backup-script-path backup-transport-folder backup-store-folder local-management backup-elements))
+    (when duplicity?
+      (transport/configure-duplicity backup-user backup-script-path
+       backup-transport-folder (:duplicity-push transport-management)))))
 
 (defmethod dda-crate/dda-init facility [dda-crate config]
   (init config))

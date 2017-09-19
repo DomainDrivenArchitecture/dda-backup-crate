@@ -47,7 +47,7 @@
                                              :target-s3 {:aws-access-key-id ""
                                                          :aws-secret-access-key ""
                                                          :s3-use-sigv4 ""
-                                                         :url ""}}}
+                                                         :bucket-name "xxx"}}}
      :backup-elements [{:type :file-compressed
                         :backup-script-name (file/backup-file-name name :file-plain)
                         :backup-file-prefix-pattern (file/backup-file-prefix-pattern name :file-plain)

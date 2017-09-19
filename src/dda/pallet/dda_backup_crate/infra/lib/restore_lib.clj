@@ -20,7 +20,7 @@
    [schema.core :as s]
    [dda.pallet.dda-backup-crate.infra.schema :as schema]))
 
-(def restore-parameters
+(def restore-usage
   ["if [ -z \"$1\" ]; then"
    "  echo \"\""
    "  echo \"usage:\""
