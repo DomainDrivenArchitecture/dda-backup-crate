@@ -39,7 +39,7 @@
         script-path (str script-path script-name)]
     (actions/remote-file
      script-path
-     :mode "700"
+     :mode "554"
      :literal true
      :content (clojure.string/join
                \newline

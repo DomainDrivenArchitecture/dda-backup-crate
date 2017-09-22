@@ -66,16 +66,16 @@
       :owner "root"
       :group user-name
       :mode "554"
+      :literal true
       :content (selmer/render-file "duplicity_transport_backup.sh.template"
-                                   {:backup-user-name user-name
-                                    :backup-transport-folder backup-transport-folder
+                                   {:backup-transport-folder backup-transport-folder
                                     :tmp-dir tmp-dir}))
     (actions/remote-file
       (str backup-script-path "/duplicity_restore_transport.sh")
       :owner "root"
       :group user-name
       :mode "554"
+      :literal true
       :content (selmer/render-file "duplicity_transport_restore.sh.template"
-                                   {:backup-user-name user-name
-                                    :backup-restore-folder backup-restore-folder
+                                   {:backup-restore-folder backup-restore-folder
                                     :tmp-dir tmp-dir}))))
