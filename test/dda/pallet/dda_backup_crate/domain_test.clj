@@ -21,23 +21,47 @@
    [dda.pallet.dda-backup-crate.domain :as sut]))
 
 (def test-backup-element {:type :file-compressed
-                   :name "testname"
-                   :root-dir s/Str
-                   :subdir-to-save s/Str})
+                          :name "ssh"
+                          :root-dir "/etc/"
+                          :subdir-to-save "ssh"})
 
-(def test-backup-config
+(def test-domain-backup-config
   {:backup-name "test"
-   :backup-user {:encrypted-passwd "WIwn6jIUt2Rbc"}
+   :backup-user {:encrypted-password "WIwn6jIUt2Rbc"}
    :local-management {:gens-stored-on-source-system 2}
-   :transport-management {}
+   :transport-management {:ssh-pull true}
    :backup-elements [test-backup-element]})
 
 (def user-domain-config
-  {:dda-backup test-backup-config})
+  {:dda-backup {:encrypted-password "WIwn6jIUt2Rbc"}})
+
+(def test-infra-backup-element (merge test-backup-element {:backup-script-name "ssh_ssh_file_${timestamp}.tgz"
+                                                           :backup-file-prefix-pattern "ssh_file"
+                                                           :type-name "file"}))
+
+(def test-backup-infra-config
+  {:backup-name "test"
+   :backup-script-path "/usr/local/lib/dda-backup/"
+   :backup-transport-folder "/var/backups/transport-outgoing"
+   :backup-store-folder "/var/backups/store"
+   :backup-restore-folder "/var/backups/restore"
+   :backup-user :dda-backup
+   :local-management {:gens-stored-on-source-system 2}
+   :transport-management {:ssh-pull true}
+   :backup-elements [test-infra-backup-element]})
+
+(def infra-result-config
+  {:dda-backup test-backup-infra-config})
 
 (deftest user-domain-configuration-test
   (testing
-   (is (= user-domain-config (sut/user-domain-configuration test-backup-config)))))
+   (is (= user-domain-config (sut/user-domain-configuration test-domain-backup-config)))))
 
 (deftest infra-backup-element-test
-  (testing (is (= ))))
+  (testing (is (= test-infra-backup-element (sut/infra-backup-element test-backup-element)))))
+
+(deftest infra-config-test
+  (testing (is (= test-backup-infra-config (sut/infra-config test-domain-backup-config)))))
+
+(deftest infra-configuration-test
+  (testing (is (= infra-result-config (sut/infra-configuration test-domain-backup-config)))))

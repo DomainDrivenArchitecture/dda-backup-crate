@@ -43,6 +43,7 @@
    type :- schema/BackupElementType]
   (str name "_" (element-type-name type)))
 
+;TODO: this produces a string with the name doubled
 (s/defn backup-file-prefix  :- s/Str
   ""
   [name :- s/Str
