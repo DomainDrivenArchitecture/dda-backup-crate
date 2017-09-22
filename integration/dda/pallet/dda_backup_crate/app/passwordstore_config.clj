@@ -27,7 +27,7 @@
    :authorized-keys [ssh-pub-key]
    :gpg {:trusted-key {:public-key gpg-public-key
                        :private-key gpg-private-key
-                       :passphrase (adapter/get-secret "meissa/system/backup-meissa.passphrase")}}})
+                       :passphrase (adapter/get-secret-wo-newline "meissa/system/backup-meissa.passphrase")}}})
 
 (def ssh-domain-config
   {:backup-name "ssh"
