@@ -19,7 +19,6 @@
    [schema.core :as s]
    [dda.config.commons.map-utils :as mu]
    [clj-pgp.core :as pgp]
-   [dda.pallet.dda-user-crate.domain :as user]
    [dda.pallet.dda-backup-crate.domain.schema :as schema]
    [dda.pallet.dda-backup-crate.domain.file-convention :as file]
    [dda.pallet.dda-backup-crate.infra :as infra]
@@ -34,6 +33,12 @@
 (defn key-id
   [ascii-armored-key]
   (pgp/hex-id (pgp/decode-public-key ascii-armored-key)))
+
+(s/defn ^:always-validate user-domain-configuration
+  [config :- BackupConfig]
+  (let [{:keys [backup-user]} config
+        user-key :dda-backup]
+    {user-key backup-user}))
 
 (s/defn ^:always-validate infra-backup-element :- infra-schema/BackupElement
   [backup-element :- schema/BackupElement]
@@ -69,27 +74,5 @@
 
 (s/defn ^:allways-validate infra-configuration :- InfraResult
   [config :- BackupConfig]
-  (let [{:keys [backup-user]} config]
-    (merge
-     (user/infra-configuration backup-user)
-     {infra/facility (infra-config config)})))
-
-{:backup-name "name"
- :backup-script-path "/usr/lib/dda-backup/"
- :backup-transport-folder "/var/backups/transport-outgoing"
- :backup-store-folder "/var/backups/store"
- :backup-restore-folder "/var/backups/restore"
- :backup-user :x ;(key (first backup-user))
- :local-management {:gens-stored-on-source-system 3}
- :transport-management {:duplicity-push {:gpg-key-id ""
-                                         :days-stored-on-backup 21
-                                         :target-s3 {:aws-access-key-id ""
-                                                     :aws-secret-access-key ""
-                                                     :bucket-name "xxx"}}}
- :backup-elements [{:type :file-compressed
-                    :backup-script-name (file/backup-file-name "name" :file-plain)
-                    :backup-file-prefix-pattern (file/backup-file-prefix-pattern "name" :file-plain)
-                    :type-name (file/element-type-name :file-plain)
-                    :name "ssh"
-                    :root-dir "/etc/"
-                    :subdir-to-save "ssh"}]}
+  (let [{} config]
+    {infra/facility (infra-config config)}))

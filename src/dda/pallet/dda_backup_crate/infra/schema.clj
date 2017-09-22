@@ -29,14 +29,6 @@
   "The backup elements"
   (s/enum :backup :restore :source-transport))
 
-(def DuplicityAction
-  (s/enum :full :incr :verify :collection-status :list-current-files :restore :remove-older-than :remove-all-but-n-full :remove-all-inc-of-but-n-full :cleanup))
-
-(def DuplicityOptions
-  "Options are seq of option-keywords and string-param or true"
-  ;TODO: find schema that tests for this specifically (not pair, not one)
-  [(s/either s/Keyword s/Str s/Bool)])
-
 (def BackupBaseElement
   {:type BackupElementType
    :name s/Str

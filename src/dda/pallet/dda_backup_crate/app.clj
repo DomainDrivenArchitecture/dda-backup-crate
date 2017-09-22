@@ -43,7 +43,9 @@
   (let [{:keys [group-key]
          :or  {group-key :dda-backup-group}} options]
     {:group-specific-config
-      {group-key (domain/infra-configuration domain-config)}}))
+      (merge
+        (user/app-configuration (domain/user-domain-configuration domain-config) :group-key group-key)
+        {group-key (domain/infra-configuration domain-config)})}))
 
 (s/defn ^:always-validate backup-group-spec
   [app-config :- BackupAppConfig]
