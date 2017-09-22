@@ -3,7 +3,7 @@
 # Make GPG explicitly aware of our private key,
 # since we'll be running this via cron as root
 BACKUP_TRANSPORT_FOLDER={{backup-transport-folder}}
-USER_ENV='/home/{{backup-user-name}}'
+USER_ENV="$HOME"
 LOG_LOCATION='/var/log/backup-transport.log'
 PATH=/usr/local/bin:/usr/bin:/bin
 
@@ -30,6 +30,7 @@ export TMPDIR='{{tmp-dir}}'
     --asynchronous-upload \
     --volsize=1500 \
     --log-file "$LOG_LOCATION" \
+    --gpg-binary "/usr/bin/gpg2" \
     "$BACKUP_TRANSPORT_FOLDER" \
     "$BUCKET_URL"
 
@@ -41,6 +42,7 @@ export TMPDIR='{{tmp-dir}}'
     --encrypt-key="$GPG_KEY_ID" \
     --sign-key="$GPG_KEY_ID" \
     --log-file "$LOG_LOCATION" \
+    --gpg-binary "/usr/bin/gpg2" \
     --force \
     "$BUCKET_URL"
 
