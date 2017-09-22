@@ -77,16 +77,16 @@ orVoJcs081M33hIFGyiETDanGni2zMlrf5Roy5LO8b5OW/zCgC/z
 (def ssh-pub-key
   (user-env/read-ssh-pub-key-to-config))
 
-(def user-config
-  {:dda-backup {:encrypted-password "kpwejjj0r04u09rg90rfj"
-                :authorized-keys [ssh-pub-key]
-                :gpg {:trusted-key {:public-key snakeoil-gpg-public-key
-                                    :private-key snakeoil-gpg-private-key
-                                    :passphrase "passphrase"}}}})
+(def os-user
+  {:encrypted-password "kpwejjj0r04u09rg90rfj"
+   :authorized-keys [ssh-pub-key]
+   :gpg {:trusted-key {:public-key snakeoil-gpg-public-key
+                       :private-key snakeoil-gpg-private-key
+                       :passphrase "passphrase"}}})
 
 (def ssh-domain-config
   {:backup-name "ssh"
-   :backup-user user-config
+   :backup-user os-user
    :local-management {:gens-stored-on-source-system 3}
    :elements [{:type :file-compressed
                :name "ssh"
@@ -95,7 +95,7 @@ orVoJcs081M33hIFGyiETDanGni2zMlrf5Roy5LO8b5OW/zCgC/z
 
 (def duplicity-domain-config
   {:backup-name "duplicity"
-   :backup-user user-config
+   :backup-user os-user
    :local-management {:gens-stored-on-source-system 1}
    :transport {:duplicity-push
                {:gpg-key-id ""
