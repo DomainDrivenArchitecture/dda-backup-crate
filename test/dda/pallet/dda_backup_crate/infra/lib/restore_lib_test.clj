@@ -18,7 +18,7 @@
   (:require
    [clojure.test :refer :all]
    [pallet.actions :as actions]
-   [dda.pallet.dda-backup-crate.infra.core.backup-element-test :as backup-element]
+   ;[dda.pallet.dda-backup-crate.infra.core.backup-element-test :as backup-element]
    [dda.pallet.dda-backup-crate.infra.lib.restore-lib :as sut]))
 
 (deftest restore-mysql
@@ -74,23 +74,23 @@
              :subdir-to-save "./"
              :new-owner "tomcat7"})))))
 
-(deftest restore-duplicity
-  (testing
-   "restore with duplicity"
-    (is (=
-         ["# Transport Backup"
-          "export PASSPHRASE= "
-          "export TMPDIR=/var/opt/gitblit/backup-cache"
-          "export AWS_ACCESS_KEY_ID=A1"
-          "export AWS_SECRET_ACCESS_KEY=A1"
-          "export S3_USE_SIGV4=True"
-          backup-element/prep-restore-script
-          "/usr/bin/duplicity restore --gpg-binary gpg2 --archive-dir /var/opt/gitblit/backup-cache --verbosity notice --s3-use-new-style --s3-european-buckets --encrypt-key=1A --sign-key=1A --log-file /var/log/gitblit/duplicity.log localhost /var/opt/gitblit/backups"
-          backup-element/post-transport-script
-          "unset AWS_ACCESS_KEY_ID"
-          "unset AWS_SECRET_ACCESS_KEY"
-          "unset S3_USE_SIGV4"
-          "unset PASSPHRASE"
-          "unset TMPDIR"
-          ""]
-         (sut/restore-duplicity backup-element/test-element)))))
+; (deftest restore-duplicity
+;   (testing
+;    "restore with duplicity"
+;     (is (=
+;          ["# Transport Backup"
+;           "export PASSPHRASE= "
+;           "export TMPDIR=/var/opt/gitblit/backup-cache"
+;           "export AWS_ACCESS_KEY_ID=A1"
+;           "export AWS_SECRET_ACCESS_KEY=A1"
+;           "export S3_USE_SIGV4=True"
+;           backup-element/prep-restore-script
+;           "/usr/bin/duplicity restore --gpg-binary gpg2 --archive-dir /var/opt/gitblit/backup-cache --verbosity notice --s3-use-new-style --s3-european-buckets --encrypt-key=1A --sign-key=1A --log-file /var/log/gitblit/duplicity.log localhost /var/opt/gitblit/backups"
+;           backup-element/post-transport-script
+;           "unset AWS_ACCESS_KEY_ID"
+;           "unset AWS_SECRET_ACCESS_KEY"
+;           "unset S3_USE_SIGV4"
+;           "unset PASSPHRASE"
+;           "unset TMPDIR"
+;           ""]
+;          (sut/restore-duplicity backup-element/test-element)))))

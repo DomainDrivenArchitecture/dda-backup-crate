@@ -44,7 +44,7 @@
 
 (defn integrated-group-spec []
   (merge
-   (app/backup-group-spec (app/app-configuration domain-config))
+   (app/backup-group-spec (app/create-app-configuration domain-config))
    (existing/node-spec provisioning-user)))
 
 (defn apply-install []

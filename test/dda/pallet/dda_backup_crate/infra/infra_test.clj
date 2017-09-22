@@ -21,7 +21,7 @@
     [pallet.actions :as actions]
     [pallet.build-actions :as build-actions]
     [dda.pallet.commons.plan-test-utils :as tu]
-    [dda.pallet.dda-backup-crate.infra.core.backup :as backup]
+    [dda.pallet.dda-backup-crate.infra.schema :as schema]
     [dda.pallet.dda-backup-crate.infra :as sut]
     ))
 
@@ -35,18 +35,18 @@
  (testing
    "test validity of configuration parts"
      (is (s/validate
-           backup/ScriptType
+           schema/ScriptType
            :backup))
      (is (thrown?
            Exception
            (s/validate
-             backup/ScriptType
+             schema/ScriptType
              :no-type)))
-     (is (map?
-           (sut/merge-config {:backup-name "system-name"
-                              :backup-user {:name "dataBackupSource"
-                                            :encrypted-passwd "WIwn6jIUt2Rbc"}
-                              :elements []})))
+    ;  (is (map?
+    ;        (sut/merge-config {:backup-name "system-name"
+    ;                           :backup-user {:name "dataBackupSource"
+    ;                                         :encrypted-passwd "WIwn6jIUt2Rbc"}
+    ;                           :elements []})))
      ))
 
  (def a-config
