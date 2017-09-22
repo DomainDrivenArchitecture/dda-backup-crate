@@ -57,7 +57,7 @@
                             [:gpg :trusted-key :public-key])]
     (mu/deep-merge
       config
-      {:backup-script-path "/usr/lib/dda-backup/"
+      {:backup-script-path "/usr/local/lib/dda-backup/"
        :backup-transport-folder "/var/backups/transport-outgoing"
        :backup-store-folder "/var/backups/store"
        :backup-restore-folder "/var/backups/restore"
