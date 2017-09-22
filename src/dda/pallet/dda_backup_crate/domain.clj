@@ -47,9 +47,8 @@
 (s/defn ^:always-validate infra-config :- infra-schema/BackupConfig
   [config :- BackupConfig]
   (let [{:keys [backup-user transport-management backup-elements]} config
-        first-user-key (key (first backup-user))
-        first-user-config (val (first backup-user))
-        users-public-gpg (get-in first-user-config
+        user-key :dda-backup
+        users-public-gpg (get-in backup-user
                             [:gpg :trusted-key :public-key])]
     (mu/deep-merge
       config
@@ -57,11 +56,11 @@
        :backup-transport-folder "/var/backups/transport-outgoing"
        :backup-store-folder "/var/backups/store"
        :backup-restore-folder "/var/backups/restore"
-       :backup-user :dda-backup
+       :backup-user user-key
        :transport-management {:duplicity-push {:tmp-dir "/tmp"
-                                               :passphrase (get-in first-user-config
+                                               :passphrase (get-in backup-user
                                                                    [:gpg :trusted-key :passphrase])
-                                               :gpg-key-id (key-id users-public-gpg)
+                                               :gpg-key-id (key-id backup-user)
                                                :days-stored-on-backup 21}}
        :backup-elements (map infra-backup-element backup-elements)})))
 

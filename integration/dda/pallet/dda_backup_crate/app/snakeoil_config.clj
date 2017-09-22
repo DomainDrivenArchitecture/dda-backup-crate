@@ -97,11 +97,10 @@ orVoJcs081M33hIFGyiETDanGni2zMlrf5Roy5LO8b5OW/zCgC/z
   {:backup-name "duplicity"
    :backup-user os-user
    :local-management {:gens-stored-on-source-system 1}
-   :transport {:duplicity-push
-               {:gpg-key-id ""
-                :aws-access-key-id ""
-                :aws-secret-access-key ""
-                :bucket-name ""}}
+   :transport-management {:duplicity-push
+                          {:target-s3 {:aws-access-key-id ""
+                                       :aws-secret-access-key ""
+                                       :bucket-name ""}}}
    :backup-elements
    [{:type :file-compressed
      :name "ssh"
