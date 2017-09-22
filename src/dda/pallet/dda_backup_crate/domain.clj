@@ -55,7 +55,6 @@
         user-key :dda-backup
         user-public-gpg (get-in backup-user
                             [:gpg :trusted-key :public-key])]
-    (println (str "debug: "(key-id user-public-gpg)))
     (mu/deep-merge
       config
       {:backup-script-path "/usr/lib/dda-backup/"
