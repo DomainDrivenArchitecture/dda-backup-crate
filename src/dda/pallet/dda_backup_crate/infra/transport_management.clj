@@ -45,6 +45,7 @@
 (s/defn configure-duplicity [user :- s/Keyword
                              backup-script-path :- s/Str
                              backup-transport-folder :- s/Str
+                             backup-restore-folder :- s/Str
                              transport-duplicity :- schema/TransportDuplicity]
   (let [user-name (name user)
         {:keys [target-s3 tmp-dir]} transport-duplicity]

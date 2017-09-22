@@ -53,16 +53,13 @@
 (def TransportManagement
   {(s/optional-key :ssh-pull) s/Any
    (s/optional-key :duplicity-push)
-   {:passphrase s/Str
-    :gpg-key-id s/Str
-    (s/optional-key :target-s3) {:aws-access-key-id s/Str
+   {(s/optional-key :target-s3) {:aws-access-key-id s/Str
                                  :aws-secret-access-key s/Str
-                                 :s3-use-sigv4 s/Str
-                                 :url s/Str}}})
+                                 :bucket-name s/Str}}})
 
 (def BackupConfig
   {:backup-name s/Str
-   :backup-user user/UserDomainConfig
+   :backup-user user/OsUser
    (s/optional-key :service-restart) s/Str
    :local-management LocalManagement
    :transport-management TransportManagement

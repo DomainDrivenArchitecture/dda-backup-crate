@@ -70,7 +70,7 @@
                          (elements/transport-script-lines duplicity? backup-script-path backup-transport-folder backup-store-folder local-management backup-elements))
     (when duplicity?
       (transport/configure-duplicity backup-user backup-script-path
-       backup-transport-folder (:duplicity-push transport-management)))))
+       backup-transport-folder backup-restore-folder (:duplicity-push transport-management)))))
 
 (defmethod dda-crate/dda-init facility [dda-crate config]
   (init config))

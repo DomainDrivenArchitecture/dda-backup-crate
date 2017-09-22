@@ -73,7 +73,6 @@
    :days-stored-on-backup s/Num
    (s/optional-key :target-s3) {:aws-access-key-id s/Str
                                 :aws-secret-access-key s/Str
-                                :s3-use-sigv4 s/Str
                                 :bucket-name s/Str}})
 
 (def TransportManagement
