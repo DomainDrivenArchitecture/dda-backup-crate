@@ -43,8 +43,8 @@
    :backup-user os-user
    :local-management {:gens-stored-on-source-system 1}
    :transport-management  {:duplicity-push
-                           {:target-s3 {:aws-access-key-id (adapter/get-secret "meissa/system/aws/backup.key.id")
-                                        :aws-secret-access-key (adapter/get-secret "meissa/system/aws/backup.key.secret")
+                           {:target-s3 {:aws-access-key-id (adapter/get-secret-wo-newline "meissa/system/aws/backup.key.id")
+                                        :aws-secret-access-key (adapter/get-secret-wo-newline "meissa/system/aws/backup.key.secret")
                                         :bucket-name "meissa-backup"}}}
    :backup-elements
    [{:type :file-compressed
