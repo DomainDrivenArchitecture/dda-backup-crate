@@ -33,23 +33,24 @@
 
 (defn key-id
   [ascii-armored-key]
-  (str (pgp/hex-id (pgp/decode-public-key ascii-armored-key)))
+  (pgp/hex-id (pgp/decode-public-key ascii-armored-key)))
 
-  (s/defn ^:always-validate infra-backup-element :- infra-schema/BackupElement
-    [backup-element :- schema/BackupElement]
-    (let [{:keys [name type]} backup-element]
-      (merge
-        backup-element
-        {:backup-script-name (file/backup-file-name name type)
-         :backup-file-prefix-pattern (file/backup-file-prefix-pattern name type)
-         :type-name (file/element-type-name type)}))))
+(s/defn ^:always-validate infra-backup-element :- infra-schema/BackupElement
+  [backup-element :- schema/BackupElement]
+  (let [{:keys [name type]} backup-element]
+    (merge
+      backup-element
+      {:backup-script-name (file/backup-file-name name type)
+       :backup-file-prefix-pattern (file/backup-file-prefix-pattern name type)
+       :type-name (file/element-type-name type)})))
 
 (s/defn ^:always-validate infra-config :- infra-schema/BackupConfig
   [config :- BackupConfig]
   (let [{:keys [backup-user transport-management backup-elements]} config
         user-key :dda-backup
-        users-public-gpg (get-in backup-user
+        user-public-gpg (get-in backup-user
                             [:gpg :trusted-key :public-key])]
+    (println (str "debug: "(key-id user-public-gpg)))
     (mu/deep-merge
       config
       {:backup-script-path "/usr/lib/dda-backup/"
@@ -60,7 +61,7 @@
        :transport-management {:duplicity-push {:tmp-dir "/tmp"
                                                :passphrase (get-in backup-user
                                                                    [:gpg :trusted-key :passphrase])
-                                               :gpg-key-id (key-id backup-user)
+                                               :gpg-key-id (key-id user-public-gpg)
                                                :days-stored-on-backup 21}}
        :backup-elements (map infra-backup-element backup-elements)})))
 
