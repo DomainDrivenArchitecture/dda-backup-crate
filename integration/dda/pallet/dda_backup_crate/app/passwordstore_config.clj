@@ -19,15 +19,10 @@
    [dda.config.commons.user-env :as user-env]
    [dda.pallet.commons.passwordstore-adapter :as adapter]))
 
-(def gpg-public-key (adapter/get-secret "meissa/system/backup-meissa.pub"))
-(def gpg-private-key (adapter/get-secret "meissa/system/backup-meissa.sec"))
 (def ssh-pub-key (user-env/read-ssh-pub-key-to-config))
 (def os-user
   {:encrypted-password "kpwejjj0r04u09rg90rfj"
-   :authorized-keys [ssh-pub-key]
-   :gpg {:trusted-key {:public-key gpg-public-key
-                       :private-key gpg-private-key
-                       :passphrase (adapter/get-secret-wo-newline "meissa/system/backup-meissa.passphrase")}}})
+   :authorized-keys [ssh-pub-key]})
 
 (def ssh-domain-config
   {:backup-name "ssh"
@@ -43,7 +38,10 @@
    :backup-user os-user
    :local-management {:gens-stored-on-source-system 1}
    :transport-management  {:duplicity-push
-                           {:target-s3 {:aws-access-key-id (adapter/get-secret-wo-newline "meissa/system/aws/backup.key.id")
+                           {:public-key (adapter/get-secret "meissa/system/backup-meissa.pub")
+                            :private-key (adapter/get-secret "meissa/system/backup-meissa.sec")
+                            :passphrase (adapter/get-secret-wo-newline "meissa/system/backup-meissa.passphrase")
+                            :target-s3 {:aws-access-key-id (adapter/get-secret-wo-newline "meissa/system/aws/backup.key.id")
                                         :aws-secret-access-key (adapter/get-secret-wo-newline "meissa/system/aws/backup.key.secret")
                                         :bucket-name "meissa-backup"}}}
    :backup-elements

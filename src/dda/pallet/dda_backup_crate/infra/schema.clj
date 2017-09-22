@@ -61,6 +61,8 @@
 (def TransportDuplicity
   {:tmp-dir s/Str
    :passphrase s/Str
+   :public-key s/Str
+   :private-key s/Str
    :gpg-key-id s/Str
    :days-stored-on-backup s/Num
    (s/optional-key :target-s3) {:aws-access-key-id s/Str

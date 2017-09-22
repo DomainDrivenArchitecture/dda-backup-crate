@@ -53,7 +53,10 @@
 (def TransportManagement
   {(s/optional-key :ssh-pull) s/Any
    (s/optional-key :duplicity-push)
-   {(s/optional-key :target-s3) {:aws-access-key-id s/Str
+   {:public-key s/Str
+    :private-key s/Str
+    :passphrase s/Str
+    (s/optional-key :target-s3) {:aws-access-key-id s/Str
                                  :aws-secret-access-key s/Str
                                  :bucket-name s/Str}}})
 

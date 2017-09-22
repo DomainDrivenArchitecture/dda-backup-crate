@@ -79,10 +79,7 @@ orVoJcs081M33hIFGyiETDanGni2zMlrf5Roy5LO8b5OW/zCgC/z
 
 (def os-user
   {:encrypted-password "kpwejjj0r04u09rg90rfj"
-   :authorized-keys [ssh-pub-key]
-   :gpg {:trusted-key {:public-key snakeoil-gpg-public-key
-                       :private-key snakeoil-gpg-private-key
-                       :passphrase "passphrase"}}})
+   :authorized-keys [ssh-pub-key]})
 
 (def ssh-domain-config
   {:backup-name "ssh"
@@ -98,7 +95,10 @@ orVoJcs081M33hIFGyiETDanGni2zMlrf5Roy5LO8b5OW/zCgC/z
    :backup-user os-user
    :local-management {:gens-stored-on-source-system 1}
    :transport-management {:duplicity-push
-                          {:target-s3 {:aws-access-key-id ""
+                          {:public-key snakeoil-gpg-public-key
+                           :private-key snakeoil-gpg-private-key
+                           :passphrase "passphrase"
+                           :target-s3 {:aws-access-key-id ""
                                        :aws-secret-access-key ""
                                        :bucket-name ""}}}
    :backup-elements

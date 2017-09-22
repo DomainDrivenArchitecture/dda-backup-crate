@@ -50,15 +50,15 @@
   (let [user-name (name user)
         {:keys [target-s3 tmp-dir]} transport-duplicity]
     (actions/remote-file
-     (str "/home/" user-name "/.credentials")
-     :owner user-name
-     :group user-name
+     (str "/root/.credentials")
+     :owner "root"
+     :group "root"
      :mode "600"
      :content (selmer/render-file "credentials.template" transport-duplicity))
     (actions/remote-file
-      (str "/home/" user-name "/.env")
-      :owner user-name
-      :group user-name
+      (str "/root/.env")
+      :owner "root"
+      :group "root"
       :mode "644"
       :content (selmer/render-file "env.template" target-s3))
     (actions/remote-file

@@ -36,9 +36,16 @@
 
 (s/defn ^:always-validate user-domain-configuration
   [config :- BackupConfig]
-  (let [{:keys [backup-user]} config
+  (let [{:keys [backup-user transport-management]} config
+        public-gpg (get-in transport-management [:duplicity-push :public-key])
+        private-gpg (get-in transport-management [:duplicity-push :private-key])
+        passphrase (get-in transport-management [:duplicity-push :passphrase])
         user-key :dda-backup]
-    {user-key backup-user}))
+    {:root {:encrypted-password "fksdjfiosjfr8o0jterojdo"
+            :gpg {:trusted-key {:public-key public-gpg
+                                :private-key private-gpg
+                                :passphrase passphrase}}}
+     user-key backup-user}))
 
 (s/defn ^:always-validate infra-backup-element :- infra-schema/BackupElement
   [backup-element :- schema/BackupElement]
@@ -53,24 +60,23 @@
   [config :- BackupConfig]
   (let [{:keys [backup-user transport-management backup-elements]} config
         user-key :dda-backup
-        user-public-gpg (get-in backup-user
-                                [:gpg :trusted-key :public-key])
-        transport-management (first (:transport-management config))
-        additional-map (if (= transport-management :duplicity-push)
+        public-gpg (get-in transport-management
+                    [:duplicity-push :public-key])
+        additional-map (if (contains? transport-management :duplicity-push)
                          {:transport-management {:duplicity-push {:tmp-dir "/tmp"
-                                                                  :passphrase (get-in backup-user
-                                                                                      [:gpg :trusted-key :passphrase])
-                                                                  :gpg-key-id (key-id user-public-gpg)
+                                                                  :gpg-key-id (key-id public-gpg)
                                                                   :days-stored-on-backup 21}}}
                          {})]
     (mu/deep-merge
      config
-     (merge {:backup-script-path "/usr/local/lib/dda-backup/"
-             :backup-transport-folder "/var/backups/transport-outgoing"
-             :backup-store-folder "/var/backups/store"
-             :backup-restore-folder "/var/backups/restore"
-             :backup-user user-key
-             :backup-elements (map infra-backup-element backup-elements)} additional-map))))
+     additional-map
+     {:backup-script-path "/usr/local/lib/dda-backup/"
+      :backup-transport-folder "/var/backups/transport-outgoing"
+      :backup-store-folder "/var/backups/store"
+      :backup-restore-folder "/var/backups/restore"
+      :backup-user user-key
+      :backup-elements (map infra-backup-element backup-elements)})))
+
 
 (s/defn ^:allways-validate infra-configuration :- InfraResult
   [config :- BackupConfig]
