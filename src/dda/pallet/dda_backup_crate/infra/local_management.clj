@@ -35,7 +35,7 @@
                        :action :create
                        :owner backup-user-name
                        :group backup-user-name)
-    (actions/directory backup-store-folder
+    (actions/directory backup-restore-folder
                        :action :create
                        :owner backup-user-name
                        :group backup-user-name)))

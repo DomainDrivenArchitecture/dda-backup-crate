@@ -47,8 +47,8 @@
                 :gpg {:trusted-key {:public-key public-gpg
                                     :private-key private-gpg
                                     :passphrase passphrase}}}}
-        {}
-       user-key backup-user))))
+        {})
+      user-key backup-user)))
 
 (s/defn ^:always-validate infra-backup-element :- infra-schema/BackupElement
   [backup-element :- schema/BackupElement]
