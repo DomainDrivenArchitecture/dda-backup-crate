@@ -14,16 +14,12 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.dda-backup-crate.infra.core.backup-test
+(ns dda.pallet.dda-backup-crate.infra.backup-elements-test
   (:require
     [schema.core :as s]
     [clojure.test :refer :all]
-    [pallet.actions :as actions]
-    [pallet.build-actions :as build-actions]
     [dda.pallet.commons.plan-test-utils :as tu]
-    [dda.pallet.dda-backup-crate.infra :as backup]
-    [dda.pallet.dda-backup-crate.infra.backup-elements :as sut]
-    ))
+    [dda.pallet.dda-backup-crate.infra.backup-elements :as sut]))
 
 (defn pre-process
   [fqdn]
@@ -40,8 +36,8 @@
    "sed -e \"$sedHttps\" ${most_recent_liferay_mysql_dump} > output1.sql"
    "sed -e \"$sedHttp\" output1.sql > output2.sql"
    "move output2.sql ${most_recent_liferay_mysql_dump}"
-   ""]
-  )
+   ""])
+
 
 (defn post-process
   [fqdn db-user-name db-pass db-name]
@@ -55,11 +51,30 @@
         " -D" db-name
         " -e \"update VirtualHost set hostname = '"
         fqdn "' where virtualHostId = 35337;\"")
-   ""]
-  )
+   ""])
+
 
 (def backup-user {:name "dataBackupSource"
                   :encrypted-passwd "WIwn6jIUt2Rbc"})
+
+(def liferay-config-elements
+   [{:type :file-compressed
+     :name "letsencrypt"
+     :root-dir "/etc/letsencrypt/"
+     :subdir-to-save "accounts csr keys renewal"
+     {:type :file-compressed
+      :name "liferay"
+      :root-dir "/var/lib/liferay/data/"
+      :subdir-to-save "document_library images"
+      :new-owner "tomcat7"}
+     {:type :mysql
+      :name "liferay"
+      :db-user-name "db-user-name"
+      :db-user-passwd "db-pass"
+      :db-name "db-name"
+      :db-pre-processing (pre-process "fqdn")
+      :db-post-processing (post-process "fqdn" "db-user-name" "db-pass" "db-name")
+      :db-create-options "character set utf8"}}])
 
 (def liferay-config
    {:backup-name "service-name"
@@ -95,48 +110,52 @@
   (testing
     "script content"
     (is (= ["#!/bin/bash"
+            ""
+            "#timestamp from server to variable"
+            "export timestamp=`date +%Y-%m-%d_%H-%M-%S`"
+            ""
+            "#stop appserver"
+            "service tomcat7 stop"
+            ""
+            "#backup the files"
+            "cd /etc/letsencrypt/"
+            "tar cvzf /home/dataBackupSource/transport-outgoing/service-name_letsencrypt_file_${timestamp}.tgz accounts csr keys renewal"
+            "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/service-name_letsencrypt_file_${timestamp}.tgz"
+            ""
+            "#backup the files"
+            "cd /var/lib/liferay/data/"
+            "tar cvzf /home/dataBackupSource/transport-outgoing/service-name_liferay_file_${timestamp}.tgz document_library images"
+            "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/service-name_liferay_file_${timestamp}.tgz"
+            ""
+            "#backup db"
+            "mysqldump --no-create-db=true -h localhost -u db-user-name -pdb-pass db-name > /home/dataBackupSource/transport-outgoing/service-name_liferay_mysql_${timestamp}.sql"
+            "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/service-name_liferay_mysql_${timestamp}.sql"
+            ""
+            "#start appserver"
+            "service tomcat7 start"
+            ""]
+          (sut/backup-script-lines
+           "service-name"
            ""
-           "#timestamp from server to variable"
-           "export timestamp=`date +%Y-%m-%d_%H-%M-%S`"
+           "tomcat7"
            ""
-           "#stop appserver"
-           "service tomcat7 stop"
-           ""
-           "#backup the files"
-           "cd /etc/letsencrypt/"
-           "tar cvzf /home/dataBackupSource/transport-outgoing/service-name_letsencrypt_file_${timestamp}.tgz accounts csr keys renewal"
-           "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/service-name_letsencrypt_file_${timestamp}.tgz"
-           ""
-           "#backup the files"
-           "cd /var/lib/liferay/data/"
-           "tar cvzf /home/dataBackupSource/transport-outgoing/service-name_liferay_file_${timestamp}.tgz document_library images"
-           "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/service-name_liferay_file_${timestamp}.tgz"
-           ""
-           "#backup db"
-           "mysqldump --no-create-db=true -h localhost -u db-user-name -pdb-pass db-name > /home/dataBackupSource/transport-outgoing/service-name_liferay_mysql_${timestamp}.sql"
-           "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/service-name_liferay_mysql_${timestamp}.sql"
-           ""
-           "#start appserver"
-           "service tomcat7 start"
-           ""]
-           (sut/backup-script-lines liferay-config)))
-    ))
+           liferay-config)))))
 
 (deftest backup-script-without-service
   (testing
     "script content"
     (is (= ["#!/bin/bash"
-           ""
-           "#timestamp from server to variable"
-           "export timestamp=`date +%Y-%m-%d_%H-%M-%S`"
-           ""
-           "#backup the files"
-           "cd /etc/letsencrypt/"
-           "tar cvzf /home/dataBackupSource/transport-outgoing/backup-name_letsencrypt_file_${timestamp}.tgz accounts csr keys renewal"
-           "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/backup-name_letsencrypt_file_${timestamp}.tgz"
-           ""]
-           (sut/backup-script-lines service-less-config)))
-    ))
+            ""
+            "#timestamp from server to variable"
+            "export timestamp=`date +%Y-%m-%d_%H-%M-%S`"
+            ""
+            "#backup the files"
+            "cd /etc/letsencrypt/"
+            "tar cvzf /home/dataBackupSource/transport-outgoing/backup-name_letsencrypt_file_${timestamp}.tgz accounts csr keys renewal"
+            "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/backup-name_letsencrypt_file_${timestamp}.tgz"
+            ""]
+           (sut/backup-script-lines service-less-config)))))
+
 
 (deftest test-transport-script-lines
   (testing
@@ -155,8 +174,8 @@
              "  (ls -t service-name_liferay_mysql_*|head -n 3;ls service-name_liferay_mysql_*)|sort|uniq -u|xargs rm -r"
              "fi"
              ""]
-           (sut/transport-script-lines liferay-config)))
-    ))
+           (sut/transport-script-lines liferay-config)))))
+
 
 (deftest restore-script
   (testing
@@ -232,8 +251,8 @@
              "echo \"finished restore successfull, pls. start the appserver.\""
              "fi"
              ""]
-           (sut/restore-script-lines liferay-config)))
-    ))
+           (sut/restore-script-lines liferay-config)))))
+
 
 (deftest restore-script-without-service
   (testing
@@ -273,8 +292,8 @@
              "echo \"finished restore successfull, pls. start the appserver.\""
              "fi"
              ""]
-           (sut/restore-script-lines service-less-config)))
-    ))
+           (sut/restore-script-lines service-less-config)))))
+
 
 
 ; (deftest write-scripts
