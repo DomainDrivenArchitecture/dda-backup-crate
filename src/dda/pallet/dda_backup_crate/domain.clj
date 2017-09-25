@@ -39,8 +39,7 @@
   (let [{:keys [backup-user transport-management]} config
         public-gpg (get-in transport-management [:duplicity-push :public-key])
         private-gpg (get-in transport-management [:duplicity-push :private-key])
-        passphrase (get-in transport-management [:duplicity-push :passphrase])
-        user-key :dda-backup]
+        passphrase (get-in transport-management [:duplicity-push :passphrase])]
     (merge
       (if (contains? transport-management :duplicity-push)
         {:root {:encrypted-password "fksdjfiosjfr8o0jterojdo"
@@ -48,7 +47,7 @@
                                     :private-key private-gpg
                                     :passphrase passphrase}}}}
         {})
-      user-key backup-user)))
+      {:dda-backup backup-user})))
 
 (s/defn ^:always-validate infra-backup-element :- infra-schema/BackupElement
   [backup-element :- schema/BackupElement]
