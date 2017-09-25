@@ -56,7 +56,8 @@
    backup-store-folder :- s/Str
    user-name :- s/Str
    element :- schema/BackupElement]
-  (case (st/get-in element [:type])
+  (println element)
+  (case (get-in element [:type])
     :file-compressed (backup-lib/backup-files-tar backup-name backup-store-folder user-name element)
     :mysql (backup-lib/backup-mysql backup-name backup-store-folder user-name element)))
 

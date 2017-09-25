@@ -32,7 +32,7 @@
 (def BackupBaseElement
   {:type BackupElementType
    :name s/Str
-   :backup-script-name s/Str
+   :backup-file-name s/Str
    :backup-file-prefix-pattern s/Str
    :type-name s/Str})
 

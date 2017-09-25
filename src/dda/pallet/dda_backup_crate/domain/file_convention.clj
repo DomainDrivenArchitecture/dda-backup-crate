@@ -37,18 +37,17 @@
     :mysql "sql"
     :duplicity "dir"))
 
-(s/defn backup-file-prefix-pattern :- s/Str
+(s/defn backup-file-prefix  :- s/Str
   ""
   [name :- s/Str
    type :- schema/BackupElementType]
   (str name "_" (element-type-name type)))
 
-;TODO: this produces a string with the name doubled
-(s/defn backup-file-prefix  :- s/Str
+(s/defn backup-file-prefix-pattern :- s/Str
   ""
   [name :- s/Str
    type :- schema/BackupElementType]
-  (str name "_" (backup-file-prefix-pattern name type)))
+  (str (backup-file-prefix name type) "*"))
 
 (s/defn backup-file-name
   ""

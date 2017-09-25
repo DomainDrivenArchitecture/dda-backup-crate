@@ -54,7 +54,7 @@
   (let [{:keys [name type]} backup-element]
     (merge
      backup-element
-     {:backup-script-name (file/backup-file-name name type)
+     {:backup-file-name (file/backup-file-name name type)
       :backup-file-prefix-pattern (file/backup-file-prefix-pattern name type)
       :type-name (file/element-type-name type)})))
 

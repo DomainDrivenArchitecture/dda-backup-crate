@@ -25,16 +25,16 @@
    backup-transport-folder :- s/Str
    user-name :- s/Str
    backup-element :- schema/BackupElement]
-  (let [{:keys [type backup-script-name root-dir subdir-to-save]} backup-element
+  (let [{:keys [type backup-file-name root-dir subdir-to-save]} backup-element
         tar-options (case type
                       :file-compressed "cvzf"
                       :file-plain "cvf")]
     ["#backup the files"
      (str "cd " root-dir)
      (str "tar " tar-options " " backup-transport-folder "/"
-          backup-script-name " " subdir-to-save)
+          backup-file-name " " subdir-to-save)
      (str "chown " user-name ":" user-name " " backup-transport-folder "/"
-          backup-script-name)
+          backup-file-name)
      ""]))
 
 (s/defn backup-files-rsync
@@ -42,11 +42,11 @@
   [backup-name :- s/Str
    backup-transport-folder :- s/Str
    backup-element :- schema/BackupElement]
-  (let [{:keys [backup-script-name root-dir subdir-to-save]} backup-element]
+  (let [{:keys [backup-file-name root-dir subdir-to-save]} backup-element]
      ["#backup the files"
       (str "cd " root-dir)
       (str "rsync -Aax " subdir-to-save " " backup-transport-folder "/"
-           backup-script-name)
+           backup-file-name)
       ""]))
 
 (s/defn backup-mysql
@@ -55,12 +55,12 @@
    backup-transport-folder :- s/Str
    user-name :- s/Str
    backup-element :- schema/BackupElement]
-  (let [{:keys [backup-script-name db-user-name db-user-passwd db-name]} backup-element]
+  (let [{:keys [backup-file-name db-user-name db-user-passwd db-name]} backup-element]
      ["#backup db"
       (str "mysqldump --no-create-db=true -h localhost -u " db-user-name
            " -p" db-user-passwd
            " " db-name " > " backup-transport-folder "/"
-           backup-script-name)
+           backup-file-name)
       (str "chown " user-name ":" user-name " " backup-transport-folder "/"
-           backup-script-name)
+           backup-file-name)
       ""]))

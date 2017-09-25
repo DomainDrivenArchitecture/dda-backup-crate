@@ -76,27 +76,30 @@
       :db-post-processing (post-process "fqdn" "db-user-name" "db-pass" "db-name")
       :db-create-options "character set utf8"}}])
 
-(def liferay-config
-   {:backup-name "service-name"
-    :backup-user backup-user
-    :service-restart "tomcat7"
-    :elements [{:type :file-compressed
-                :name "letsencrypt"
-                :root-dir "/etc/letsencrypt/"
-                :subdir-to-save "accounts csr keys renewal"}
-               {:type :file-compressed
-                :name "liferay"
-                :root-dir "/var/lib/liferay/data/"
-                :subdir-to-save "document_library images"
-                :new-owner "tomcat7"}
-               {:type :mysql
-                :name "liferay"
-                :db-user-name "db-user-name"
-                :db-user-passwd "db-pass"
-                :db-name "db-name"
-                :db-pre-processing (pre-process "fqdn")
-                :db-post-processing (post-process "fqdn" "db-user-name" "db-pass" "db-name")
-                :db-create-options "character set utf8"}]})
+(def liferay-elements
+   [{:type :file-compressed
+     :name "letsencrypt"
+     :backup-file-name "service-name_letsencrypt_file_${timestamp}.tgz"
+     :type-name "file"
+     :root-dir "/etc/letsencrypt/"
+     :subdir-to-save "accounts csr keys renewal"}
+    {:type :file-compressed
+     :name "liferay"
+     :backup-file-name "service-name_liferay_file_${timestamp}.tgz"
+     :type-name "file"
+     :root-dir "/var/lib/liferay/data/"
+     :subdir-to-save "document_library images"
+     :new-owner "tomcat7"}
+    {:type :mysql
+     :name "liferay"
+     :backup-file-name "service-name_liferay_mysql_${timestamp}.sql"
+     :type-name "mysql"
+     :db-user-name "db-user-name"
+     :db-user-passwd "db-pass"
+     :db-name "db-name"
+     :db-pre-processing (pre-process "fqdn")
+     :db-post-processing (post-process "fqdn" "db-user-name" "db-pass" "db-name")
+     :db-create-options "character set utf8"}])
 
 (def service-less-config
    {:backup-name "backup-name"
@@ -106,7 +109,7 @@
                 :root-dir "/etc/letsencrypt/"
                 :subdir-to-save "accounts csr keys renewal"}]})
 
-(deftest backup-script
+(deftest backup-script-with-service
   (testing
     "script content"
     (is (= ["#!/bin/bash"
@@ -119,27 +122,27 @@
             ""
             "#backup the files"
             "cd /etc/letsencrypt/"
-            "tar cvzf /home/dataBackupSource/transport-outgoing/service-name_letsencrypt_file_${timestamp}.tgz accounts csr keys renewal"
-            "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/service-name_letsencrypt_file_${timestamp}.tgz"
+            "tar cvzf /var/backups/transport-outgoing/service-name_letsencrypt_file_${timestamp}.tgz accounts csr keys renewal"
+            "chown dda-backup:dda-backup /var/backups/transport-outgoing/service-name_letsencrypt_file_${timestamp}.tgz"
             ""
             "#backup the files"
             "cd /var/lib/liferay/data/"
-            "tar cvzf /home/dataBackupSource/transport-outgoing/service-name_liferay_file_${timestamp}.tgz document_library images"
-            "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/service-name_liferay_file_${timestamp}.tgz"
+            "tar cvzf /var/backups/transport-outgoing/service-name_liferay_file_${timestamp}.tgz document_library images"
+            "chown dda-backup:dda-backup /var/backups/transport-outgoing/service-name_liferay_file_${timestamp}.tgz"
             ""
             "#backup db"
-            "mysqldump --no-create-db=true -h localhost -u db-user-name -pdb-pass db-name > /home/dataBackupSource/transport-outgoing/service-name_liferay_mysql_${timestamp}.sql"
-            "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/service-name_liferay_mysql_${timestamp}.sql"
+            "mysqldump --no-create-db=true -h localhost -u db-user-name -pdb-pass db-name > /var/backups/transport-outgoing/service-name_liferay_mysql_${timestamp}.sql"
+            "chown dda-backup:dda-backup /var/backups/transport-outgoing/service-name_liferay_mysql_${timestamp}.sql"
             ""
             "#start appserver"
             "service tomcat7 start"
             ""]
           (sut/backup-script-lines
            "service-name"
-           ""
+           "/var/backups/transport-outgoing"
            "tomcat7"
-           ""
-           liferay-config)))))
+           "dda-backup"
+           liferay-elements)))))
 
 (deftest backup-script-without-service
   (testing
@@ -174,7 +177,7 @@
              "  (ls -t service-name_liferay_mysql_*|head -n 3;ls service-name_liferay_mysql_*)|sort|uniq -u|xargs rm -r"
              "fi"
              ""]
-           (sut/transport-script-lines liferay-config)))))
+           (sut/transport-script-lines liferay-elements)))))
 
 
 (deftest restore-script
@@ -251,7 +254,7 @@
              "echo \"finished restore successfull, pls. start the appserver.\""
              "fi"
              ""]
-           (sut/restore-script-lines liferay-config)))))
+           (sut/restore-script-lines liferay-elements)))))
 
 
 (deftest restore-script-without-service
@@ -293,17 +296,3 @@
              "fi"
              ""]
            (sut/restore-script-lines service-less-config)))))
-
-
-
-; (deftest write-scripts
-;   (testing
-;     "test write-script actions"
-;     (is (.contains
-;           (tu/extract-nth-action-command
-;             (build-actions/build-actions
-;               build-actions/ubuntu-session
-;               (sut/write-scripts liferay-config))
-;               1)
-;           "service-name_backup.sh"))
-;     ))
