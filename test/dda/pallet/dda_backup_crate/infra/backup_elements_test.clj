@@ -53,10 +53,6 @@
         fqdn "' where virtualHostId = 35337;\"")
    ""])
 
-
-(def backup-user {:name "dataBackupSource"
-                  :encrypted-passwd "WIwn6jIUt2Rbc"})
-
 (def liferay-config-elements
    [{:type :file-compressed
      :name "letsencrypt"
@@ -116,6 +112,8 @@
 (def transport-ssh
   {:ssh-pull true})
 
+(def local-management
+  {:gens-stored-on-source-system 1})
 
 (deftest backup-script-with-service
   (testing
@@ -193,18 +191,24 @@
     (is (= ["#!/bin/bash"
              ""
              "# Move transported files to store"
-             "mv /home/dataBackupSource/transport-outgoing/* /home/dataBackupSource/store"
+             "mv /var/backups/transport-outgoing/* /var/backups/store"
              ""
              "# Manage old backup generations"
-             "cd /home/dataBackupSource/store"
+             "cd /var/backups/store"
              "# test wether pwd points to expected place"
-             "if [ \"$PWD\" == \"/home/dataBackupSource/store\" ]; then"
-             "  (ls -t service-name_letsencrypt_file_*|head -n 3;ls service-name_letsencrypt_file_*)|sort|uniq -u|xargs rm -r"
-             "  (ls -t service-name_liferay_file_*|head -n 3;ls service-name_liferay_file_*)|sort|uniq -u|xargs rm -r"
-             "  (ls -t service-name_liferay_mysql_*|head -n 3;ls service-name_liferay_mysql_*)|sort|uniq -u|xargs rm -r"
+             "if [ \"$PWD\" == \"/var/backups/store\" ]; then"
+             "  (ls -t service-name_letsencrypt_file_*|head -n 1;ls service-name_letsencrypt_file_*)|sort|uniq -u|xargs rm -r"
+             "  (ls -t service-name_liferay_file_*|head -n 1;ls service-name_liferay_file_*)|sort|uniq -u|xargs rm -r"
+             "  (ls -t service-name_liferay_mysql_*|head -n 1;ls service-name_liferay_mysql_*)|sort|uniq -u|xargs rm -r"
              "fi"
              ""]
-           (sut/transport-script-lines liferay-elements)))))
+           (sut/transport-script-lines
+            false
+            "/usr/local/lib/dda-backup"
+            "/var/backups/transport-outgoing"
+            "/var/backups/store"
+            local-management
+            liferay-elements)))))
 
 
 (deftest restore-script
