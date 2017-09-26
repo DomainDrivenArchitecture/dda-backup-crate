@@ -35,9 +35,10 @@
 (def user-domain-config
   {:dda-backup {:encrypted-password "WIwn6jIUt2Rbc"}})
 
-(def test-infra-backup-element (merge test-backup-element {:backup-script-name "ssh_ssh_file_${timestamp}.tgz"
-                                                           :backup-file-prefix-pattern "ssh_file"
-                                                           :type-name "file"}))
+(def test-infra-backup-element (merge test-backup-element
+                                      {:backup-file-prefix-pattern "ssh_file*",
+                                       :backup-file-name "ssh_file_${timestamp}.tgz"
+                                       :type-name "file"}))
 
 (def test-backup-infra-config
   {:backup-name "test"
