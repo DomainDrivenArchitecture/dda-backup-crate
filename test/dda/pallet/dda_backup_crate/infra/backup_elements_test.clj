@@ -101,13 +101,13 @@
      :db-post-processing (post-process "fqdn" "db-user-name" "db-pass" "db-name")
      :db-create-options "character set utf8"}])
 
-(def service-less-config
-   {:backup-name "backup-name"
-    :backup-user backup-user
-    :elements [{:type :file-compressed
-                :name "letsencrypt"
-                :root-dir "/etc/letsencrypt/"
-                :subdir-to-save "accounts csr keys renewal"}]})
+(def letsencrypt-only-element
+   [{:type :file-compressed
+     :backup-file-name "service-name_letsencrypt_file_${timestamp}.tgz"
+     :type-name "file"
+     :name "letsencrypt"
+     :root-dir "/etc/letsencrypt/"
+     :subdir-to-save "accounts csr keys renewal"}])
 
 (deftest backup-script-with-service
   (testing
@@ -154,10 +154,27 @@
             ""
             "#backup the files"
             "cd /etc/letsencrypt/"
-            "tar cvzf /home/dataBackupSource/transport-outgoing/backup-name_letsencrypt_file_${timestamp}.tgz accounts csr keys renewal"
-            "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/backup-name_letsencrypt_file_${timestamp}.tgz"
+            "tar cvzf /var/backups/transport-outgoing/service-name_letsencrypt_file_${timestamp}.tgz accounts csr keys renewal"
+            "chown dda-backup:dda-backup /var/backups/transport-outgoing/service-name_letsencrypt_file_${timestamp}.tgz"
             ""]
-           (sut/backup-script-lines service-less-config)))))
+           (sut/backup-script-lines
+            "service-name"
+            "/var/backups/transport-outgoing"
+            nil
+            "dda-backup"
+            letsencrypt-only-element)))
+    (is (= (sut/backup-script-lines
+             "service-name"
+             "/var/backups/transport-outgoing"
+             nil
+             "dda-backup"
+             letsencrypt-only-element)
+           (sut/backup-script-lines
+            "service-name"
+            "/var/backups/transport-outgoing"
+            ""
+            "dda-backup"
+            letsencrypt-only-element)))))
 
 
 (deftest test-transport-script-lines
@@ -295,4 +312,4 @@
              "echo \"finished restore successfull, pls. start the appserver.\""
              "fi"
              ""]
-           (sut/restore-script-lines service-less-config)))))
+           (sut/restore-script-lines letsencrypt-only-element)))))

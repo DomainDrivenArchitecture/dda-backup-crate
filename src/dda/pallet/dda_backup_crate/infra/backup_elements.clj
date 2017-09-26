@@ -73,7 +73,7 @@
    (concat
     common-lib/head
     common-lib/export-timestamp
-    (when (some? service-restart)
+    (when (not (clojure.string/blank? service-restart))
       (common-lib/stop-app-server service-restart))
     (mapcat #(backup-element-lines backup-name backup-store-folder user-name %) elements)
     (when (some? service-restart)
