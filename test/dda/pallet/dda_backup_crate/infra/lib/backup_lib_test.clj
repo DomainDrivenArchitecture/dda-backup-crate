@@ -21,64 +21,68 @@
    ;[dda.pallet.dda-backup-crate.infra.core.backup-element-test :as backup-element]
    [dda.pallet.dda-backup-crate.infra.lib.backup-lib :as sut]))
 
-(deftest transport-lines
-  (testing
-   "backup mysql"
-    (is (= ["#backup db"
-            "mysqldump --no-create-db=true -h localhost -u prod -ppwd lportal > /home/dataBackupSource/transport-outgoing/portal_prod_mysql_${timestamp}.sql"
-            "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/portal_prod_mysql_${timestamp}.sql"
-            ""]
-           (sut/backup-mysql
-            "portal"
-            {:type :mysql
-             :name "prod"
-             :db-user-name "prod"
-             :db-user-passwd "pwd"
-             :db-name "lportal"})))))
-
 (deftest backup-files-tar
   (testing
    "backup files as compressed archive"
     (is (= ["#backup the files"
             "cd /var/lib/liferay/data/"
-            "tar cvzf /home/dataBackupSource/transport-outgoing/portal_prod_file_${timestamp}.tgz document_library"
-            "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/portal_prod_file_${timestamp}.tgz"
+            "tar cvzf /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz document_library"
+            "chown dda-backup:dda-backup /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz"
             ""]
            (sut/backup-files-tar
             "portal"
-            {:type :file-compressed
-             :name "prod"
+            "/var/backups/transport-outgoing"
+            "dda-backup"
+            {:name "prod"
+             :type :file-compressed
+             :backup-file-name "portal_prod_file_${timestamp}.tgz"
              :root-dir "/var/lib/liferay/data/"
              :subdir-to-save "document_library"}))))
   (testing
    "backup files as uncompressed archive"
     (is (= ["#backup the files"
             "cd /var/lib/liferay/data/"
-            "tar cvf /home/dataBackupSource/transport-outgoing/portal_prod_file_${timestamp}.tar document_library"
-            "chown dataBackupSource:dataBackupSource /home/dataBackupSource/transport-outgoing/portal_prod_file_${timestamp}.tar"
+            "tar cvf /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tar document_library"
+            "chown dda-backup:dda-backup /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tar"
             ""]
            (sut/backup-files-tar
             "portal"
-            {:type :file-plain
-             :name "prod"
+            "/var/backups/transport-outgoing"
+            "dda-backup"
+            {:name "prod"
+             :type :file-plain
+             :backup-file-name "portal_prod_file_${timestamp}.tar"
              :root-dir "/var/lib/liferay/data/"
              :subdir-to-save "document_library"})))))
 
-; (deftest backup-files-duplicity
-;   (testing "backup files by using duplicity"
-;     (is (= ["#backup the files"
-;             "export PASSPHRASE= "
-;             "export TMPDIR=/var/opt/gitblit/backup-cache"
-;             "export AWS_ACCESS_KEY_ID=A1"
-;             "export AWS_SECRET_ACCESS_KEY=A1"
-;             "export S3_USE_SIGV4=True"
-;             backup-element/prep-backup-script
-;             "/usr/bin/duplicity full --gpg-binary gpg2 --archive-dir /var/opt/gitblit/backup-cache --verbosity notice --s3-use-new-style --s3-european-buckets --encrypt-key=1A --sign-key=1A --asynchronous-upload --volsize=1500 --log-file /var/log/gitblit/duplicity.log /var/opt/gitblit/backups localhost"
-;             "/usr/bin/duplicity remove-older-than 21D --gpg-binary gpg2 --archive-dir /var/opt/gitblit/backup-cache --verbosity notice --s3-use-new-style --s3-european-buckets --encrypt-key=1A --sign-key=1A --log-file /var/log/gitblit/duplicity.log --force localhost"
-;             "unset AWS_ACCESS_KEY_ID"
-;             "unset AWS_SECRET_ACCESS_KEY"
-;             "unset S3_USE_SIGV4"
-;             "unset PASSPHRASE"
-;             "unset TMPDIR"
-;             ""]
-;            (sut/backup-files-duplicity backup-element/test-element)))))
+(deftest backup-files-rsync
+  (testing
+    (is (= ["#backup the files"
+            "cd /var/lib/liferay/data/"
+            "rsync -Aax document_library /var/backups/transport-outgoing/portal_prod_file"
+            ""]
+           (sut/backup-files-rsync
+            "portal"
+            "/var/backups/transport-outgoing"
+            {:name "prod"
+             :type :rsync
+             :backup-file-name "portal_prod_file"
+             :root-dir "/var/lib/liferay/data/"
+             :subdir-to-save "document_library"})))))
+
+(deftest backup-mysql
+  (testing
+    (is (= ["#backup db"
+            "mysqldump --no-create-db=true -h localhost -u db-user -pdb-passwd db-name > /var/backups/transport-outgoing/portal_prod_file_${timestamp}.sql"
+            "chown dda-backup:dda-backup /var/backups/transport-outgoing/portal_prod_file_${timestamp}.sql"
+            ""]
+           (sut/backup-mysql
+            "portal"
+            "/var/backups/transport-outgoing"
+            "dda-backup"
+            {:name "prod"
+             :type :mysql
+             :backup-file-name "portal_prod_file_${timestamp}.sql"
+             :db-user-name "db-user"
+             :db-user-passwd "db-passwd"
+             :db-name "db-name"})))))
