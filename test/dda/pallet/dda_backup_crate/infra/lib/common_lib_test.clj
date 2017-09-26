@@ -18,8 +18,8 @@
   (:require
     [clojure.test :refer :all]
     [pallet.actions :as actions]
-    [dda.pallet.dda-backup-crate.infra.lib.common-lib :as sut]
-    ))
+    [dda.pallet.dda-backup-crate.infra.lib.common-lib :as sut]))
+
 
 (deftest app-server
   (testing
@@ -27,6 +27,4 @@
     (is (= ["#stop appserver"
             "service tomcat7 stop"
             ""]
-           (sut/stop-app-server "tomcat7")))
-    )
-  )
+           (sut/stop-app-server "tomcat7")))))

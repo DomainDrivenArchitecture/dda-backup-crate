@@ -161,7 +161,7 @@
 (defn restore-rsync
   [& {:keys [restore-target-dir
              new-owner]
-      :or {dump-filename "${most_recent_sql_dump}"}}]
+      :or {dump-filename "${most_recent_file_dump}"}}]
   (into []
         (concat
          [(str "rm -r " restore-target-dir "/*")

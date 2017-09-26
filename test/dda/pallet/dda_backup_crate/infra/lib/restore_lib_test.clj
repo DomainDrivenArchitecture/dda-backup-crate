@@ -36,6 +36,7 @@
            (sut/restore-mysql-script
             {:type :mysql
              :name "name"
+             :type-name "mysql"
              :db-user-name "owncloud"
              :db-user-passwd "owncloud-db-pwd"
              :db-name "owncloud"})))))
@@ -54,6 +55,7 @@
            (sut/restore-tar-script
             {:type :file-plain
              :name "name"
+             :type-name "file"
              :subdir-to-save "./"
              :root-dir "/var/www/owncloud"}))))
   (testing
@@ -70,6 +72,7 @@
            (sut/restore-tar-script
             {:type :file-compressed
              :name "name"
+             :type-name "file"
              :root-dir "/var/lib/liferay/data"
              :subdir-to-save "./"
              :new-owner "tomcat7"})))))
