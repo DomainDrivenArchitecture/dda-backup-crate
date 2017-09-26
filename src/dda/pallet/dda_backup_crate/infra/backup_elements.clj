@@ -68,16 +68,17 @@
    service-restart :- s/Str
    user-name :- s/Str
    elements :- [schema/BackupElement]]
-  (into
-   []
-   (concat
-    common-lib/head
-    common-lib/export-timestamp
-    (when (not (clojure.string/blank? service-restart))
-      (common-lib/stop-app-server service-restart))
-    (mapcat #(backup-element-lines backup-name backup-store-folder user-name %) elements)
-    (when (some? service-restart)
-      (common-lib/start-app-server service-restart)))))
+  (let [service-restart? (not (clojure.string/blank? service-restart))]
+    (into
+     []
+     (concat
+      common-lib/head
+      common-lib/export-timestamp
+      (when service-restart?
+        (common-lib/stop-app-server service-restart))
+      (mapcat #(backup-element-lines backup-name backup-store-folder user-name %) elements)
+      (when service-restart?
+        (common-lib/start-app-server service-restart))))))
 
 (s/defn transport-element-lines
   ""
@@ -125,7 +126,6 @@
    []
    (concat
     common-lib/head
-    restore-lib/restore-usage
     (when duplicity?
       (duplicity-lib/transport-restore backup-script-path))
     (restore-lib/restore-navigate-to-restore-location backup-restore-folder)
@@ -134,7 +134,7 @@
     (when (contains? transport-management :ssh-pull)
       (restore-lib/provide-restore-dumps elements))
     (restore-lib/restore-head-script elements)
-    (when (some? service-restart)
+    (when (not (clojure.string/blank? service-restart))
       (common-lib/stop-app-server service-restart))
     (mapcat restore-element-lines elements)
     restore-lib/restore-tail)))

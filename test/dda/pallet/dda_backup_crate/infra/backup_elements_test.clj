@@ -80,12 +80,14 @@
    [{:type :file-compressed
      :name "letsencrypt"
      :backup-file-name "service-name_letsencrypt_file_${timestamp}.tgz"
+     :backup-file-prefix-pattern "service-name_letsencrypt_file_*"
      :type-name "file"
      :root-dir "/etc/letsencrypt/"
      :subdir-to-save "accounts csr keys renewal"}
     {:type :file-compressed
      :name "liferay"
      :backup-file-name "service-name_liferay_file_${timestamp}.tgz"
+     :backup-file-prefix-pattern "service-name_liferay_file_*"
      :type-name "file"
      :root-dir "/var/lib/liferay/data/"
      :subdir-to-save "document_library images"
@@ -93,6 +95,7 @@
     {:type :mysql
      :name "liferay"
      :backup-file-name "service-name_liferay_mysql_${timestamp}.sql"
+     :backup-file-prefix-pattern "service-name_liferay_mysql_*"
      :type-name "mysql"
      :db-user-name "db-user-name"
      :db-user-passwd "db-pass"
@@ -104,10 +107,15 @@
 (def letsencrypt-only-element
    [{:type :file-compressed
      :backup-file-name "service-name_letsencrypt_file_${timestamp}.tgz"
+     :backup-file-prefix-pattern "service-name_letsencrypt_file_*"
      :type-name "file"
      :name "letsencrypt"
      :root-dir "/etc/letsencrypt/"
      :subdir-to-save "accounts csr keys renewal"}])
+
+(def transport-ssh
+  {:ssh-pull true})
+
 
 (deftest backup-script-with-service
   (testing
@@ -146,7 +154,7 @@
 
 (deftest backup-script-without-service
   (testing
-    "script content"
+    "script content for service nil"
     (is (= ["#!/bin/bash"
             ""
             "#timestamp from server to variable"
@@ -162,7 +170,9 @@
             "/var/backups/transport-outgoing"
             nil
             "dda-backup"
-            letsencrypt-only-element)))
+            letsencrypt-only-element))))
+  (testing
+    "script content for service empty"
     (is (= (sut/backup-script-lines
              "service-name"
              "/var/backups/transport-outgoing"
@@ -202,23 +212,13 @@
     "script content"
     (is (= ["#!/bin/bash"
             ""
-            "if [ -z \"$1\" ]; then"
-            "  echo \"\""
-            "  echo \"usage:\""
-            "  echo \"restore.sh [file_name_prefix]\""
-            "  echo \"  file_name_prefix: mandantory, the file name prefix for the files to restore like 'liferay_pa-prod'.\""
-            "  echo \"\""
-            "  echo \"Example 'restore.sh pa-prod' will use the newest backup-files with the pattern iferay_pa-prod_mysql_* and iferay_pa-prod_file_*\""
-            "  exit 1"
-            "fi"
-            ""
             "# cd to restore location"
-            "cd /home/dataBackupSource/restore"
+            "cd /var/backups/restore"
             ""
             "# Get the dumps"
-            "most_recent_letsencrypt_file_dump=$(ls -d -t1 $1letsencrypt_file_* | head -n1)"
-            "most_recent_liferay_file_dump=$(ls -d -t1 $1liferay_file_* | head -n1)"
-            "most_recent_liferay_mysql_dump=$(ls -d -t1 $1liferay_mysql_* | head -n1)"
+            "most_recent_letsencrypt_file_dump=$(ls -d -t1 service-name_letsencrypt_file_* | head -n1)"
+            "most_recent_liferay_file_dump=$(ls -d -t1 service-name_liferay_file_* | head -n1)"
+            "most_recent_liferay_mysql_dump=$(ls -d -t1 service-name_liferay_mysql_* | head -n1)"
             ""
             "echo \"using this inputs:\""
             "echo \"$most_recent_letsencrypt_file_dump\""
@@ -271,7 +271,13 @@
              "echo \"finished restore successfull, pls. start the appserver.\""
              "fi"
              ""]
-           (sut/restore-script-lines liferay-elements)))))
+           (sut/restore-script-lines
+            false
+            "/usr/lib/local/dda-backup"
+            "/var/backups/restore"
+            "tomcat7"
+            transport-ssh
+            liferay-elements)))))
 
 
 (deftest restore-script-without-service
@@ -279,21 +285,11 @@
     "script content"
     (is (= ["#!/bin/bash"
             ""
-            "if [ -z \"$1\" ]; then"
-            "  echo \"\""
-            "  echo \"usage:\""
-            "  echo \"restore.sh [file_name_prefix]\""
-            "  echo \"  file_name_prefix: mandantory, the file name prefix for the files to restore like 'liferay_pa-prod'.\""
-            "  echo \"\""
-            "  echo \"Example 'restore.sh pa-prod' will use the newest backup-files with the pattern iferay_pa-prod_mysql_* and iferay_pa-prod_file_*\""
-            "  exit 1"
-            "fi"
-            ""
             "# cd to restore location"
-            "cd /home/dataBackupSource/restore"
+            "cd /var/backups/restore"
             ""
             "# Get the dumps"
-            "most_recent_letsencrypt_file_dump=$(ls -d -t1 $1letsencrypt_file_* | head -n1)"
+            "most_recent_letsencrypt_file_dump=$(ls -d -t1 service-name_letsencrypt_file_* | head -n1)"
             ""
             "echo \"using this inputs:\""
             "echo \"$most_recent_letsencrypt_file_dump\""
@@ -312,4 +308,10 @@
              "echo \"finished restore successfull, pls. start the appserver.\""
              "fi"
              ""]
-           (sut/restore-script-lines letsencrypt-only-element)))))
+           (sut/restore-script-lines
+            false
+            "/usr/lib/local/dda-backup"
+            "/var/backups/restore"
+            ""
+            transport-ssh
+            letsencrypt-only-element)))))

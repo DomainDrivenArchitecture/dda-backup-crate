@@ -20,18 +20,6 @@
    [schema.core :as s]
    [dda.pallet.dda-backup-crate.infra.schema :as schema]))
 
-(def restore-usage
-  ["if [ -z \"$1\" ]; then"
-   "  echo \"\""
-   "  echo \"usage:\""
-   "  echo \"restore.sh [file_name_prefix]\""
-   "  echo \"  file_name_prefix: mandantory, the file name prefix for the files to restore like 'liferay_pa-prod'.\""
-   "  echo \"\""
-   "  echo \"Example 'restore.sh pa-prod' will use the newest backup-files with the pattern iferay_pa-prod_mysql_* and iferay_pa-prod_file_*\""
-   "  exit 1"
-   "fi"
-   ""])
-
 (s/defn restore-navigate-to-restore-location
   [backup-restore-folder :- s/Str]
   ["# cd to restore location"
@@ -49,9 +37,9 @@
   [backup-element :- schema/BackupElement]
   (let [{:keys [backup-file-prefix-pattern]} backup-element]
     [(str (restore-dump-name backup-element)
-          "=$(ls -d -t1 $1"
+          "=$(ls -d -t1 "
           backup-file-prefix-pattern
-          "_* | head -n1)")]))
+          " | head -n1)")]))
 
 (s/defn echo-restore-dump
   "Echo used file for restore."
