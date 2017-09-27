@@ -32,7 +32,7 @@
 
 (defn key-id
   [ascii-armored-key]
-  (pgp/hex-id (pgp/decode-public-key ascii-armored-key)))
+  (clojure.string/upper-case (pgp/hex-id (pgp/decode-public-key ascii-armored-key))))
 
 (s/defn ^:always-validate user-domain-configuration
   [config :- BackupConfig]
