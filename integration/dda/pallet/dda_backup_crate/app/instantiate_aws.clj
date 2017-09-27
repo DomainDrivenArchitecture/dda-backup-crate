@@ -29,7 +29,7 @@
 
 (defn provisioning-spec [count]
   (merge
-   (app/backup-group-spec (app/create-app-configuration config/duplicity-domain-config))
+   (app/backup-group-spec (app/app-configuration config/duplicity-domain-config))
    (cloud-target/node-spec "jem")
    {:count count}))
 

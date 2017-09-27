@@ -38,11 +38,11 @@
    :backup-user os-user
    :local-management {:gens-stored-on-source-system 1}
    :transport-management  {:duplicity-push
-                           {:public-key (adapter/get-secret "meissa/system/backup-meissa.pub")
-                            :private-key (adapter/get-secret "meissa/system/backup-meissa.sec")
-                            :passphrase (adapter/get-secret-wo-newline "meissa/system/backup-meissa.passphrase")
-                            :target-s3 {:aws-access-key-id (adapter/get-secret-wo-newline "meissa/system/aws/backup.key.id")
-                                        :aws-secret-access-key (adapter/get-secret-wo-newline "meissa/system/aws/backup.key.secret")
+                           {:public-key (adapter/get-secret "meissa/tenant/meissa/backup/gpg.pub")
+                            :private-key (adapter/get-secret "meissa/tenant/meissa/backup/gpg.sec")
+                            :passphrase (adapter/get-secret-wo-newline "meissa/tenant/meissa/backup/gpg.passphrase")
+                            :target-s3 {:aws-access-key-id (adapter/get-secret-wo-newline "meissa/tenant/meissa/aws/backup.key.id")
+                                        :aws-secret-access-key (adapter/get-secret-wo-newline "meissa/tenant/meissa/aws/backup.key.secret")
                                         :bucket-name "meissa-backup"}}}
    :backup-elements
    [{:type :file-compressed
