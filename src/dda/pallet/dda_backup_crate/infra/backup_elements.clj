@@ -129,10 +129,7 @@
     (when duplicity?
       (duplicity-lib/transport-restore backup-script-path))
     (restore-lib/restore-navigate-to-restore-location backup-restore-folder)
-    (when (contains? transport-management :duplicity-push))
-      ;transport duplicity
-    (when (contains? transport-management :ssh-pull)
-      (restore-lib/provide-restore-dumps elements))
+    (restore-lib/provide-restore-dumps elements)
     (restore-lib/restore-head-script elements)
     (when (not (clojure.string/blank? service-restart))
       (common-lib/stop-app-server service-restart))
