@@ -1,4 +1,4 @@
-(defproject dda/dda-backup-crate "0.6.0-SNAPSHOT"
+(defproject dda/dda-backup-crate "0.6.0"
   :description "A crate to handle backups"
   :url "https://www.domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
@@ -8,10 +8,10 @@
                  [selmer "1.11.1"]
                  [com.palletops/pallet "0.8.12"]
                  [com.palletops/stevedore "0.8.0-beta.7"]
-                 [dda/dda-user-crate "0.6.1-SNAPSHOT"]
+                 [dda/dda-user-crate "0.6.1"]
                  [dda/dda-config-commons "0.2.2"]
-                 [dda/dda-pallet-commons "0.4.2-SNAPSHOT"]
-                 [dda/dda-pallet "0.5.4-SNAPSHOT"]]
+                 [dda/dda-pallet-commons "0.4.2"]
+                 [dda/dda-pallet "0.5.4"]]
   :repositories [["snapshots" :clojars]
                  ["releases" :clojars]]
   :deploy-repositories [["snapshots" :clojars]
@@ -21,7 +21,7 @@
               :dependencies
               [[org.domaindrivenarchitecture/pallet-aws "0.2.8.2"]
                [com.palletops/pallet "0.8.12" :classifier "tests"]
-               [dda/dda-pallet-commons "0.4.2-SNAPSHOT" :classifier "tests"]
+               [dda/dda-pallet-commons "0.4.2" :classifier "tests"]
                [ch.qos.logback/logback-classic "1.2.3"]
                [org.slf4j/jcl-over-slf4j "1.8.0-alpha2"]]
               :plugins
