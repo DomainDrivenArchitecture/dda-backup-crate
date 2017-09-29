@@ -1,5 +1,7 @@
 # dda-backup-crate
 
+[![Clojars Project](https://img.shields.io/clojars/v/dda/dda-backup-crate.svg)](https://clojars.org/dda/dda-backup-crate)
+[![Build Status](https://travis-ci.org/DomainDrivenArchitecture/dda-backup-crate.svg?branch=master)](https://travis-ci.org/DomainDrivenArchitecture/dda-backup-crate)
 
 ## [dda-backup-crate](https://github.com/DomainDrivenArchitecture/dda-backup-crate)
 The backup crate provides installation & configuration application backups. Specific adapters has to be defined.
@@ -41,8 +43,8 @@ The backup Crate provides:
                  :encrypted-passwd "someEncryptedPwd"}}
 ```
 
-Backs up .ssh and .mozilla in /home/some-user. 
-  
+Backs up .ssh and .mozilla in /home/some-user.
+
 ### Installation
 
 ```  
@@ -61,7 +63,10 @@ cd /home/dataBackupSource/restore/
 /usr/lib/dda-backup/app-name_restore.sh [prefix for restore files]
 ```
 
-  
+## Using Duplicity
+Concerning duplicity-ppa, in the case of "Package source : FAIL"
+the second try will work.
+
 ## License
 
 Author: Michael Jerger, Tobias Scherer, Thomas Jakob
