@@ -78,8 +78,9 @@ orVoJcs081M33hIFGyiETDanGni2zMlrf5Roy5LO8b5OW/zCgC/z
   (user-env/read-ssh-pub-key-to-config))
 
 (def os-user
-  {:encrypted-password "kpwejjj0r04u09rg90rfj"
-   :authorized-keys [ssh-pub-key]})
+  {:hashed-password "kpwejjj0r04u09rg90rfj"
+   :authorized-keys [ssh-pub-key]
+   :settings #{}})
 
 (def ssh-domain-config
   {:backup-name "ssh"

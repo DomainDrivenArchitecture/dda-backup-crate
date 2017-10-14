@@ -4,14 +4,9 @@
   :license {:name "Apache License, Version 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [prismatic/schema "1.1.6"]
+                 [dda/dda-pallet "0.5.5-SNAPSHOT"]
                  [selmer "1.11.1"]
-                 [com.palletops/pallet "0.8.12"]
-                 [com.palletops/stevedore "0.8.0-beta.7"]
-                 [dda/dda-user-crate "0.6.1"]
-                 [dda/dda-config-commons "0.2.2"]
-                 [dda/dda-pallet-commons "0.4.2"]
-                 [dda/dda-pallet "0.5.4"]]
+                 [dda/dda-user-crate "0.6.2-SNAPSHOT"]]
   :repositories [["snapshots" :clojars]
                  ["releases" :clojars]]
   :deploy-repositories [["snapshots" :clojars]

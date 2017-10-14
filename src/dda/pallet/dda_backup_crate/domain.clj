@@ -28,7 +28,7 @@
 
 (def InfraResult infra/InfraResult)
 
-(def default-user-config {:dataBackupSource {:encrypted-password  "WIwn6jIUt2Rbc"}})
+(def default-user-config {:dataBackupSource {:hashed-password  "WIwn6jIUt2Rbc"}})
 
 (defn key-id
   [ascii-armored-key]
@@ -42,7 +42,7 @@
         passphrase (get-in transport-management [:duplicity-push :passphrase])]
     (merge
       (if (contains? transport-management :duplicity-push)
-        {:root {:encrypted-password "fksdjfiosjfr8o0jterojdo"
+        {:root {:hashed-password "fksdjfiosjfr8o0jterojdo"
                 :gpg {:trusted-key {:public-key public-gpg
                                     :private-key private-gpg
                                     :passphrase passphrase}}}}

@@ -62,7 +62,7 @@
 
 (def BackupConfig
   {:backup-name s/Str
-   :backup-user user/OsUser
+   :backup-user user/User
    (s/optional-key :service-restart) s/Str
    :local-management LocalManagement
    :transport-management TransportManagement

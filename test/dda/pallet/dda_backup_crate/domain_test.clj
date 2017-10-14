@@ -27,13 +27,13 @@
 
 (def test-domain-backup-config
   {:backup-name "test"
-   :backup-user {:encrypted-password "WIwn6jIUt2Rbc"}
+   :backup-user {:hashed-password "WIwn6jIUt2Rbc"}
    :local-management {:gens-stored-on-source-system 2}
    :transport-management {:ssh-pull true}
    :backup-elements [test-backup-element]})
 
 (def user-domain-config
-  {:dda-backup {:encrypted-password "WIwn6jIUt2Rbc"}})
+  {:dda-backup {:hashed-password "WIwn6jIUt2Rbc"}})
 
 (def test-infra-backup-element (merge test-backup-element
                                       {:backup-file-prefix-pattern "ssh_file*",
