@@ -48,7 +48,8 @@
                              backup-restore-folder :- s/Str
                              transport-duplicity :- schema/TransportDuplicity]
   (let [user-name (name user)
-        {:keys [target-s3 tmp-dir]} transport-duplicity]
+        {:keys [target-s3 tmp-dir]} transport-duplicity
+        {:keys [bucket-name directory-name]} target-s3]
     (actions/remote-file
      (str "/root/.credentials")
      :owner "root"
@@ -60,7 +61,10 @@
       :owner "root"
       :group "root"
       :mode "644"
-      :content (selmer/render-file "env.template" target-s3))
+      :content (selmer/render-file "env.template" {:bucket-name bucket-name
+                                                   :directory (if (some? directory-name)
+                                                                (str "/" directory-name)
+                                                                "")}))
     (actions/remote-file
       (str backup-script-path "/duplicity_backup_transport.sh")
       :owner "root"
