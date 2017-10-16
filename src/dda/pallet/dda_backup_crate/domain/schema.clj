@@ -58,7 +58,8 @@
     :passphrase s/Str
     (s/optional-key :target-s3) {:aws-access-key-id s/Str
                                  :aws-secret-access-key s/Str
-                                 :bucket-name s/Str}}})
+                                 :bucket-name s/Str
+                                 (s/optional-key :directory-name) s/Str}}})
 
 (def BackupConfig
   {:backup-name s/Str

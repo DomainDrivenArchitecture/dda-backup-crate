@@ -5,8 +5,8 @@
             :url "https://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [dda/dda-pallet "0.5.5-SNAPSHOT"]
-                 [selmer "1.11.1"]
-                 [dda/dda-user-crate "0.6.2-SNAPSHOT"]]
+                 [dda/dda-user-crate "0.6.2-SNAPSHOT"]
+                 [selmer "1.11.1"]]
   :repositories [["snapshots" :clojars]
                  ["releases" :clojars]]
   :deploy-repositories [["snapshots" :clojars]
