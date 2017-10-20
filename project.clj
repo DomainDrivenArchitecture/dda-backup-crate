@@ -1,11 +1,11 @@
-(defproject dda/dda-backup-crate "0.6.1-SNAPSHOT"
+(defproject dda/dda-backup-crate "0.6.1"
   :description "A crate to handle backups"
   :url "https://www.domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [dda/dda-pallet "0.5.5-SNAPSHOT"]
-                 [dda/dda-user-crate "0.6.2-SNAPSHOT"]
+                 [dda/dda-pallet "0.5.5"]
+                 [dda/dda-user-crate "0.6.2"]
                  [selmer "1.11.1"]]
   :repositories [["snapshots" :clojars]
                  ["releases" :clojars]]
