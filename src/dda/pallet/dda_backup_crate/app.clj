@@ -38,7 +38,7 @@
    {s/Keyword InfraResult}})
 
 (s/defn ^:always-validate app-configuration :- BackupAppConfig
-  [domain-config :- domain/BackupConfig
+  [domain-config :- domain/ResolvedBackupConfig
    & options]
   (let [{:keys [group-key]
          :or  {group-key :dda-backup-group}} options]

@@ -81,6 +81,6 @@
 
 
 (s/defn ^:always-validate infra-configuration :- InfraResult
-  [config :- BackupConfig]
+  [config :- ResolvedBackupConfig]
   (let [{} config]
     {infra/facility (infra-config config)}))
