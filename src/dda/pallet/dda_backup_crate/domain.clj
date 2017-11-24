@@ -80,7 +80,7 @@
       :backup-elements (map infra-backup-element backup-elements)})))
 
 
-(s/defn ^:allways-validate infra-configuration :- InfraResult
-  [config :- ResolvedBackupConfig]
+(s/defn ^:always-validate infra-configuration :- InfraResult
+  [config :- BackupConfig]
   (let [{} config]
     {infra/facility (infra-config config)}))
