@@ -25,9 +25,9 @@
 (def facility :dda-backup)
 (def version  [0 3 4])
 
-(def BackupConfig schema/BackupConfig)
+(def ResolvedBackupConfig schema/ResolvedBackupConfig)
 
-(def InfraResult {facility BackupConfig})
+(def InfraResult {facility ResolvedBackupConfig})
 
 (def dda-backup-crate
   (dda-crate/make-dda-crate
@@ -37,14 +37,14 @@
 
 (s/defn ^:always-validate init
   "init package-sources & update packages."
-  [config :- BackupConfig]
+  [config :- ResolvedBackupConfig]
   (let [{:keys [transport-management]} config]
     (when (contains? transport-management :duplicity-push)
       (transport/init))))
 
 (s/defn ^:always-validate install
   "collected install actions for backup crate."
-  [config :- BackupConfig]
+  [config :- ResolvedBackupConfig]
   (let [{:keys [backup-user backup-script-path backup-transport-folder
                 backup-store-folder backup-restore-folder
                 transport-management local-management]} config]
@@ -56,7 +56,7 @@
 
 (s/defn ^:always-validate configure
   "collected configuration actions for backup crate."
-  [config :- BackupConfig]
+  [config :- ResolvedBackupConfig]
   (let [{:keys [backup-name backup-script-path backup-transport-folder
                 backup-store-folder backup-restore-folder
                 service-restart backup-user backup-elements

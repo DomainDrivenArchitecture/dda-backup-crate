@@ -74,7 +74,7 @@
   {(s/optional-key :ssh-pull) s/Any
    (s/optional-key :duplicity-push) TransportDuplicity})
 
-(def BackupConfig
+(def ResolvedBackupConfig
   {:backup-name s/Str
    :backup-script-path s/Str
    :backup-transport-folder s/Str

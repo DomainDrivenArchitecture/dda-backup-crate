@@ -61,7 +61,7 @@
                                  :bucket-name s/Str
                                  (s/optional-key :directory-name) s/Str}}})
 
-(def BackupConfig
+(def ResolvedBackupConfig
   {:backup-name s/Str
    :backup-user user/User
    (s/optional-key :service-restart) s/Str

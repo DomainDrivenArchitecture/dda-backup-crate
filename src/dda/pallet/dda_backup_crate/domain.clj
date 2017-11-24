@@ -24,7 +24,7 @@
    [dda.pallet.dda-backup-crate.infra :as infra]
    [dda.pallet.dda-backup-crate.infra.schema :as infra-schema]))
 
-(def BackupConfig schema/BackupConfig)
+(def ResolvedBackupConfig schema/ResolvedBackupConfig)
 
 (def InfraResult infra/InfraResult)
 
@@ -35,7 +35,7 @@
   (clojure.string/upper-case (pgp/hex-id (pgp/decode-public-key ascii-armored-key))))
 
 (s/defn ^:always-validate user-domain-configuration
-  [config :- BackupConfig]
+  [config :- ResolvedBackupConfig]
   (let [{:keys [backup-user transport-management]} config
         public-gpg (get-in transport-management [:duplicity-push :public-key])
         private-gpg (get-in transport-management [:duplicity-push :private-key])
@@ -58,8 +58,8 @@
       :backup-file-prefix-pattern (file/backup-file-prefix-pattern name type)
       :type-name (file/element-type-name type)})))
 
-(s/defn ^:always-validate infra-config :- infra-schema/BackupConfig
-  [config :- BackupConfig]
+(s/defn ^:always-validate infra-config :- infra-schema/ResolvedBackupConfig
+  [config :- ResolvedBackupConfig]
   (let [{:keys [backup-user transport-management backup-elements]} config
         user-key :dda-backup
         public-gpg (get-in transport-management
@@ -81,6 +81,6 @@
 
 
 (s/defn ^:allways-validate infra-configuration :- InfraResult
-  [config :- BackupConfig]
+  [config :- ResolvedBackupConfig]
   (let [{} config]
     {infra/facility (infra-config config)}))
