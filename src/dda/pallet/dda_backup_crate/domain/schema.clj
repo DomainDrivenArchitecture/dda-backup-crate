@@ -17,6 +17,7 @@
 (ns dda.pallet.dda-backup-crate.domain.schema
   (:require
    [schema.core :as s]
+   [dda.pallet.commons.secret :as secret]
    [dda.pallet.dda-user-crate.domain :as user]
    [dda.pallet.dda-backup-crate.infra.schema :as infra]))
 
@@ -28,18 +29,45 @@
   {:type BackupElementType
    :name s/Str})
 
+(def BackupDbElement
+  "The db backup elements"
+  {:db-user-name s/Str
+   :db-user-passwd secret/Secret
+   :db-name s/Str
+   (s/optional-key :db-create-options) s/Str
+   (s/optional-key :db-pre-processing) [s/Str]
+   (s/optional-key :db-post-processing) [s/Str]})
+
+(def ResolvedBackupDbElement
+  "The db backup elements"
+  {:db-user-name s/Str
+   :db-user-passwd s/Str
+   :db-name s/Str
+   (s/optional-key :db-create-options) s/Str
+   (s/optional-key :db-pre-processing) [s/Str]
+   (s/optional-key :db-post-processing) [s/Str]})
+
 (def BackupElement
   "The backup elements"
   (s/conditional
    #(= (:type %) :mysql)
    (merge
     BackupBaseElement
-    {:db-user-name s/Str
-     :db-user-passwd s/Str
-     :db-name s/Str
-     (s/optional-key :db-create-options) s/Str
-     (s/optional-key :db-pre-processing) [s/Str]
-     (s/optional-key :db-post-processing) [s/Str]})
+    BackupDbElement)
+   #(= (:type %) :file-compressed)
+   (merge
+    BackupBaseElement
+    {:root-dir s/Str
+     :subdir-to-save s/Str
+     (s/optional-key :new-owner) s/Str})))
+
+(def ResolvedBackupElement
+  "The backup elements"
+  (s/conditional
+   #(= (:type %) :mysql)
+   (merge
+    BackupBaseElement
+    ResolvedBackupDbElement)
    #(= (:type %) :file-compressed)
    (merge
     BackupBaseElement
@@ -53,6 +81,17 @@
 (def TransportManagement
   {(s/optional-key :ssh-pull) s/Any
    (s/optional-key :duplicity-push)
+   {:public-key secret/Secret
+    :private-key secret/Secret
+    :passphrase secret/Secret
+    (s/optional-key :target-s3) {:aws-access-key-id secret/Secret
+                                 :aws-secret-access-key secret/Secret
+                                 :bucket-name s/Str
+                                 (s/optional-key :directory-name) s/Str}}})
+
+(def ResolvedTransportManagement
+  {(s/optional-key :ssh-pull) s/Any
+   (s/optional-key :duplicity-push)
    {:public-key s/Str
     :private-key s/Str
     :passphrase s/Str
@@ -61,10 +100,18 @@
                                  :bucket-name s/Str
                                  (s/optional-key :directory-name) s/Str}}})
 
-(def ResolvedBackupConfig
+(def BackupConfig
   {:backup-name s/Str
    :backup-user user/User
    (s/optional-key :service-restart) s/Str
    :local-management LocalManagement
    :transport-management TransportManagement
    :backup-elements [BackupElement]})
+
+(def ResolvedBackupConfig
+  {:backup-name s/Str
+   :backup-user user/User
+   (s/optional-key :service-restart) s/Str
+   :local-management LocalManagement
+   :transport-management ResolvedTransportManagement
+   :backup-elements [ResolvedBackupElement]})
