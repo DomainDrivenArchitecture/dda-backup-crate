@@ -50,7 +50,7 @@
       {:dda-backup backup-user})))
 
 (s/defn ^:always-validate infra-backup-element :- infra-schema/BackupElement
-  [backup-element :- schema/BackupElement]
+  [backup-element :- schema/ResolvedBackupElement]
   (let [{:keys [name type]} backup-element]
     (merge
      backup-element
