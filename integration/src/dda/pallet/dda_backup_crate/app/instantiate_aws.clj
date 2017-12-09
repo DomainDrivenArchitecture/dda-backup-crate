@@ -36,7 +36,7 @@
 (defn converge-install
   [count & options]
   (let [{:keys [gpg-key-id gpg-passphrase target]
-         :or {target "dev-resources/jem-aws-target.edn"}} options
+         :or {target "integration/resources/jem-aws-target.edn"}} options
         target-config (cloud-target/load-targets target)]
    (operation/do-converge-install
      (cloud-target/provider (:context target-config))
@@ -46,7 +46,7 @@
 (defn configure
  [& options]
  (let [{:keys [gpg-key-id gpg-passphrase target]
-        :or {target "dev-resources/jem-aws-target.edn"}} options
+        :or {target "integration/resources/jem-aws-target.edn"}} options
        target-config (cloud-target/load-targets target)]
   (operation/do-apply-configure
     (cloud-target/provider (:context target-config))
@@ -56,7 +56,7 @@
 (defn node-test
   [& options]
   (let [{:keys [gpg-key-id gpg-passphrase target]
-         :or {target "dev-resources/jem-aws-target.edn"}} options
+         :or {target "integration/resources/jem-aws-target.edn"}} options
         target-config (cloud-target/load-targets target)]
    (operation/do-server-test
      (cloud-target/provider (:context target-config))
