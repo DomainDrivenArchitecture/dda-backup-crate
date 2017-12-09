@@ -18,7 +18,6 @@
   (:require
     [schema.core :as s]
     [clojure.test :refer :all]
-    [dda.pallet.commons.plan-test-utils :as tu]
     [dda.pallet.dda-backup-crate.infra.backup-elements :as sut]))
 
 (defn pre-process
