@@ -3,6 +3,8 @@
 [![Clojars Project](https://img.shields.io/clojars/v/dda/dda-backup-crate.svg)](https://clojars.org/dda/dda-backup-crate)
 [![Build Status](https://travis-ci.org/DomainDrivenArchitecture/dda-backup-crate.svg?branch=master)](https://travis-ci.org/DomainDrivenArchitecture/dda-backup-crate)
 
+[![Slack](https://img.shields.io/badge/chat-clojurians-green.svg?style=flat)](https://clojurians.slack.com/messages/#dda-pallet/) | [<img src="https://domaindrivenarchitecture.org/img/meetup.svg" width=50 alt="DevOps Hacking with Clojure Meetup"> DevOps Hacking with Clojure](https://www.meetup.com/de-DE/preview/dda-pallet-DevOps-Hacking-with-Clojure) | [Website & Blog](https://domaindrivenarchitecture.org)
+
 ## [dda-backup-crate](https://github.com/DomainDrivenArchitecture/dda-backup-crate)
 The backup crate provides installation & configuration application backups. Specific adapters has to be defined.
 

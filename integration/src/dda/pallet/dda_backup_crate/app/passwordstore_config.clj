@@ -17,7 +17,7 @@
 (ns dda.pallet.dda-backup-crate.app.passwordstore-config
   (:require
    [dda.config.commons.user-env :as user-env]
-   [dda.pallet.commons.passwordstore-adapter :as adapter]))
+   [dda.config.commons.secret.passwordstore :as adapter]))
 
 (def ssh-pub-key (user-env/read-ssh-pub-key-to-config))
 (def os-user
@@ -44,7 +44,8 @@
                             :passphrase (adapter/get-secret-wo-newline "meissa/tenant/meissa/backup/gpg.passphrase")
                             :target-s3 {:aws-access-key-id (adapter/get-secret-wo-newline "meissa/tenant/meissa/aws/backup.key.id")
                                         :aws-secret-access-key (adapter/get-secret-wo-newline "meissa/tenant/meissa/aws/backup.key.secret")
-                                        :bucket-name "meissa-backup"}}}
+                                        :bucket-name "meissa-backup"
+                                        :directory-name "backup-test"}}}
    :backup-elements
    [{:type :file-compressed
      :name "ssh"

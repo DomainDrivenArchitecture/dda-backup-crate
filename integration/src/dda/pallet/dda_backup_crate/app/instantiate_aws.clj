@@ -27,44 +27,38 @@
    [dda.pallet.dda-backup-crate.app.passwordstore-config :as config]
    [dda.pallet.dda-backup-crate.app.snakeoil-config :as config2]))
 
-(defn provisioning-spec [count]
+(defn provisioning-spec [node-spec-config count]
   (merge
    (app/backup-group-spec (app/app-configuration config/duplicity-domain-config))
-   (cloud-target/node-spec "jem")
+   (cloud-target/node-spec node-spec-config)
    {:count count}))
 
 (defn converge-install
   [count & options]
-  (let [{:keys [gpg-key-id gpg-passphrase
-                summarize-session]
-         :or {summarize-session true}} options]
+  (let [{:keys [gpg-key-id gpg-passphrase target]
+         :or {target "integration/resources/jem-aws-target.edn"}} options
+        target-config (cloud-target/load-targets target)]
    (operation/do-converge-install
-     (if (some? gpg-key-id)
-       (cloud-target/provider gpg-key-id gpg-passphrase)
-       (cloud-target/provider))
-     (provisioning-spec count)
-     :summarize-session summarize-session)))
+     (cloud-target/provider (:context target-config))
+     (provisioning-spec (:node-spec target-config) count)
+     :summarize-session true)))
 
 (defn configure
  [& options]
- (let [{:keys [gpg-key-id gpg-passphrase
-               summarize-session]
-        :or {summarize-session true}} options]
+ (let [{:keys [gpg-key-id gpg-passphrase target]
+        :or {target "integration/resources/jem-aws-target.edn"}} options
+       target-config (cloud-target/load-targets target)]
   (operation/do-apply-configure
-    (if (some? gpg-key-id)
-      (cloud-target/provider gpg-key-id gpg-passphrase)
-      (cloud-target/provider))
-    (provisioning-spec 0)
-    :summarize-session summarize-session)))
+    (cloud-target/provider (:context target-config))
+    (provisioning-spec (:node-spec target-config) 0)
+    :summarize-session true)))
 
-(defn serverspec
+(defn node-test
   [& options]
-  (let [{:keys [gpg-key-id gpg-passphrase
-                summarize-session]
-         :or {summarize-session true}} options]
+  (let [{:keys [gpg-key-id gpg-passphrase target]
+         :or {target "integration/resources/jem-aws-target.edn"}} options
+        target-config (cloud-target/load-targets target)]
    (operation/do-server-test
-     (if (some? gpg-key-id)
-       (cloud-target/provider gpg-key-id gpg-passphrase)
-       (cloud-target/provider))
-     (provisioning-spec 0)
-     :summarize-session summarize-session)))
+     (cloud-target/provider (:context target-config))
+     (provisioning-spec (:node-spec target-config) count)
+     :summarize-session true)))
