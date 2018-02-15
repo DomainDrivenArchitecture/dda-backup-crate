@@ -25,7 +25,7 @@
    backup-transport-folder :- s/Str
    user-name :- s/Str
    backup-element :- schema/BackupElement]
-  (let [{:keys [type backup-file-name root-dir subdir-to-save]} backup-element
+  (let [{:keys [type backup-file-name backup-path]} backup-element
         tar-options (case type
                       :file-compressed "cvzf"
                       :file-plain "cvf")]

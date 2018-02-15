@@ -16,7 +16,8 @@
 
 (ns dda.pallet.dda-backup-crate.infra.schema
   (:require
-   [schema.core :as s]))
+   [schema.core :as s]
+   [dda.config.commons.directory-model :as directory-model]))
 
 (def BackupElementType
   "The backup source elements"
@@ -51,9 +52,10 @@
    #(= (:type %) :file-compressed)
    (merge
     BackupBaseElement
-    {:root-dir s/Str
-     :subdir-to-save s/Str
-     (s/optional-key :new-owner) s/Str})))
+    ; TODO probably requires slightly different shcema: /etc/.../ not /etc/
+    {:backup-path [directory-model/NonRootDirectory]
+     (s/optional-key :new-owner) s/Str}
+    )))
 
 (def LocalManagement
   {:gens-stored-on-source-system s/Num})
