@@ -1,0 +1,3 @@
+#backup db
+mysqldump --no-create-db=true -h localhost -u {{db-user-name}} -p{{db-user-passwd}} {{db-name}} > {{backup-transport-folder}}/{{backup-file-name}}
+chown {{user-name}}:{{user-name}} {{backup-transport-folder}}/{{backup-file-name}}
