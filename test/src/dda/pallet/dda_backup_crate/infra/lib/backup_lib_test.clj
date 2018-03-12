@@ -23,66 +23,64 @@
 
 (deftest backup-files-tar
   (testing
-   "backup files as compressed archive"
-    (is (= ["#backup the files"
-            "cd /var/lib/liferay/data/"
-            "tar cvzf /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz document_library"
-            "chown dda-backup:dda-backup /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz"
-            ""]
-           (sut/backup-files-tar
-            "portal"
-            "/var/backups/transport-outgoing"
-            "dda-backup"
-            {:name "prod"
-             :type :file-compressed
-             :backup-file-name "portal_prod_file_${timestamp}.tgz"
-             :root-dir "/var/lib/liferay/data/"
-             :subdir-to-save "document_library"}))))
+    "backup files as compressed archive"
+    (is (= ["#backup the specified files and directories"
+            "tar cvzf /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz /var/lib/liferay/data/ /var/lib/httpd/www/"
+            "chown dda-backup:dda-backup /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz"]
+           (clojure.string/split-lines (sut/backup-element
+                                         :backup-name "portal"
+                                         :backup-transport-folder "/var/backups/transport-outgoing"
+                                         :user-name "dda-backup"
+                                         :backup-element {:name             "prod"
+                                                          :type             :file-compressed
+                                                          :backup-file-name "portal_prod_file_${timestamp}.tgz"
+                                                          :backup-path      ["/var/lib/liferay/data/" "/var/lib/httpd/www/"]
+                                                          })))))
   (testing
-   "backup files as uncompressed archive"
-    (is (= ["#backup the files"
-            "cd /var/lib/liferay/data/"
-            "tar cvf /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tar document_library"
-            "chown dda-backup:dda-backup /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tar"
-            ""]
-           (sut/backup-files-tar
-            "portal"
-            "/var/backups/transport-outgoing"
-            "dda-backup"
-            {:name "prod"
-             :type :file-plain
-             :backup-file-name "portal_prod_file_${timestamp}.tar"
-             :root-dir "/var/lib/liferay/data/"
-             :subdir-to-save "document_library"})))))
+    "backup files as compressed archive"
+    (is (= ["#backup the specified files and directories"
+            "tar cvf /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz /var/lib/liferay/data/ /var/lib/httpd/www/"
+            "chown dda-backup:dda-backup /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz"]
+           (clojure.string/split-lines (sut/backup-element
+                                         :backup-name "portal"
+                                         :backup-transport-folder "/var/backups/transport-outgoing"
+                                         :user-name "dda-backup"
+                                         :backup-element {:name             "prod"
+                                                          :type             :file-plain
+                                                          :backup-file-name "portal_prod_file_${timestamp}.tgz"
+                                                          :backup-path      ["/var/lib/liferay/data/" "/var/lib/httpd/www/"]
+                                                          }))))))
 
 (deftest backup-files-rsync
   (testing
     (is (= ["#backup the files"
-            "cd /var/lib/liferay/data/"
-            "rsync -Aax document_library /var/backups/transport-outgoing/portal_prod_file"
-            ""]
-           (sut/backup-files-rsync
-            "portal"
-            "/var/backups/transport-outgoing"
-            {:name "prod"
-             :type :rsync
-             :backup-file-name "portal_prod_file"
-             :root-dir "/var/lib/liferay/data/"
-             :subdir-to-save "document_library"})))))
+            "rsync -Aax /var/lib/liferay/data/ /var/lib/httpd/www/ /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz"
+            ]
+           (clojure.string/split-lines (sut/backup-element
+                                         :backup-name "portal"
+                                         :backup-transport-folder "/var/backups/transport-outgoing"
+                                         :user-name "dda-backup"
+                                         :backup-element {:name             "prod"
+                                                          :type             :rsync
+                                                          :backup-file-name "portal_prod_file_${timestamp}.tgz"
+                                                          :backup-path      ["/var/lib/liferay/data/" "/var/lib/httpd/www/"]
+                                                          }))))))
+
+
 
 (deftest backup-mysql
   (testing
     (is (= ["#backup db"
             "mysqldump --no-create-db=true -h localhost -u db-user -pdb-passwd db-name > /var/backups/transport-outgoing/portal_prod_file_${timestamp}.sql"
-            "chown dda-backup:dda-backup /var/backups/transport-outgoing/portal_prod_file_${timestamp}.sql"
-            ""]
-           (sut/backup-mysql
-            "portal"
-            "/var/backups/transport-outgoing"
-            "dda-backup"
-            {:name "prod"
-             :type :mysql
-             :backup-file-name "portal_prod_file_${timestamp}.sql"
-             :db-user-name "db-user"
-             :db-user-passwd "db-passwd"
-             :db-name "db-name"})))))
+            "chown dda-backup:dda-backup /var/backups/transport-outgoing/portal_prod_file_${timestamp}.sql"]
+           (clojure.string/split-lines (sut/backup-element
+                                         :backup-name "portal"
+                                         :backup-transport-folder "/var/backups/transport-outgoing"
+                                         :user-name "dda-backup"
+                                         :backup-element {:name             "prod"
+                                                          :type             :mysql
+                                                          :backup-file-name "portal_prod_file_${timestamp}.sql"
+                                                          :db-user-name "db-user"
+                                                          :db-user-passwd "db-passwd"
+                                                          :db-name "db-name"
+                                                          }))))))
