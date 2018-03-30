@@ -2,14 +2,11 @@
 
 #timestamp from server to variable
 export timestamp=`date +%Y-%m-%d_%H-%M-%S`
-
 {% if service-restart? %}
 #stop appserver
 service {{service-restart}} stop
 {% endif %}
-
 {{backup-elements}}
-
 {% if service-restart? %}
 #start appserver
 service {{service-restart}} start

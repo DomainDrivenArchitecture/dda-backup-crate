@@ -16,13 +16,10 @@
 
 (ns dda.pallet.dda-backup-crate.infra.lib.backup-lib
   (require
-    [schema.core :as s]
-    [dda.pallet.dda-backup-crate.infra.schema :as schema]
     [selmer.parser :as selmer]))
 
 (defn backup-element-type
   [& {:keys [backup-element]}]
-  (println "dispatch")
   (-> backup-element :type))
 
 (defmulti backup-element backup-element-type)

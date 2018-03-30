@@ -21,6 +21,7 @@
    ;[dda.pallet.dda-backup-crate.infra.core.backup-element-test :as backup-element]
    [dda.pallet.dda-backup-crate.infra.lib.restore-lib :as sut]))
 
+
 (deftest restore-mysql
   (testing
    "restore for owncloud"
@@ -28,18 +29,18 @@
             "echo \"db restore ...\""
             ""
             "mysql -hlocalhost -uowncloud -powncloud-db-pwd -e \"drop database owncloud\";"
-            "mysql -hlocalhost -uowncloud -powncloud-db-pwd -e \"create database owncloud\";";
+            "mysql -hlocalhost -uowncloud -powncloud-db-pwd -e \"create database owncloud\";"
             "mysql -hlocalhost -uowncloud -powncloud-db-pwd owncloud < ${most_recent_name_mysql_dump}"
             ""
-            "echo \"finished db restore\""
-            ""]
-           (sut/restore-mysql-script
-            {:type :mysql
-             :name "name"
-             :type-name "mysql"
-             :db-user-name "owncloud"
-             :db-user-passwd "owncloud-db-pwd"
-             :db-name "owncloud"})))))
+            "echo \"finished db restore\""]
+           (clojure.string/split-lines
+             (sut/restore-element
+                {:type :mysql
+                 :name "name"
+                 :type-name "mysql"
+                 :db-user-name "owncloud"
+                 :db-user-passwd "owncloud-db-pwd"
+                 :db-name "owncloud"}))))))
 
 (deftest restore-tar
   (testing
@@ -48,34 +49,33 @@
             "echo \"file restore ...\""
             ""
             "rm -r /var/www/owncloud/*"
-            "tar --same-owner --same-permissions -xf ${most_recent_name_file_dump} -C /var/www/owncloud"
+            "tar --same-owner --same-permissions -xf ${most_recent_name_file_dump} -C /"
             ""
-            "echo \"finished file restore.\""
-            ""]
-           (sut/restore-tar-script
-            {:type :file-plain
-             :name "name"
-             :type-name "file"
-             :subdir-to-save "./"
-             :root-dir "/var/www/owncloud"}))))
+            "echo \"finished file restore.\""]
+           (clojure.string/split-lines
+             (sut/restore-element
+               {:type :file-plain
+                :name "name"
+                :type-name "file"
+                :backup-path ["/var/www/owncloud/*"]})))))
   (testing
    "restore for liferay"
     (is (= ["# ------------- restore file --------------"
             "echo \"file restore ...\""
             ""
             "rm -r /var/lib/liferay/data/*"
-            "tar -xzf ${most_recent_name_file_dump} -C /var/lib/liferay/data"
-            "chown -R tomcat7:tomcat7 /var/lib/liferay/data"
+            "tar -xzf ${most_recent_name_file_dump} -C /"
             ""
-            "echo \"finished file restore.\""
-            ""]
-           (sut/restore-tar-script
-            {:type :file-compressed
-             :name "name"
-             :type-name "file"
-             :root-dir "/var/lib/liferay/data"
-             :subdir-to-save "./"
-             :new-owner "tomcat7"})))))
+            "chown -R tomcat7:tomcat7 /var/lib/liferay/data/*"
+            ""
+            "echo \"finished file restore.\""]
+           (clojure.string/split-lines
+             (sut/restore-element
+               {:type :file-compressed
+                :name "name"
+                :type-name "file"
+                :backup-path ["/var/lib/liferay/data/*"]
+                :new-owner "tomcat7"}))))))
 
 ; (deftest restore-duplicity
 ;   (testing

@@ -25,5 +25,4 @@
 
 (s/defn transport-restore
   [backup-script-path :- s/Str]
-  [(str backup-script-path "/duplicity_restore_transport.sh")
-   ""])
+  (str backup-script-path "/duplicity_restore_transport.sh"))

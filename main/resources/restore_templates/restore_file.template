@@ -1,0 +1,9 @@
+# ------------- restore file --------------
+echo "file restore ..."
+
+rm -r {{backup-path}}
+tar{% if tar-own-options %} {{tar-own-options}}{% endif %} {{tar-compress-option}} ${{restore-dump-name}} -C /
+{% if chown %}
+{{chown}}
+{% endif %}
+echo "finished file restore."

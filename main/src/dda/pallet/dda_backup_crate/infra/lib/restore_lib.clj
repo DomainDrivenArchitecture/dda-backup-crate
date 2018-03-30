@@ -18,13 +18,13 @@
 (ns dda.pallet.dda-backup-crate.infra.lib.restore-lib
   (require
    [schema.core :as s]
-   [dda.pallet.dda-backup-crate.infra.schema :as schema]))
+   [dda.pallet.dda-backup-crate.infra.schema :as schema]
+   [selmer.parser :as selmer]))
 
-(s/defn restore-navigate-to-restore-location
-  [backup-restore-folder :- s/Str]
-  ["# cd to restore location"
-   (str "cd " backup-restore-folder)
-   ""])
+(defn render-file
+  [file map]
+  (selmer.util/without-escaping
+     (selmer/render-file file map)))
 
 (s/defn restore-dump-name
   "Get the newest file for restore."
@@ -72,92 +72,63 @@
          " && "
          (map restore-head-element elements))
         "; then")
-   "echo \"starting restore\""
-   ""])
+   "echo \"starting restore\""])
 
 (def restore-tail
   ["echo \"finished restore successfull, pls. start the appserver.\""
    "fi"
    ""])
 
-(def restore-db-head
-  ["# ------------- restore db --------------"
-   "echo \"db restore ...\""
-   ""])
+(defn restore-element-type
+  [backup-element]
+  (-> backup-element :type))
 
-(def restore-db-tail
-  ["echo \"finished db restore\""
-   ""])
+(defmulti restore-element restore-element-type)
 
-(s/defn restore-mysql-dump :- [s/Str]
-  "lines for restoring a mysql dump"
-  [element :- schema/BackupElement]
+(defmethod restore-element :file-compressed
+  [element]
+  (render-file "restore_templates/restore_file.template"
+                      {:backup-path (clojure.string/join " " (:backup-path element))
+                       :tar-own-options (if (contains? element :new-owner)
+                                          nil
+                                          "--same-owner --same-permissions")
+                       :tar-compress-option "-xzf"
+                       :chown (if (contains? element :new-owner)
+                                (str "chown -R " (:new-owner element)
+                                      ":" (:new-owner element)
+                                      " " (clojure.string/join " " (:backup-path element)))
+                                nil)
+                       :restore-dump-name (str "{" (restore-dump-name element) "}")}))
+
+(defmethod restore-element :file-plain
+  [element]
+  (render-file "restore_templates/restore_file.template"
+                      {:backup-path (clojure.string/join " " (:backup-path element))
+                       :tar-own-options (if (contains? element :new-owner)
+                                          nil
+                                          "--same-owner --same-permissions")
+                       :tar-compress-option "-xf"
+                       :chown (if (contains? element :new-owner)
+                                [(str "chown -R " (:new-owner element)
+                                      ":" (:new-owner element)
+                                      " " (clojure.string/join " " (:backup-path element)))]
+                                nil)
+                       :restore-dump-name (str "{" (restore-dump-name element) "}")}))
+
+(defmethod restore-element :mysql
+  [element]
   (let [{:keys [db-user-name db-user-passwd db-name db-create-options]
-         :or {db-create-options ""}} element]
-    [(str "mysql -hlocalhost -u" db-user-name " -p" db-user-passwd " -e \"drop database " db-name "\";")
-     (str "mysql -hlocalhost -u" db-user-name " -p" db-user-passwd " -e \"create database "
-          db-name db-create-options "\";")
-     (str "mysql -hlocalhost -u" db-user-name " -p" db-user-passwd " " db-name " < ${" (restore-dump-name element) "}")
-     ""]))
+         :or   {db-create-options ""}} element]
+    (render-file "restore_templates/restore_mysql.template"
+                        {:db-pre-processing (clojure.string/join "\n" (:db-pre-processing element))
+                         :db-user-name db-user-name
+                         :db-user-passwd db-user-passwd
+                         :db-name db-name
+                         :db-create-options db-create-options
+                         :restore-dump-name (str "{" (restore-dump-name element) "}")
+                         :db-post-processing (clojure.string/join "\n" (:db-post-processing element))})))
 
-(s/defn restore-mysql-script :- [s/Str]
-  "The script for restoring mysql."
-  [element :- schema/BackupElement]
-  (let [{:keys [db-pre-processing db-post-processing]} element]
-    (into
-     []
-     (concat
-      restore-db-head
-      (when (contains? element :db-pre-processing)
-        db-pre-processing)
-      (restore-mysql-dump element)
-      (when (contains? element :db-post-processing)
-        db-post-processing)
-      restore-db-tail))))
-
-(def restore-file-head
-  ["# ------------- restore file --------------"
-   "echo \"file restore ...\""
-   ""])
-
-(def restore-file-tail
-  ["echo \"finished file restore.\""
-   ""])
-
-(s/defn restore-tar-dump :- [s/Str]
-  "restore files from a tar dump."
-  [element :- schema/BackupElement]
-  (let [{:keys [root-dir new-owner type]} element
-        chown (if (contains? element :new-owner)
-                [(str "chown -R " new-owner
-                      ":" new-owner
-                      " " root-dir)]
-                [])
-        tar-own-options (if (contains? element :new-owner)
-                          ""
-                          "--same-owner --same-permissions ")
-        tar-compress-option (if (= type :file-compressed)
-                              "z"
-                              "")]
-    (into
-     []
-     (concat
-        ;TODO: Use NonRootDirectory type here!
-      [(str "rm -r " root-dir "/*")
-       (str "tar " tar-own-options "-x" tar-compress-option "f ${" (restore-dump-name element) "} -C " root-dir)]
-      chown
-      [""]))))
-
-(s/defn restore-tar-script :- [s/Str]
-  "The script for restoring a tar file."
-  [element :- schema/BackupElement]
-  (into
-   []
-   (concat
-    restore-file-head
-    (restore-tar-dump element)
-    restore-file-tail)))
-
+;TODO What is the argument restore-target-dir? It is not present in any configuration.
 (defn restore-rsync
   [& {:keys [restore-target-dir
              new-owner]
@@ -174,3 +145,4 @@
            [(str "chown -R " new-owner ":" new-owner " " restore-target-dir)]
            [])
          [""])))
+

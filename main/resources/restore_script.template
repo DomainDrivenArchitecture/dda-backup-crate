@@ -1,0 +1,12 @@
+#!/bin/bash
+{% if duplicity %}
+{{duplicity}}
+{% endif %}
+{{provide-restore-dumps}}
+{{restore-head-script}}
+{% if service-restart %}
+{{service-restart}}
+{% endif %}
+{{restore-elements}}
+echo "finished restore successfull, pls. start the appserver."
+fi

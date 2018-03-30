@@ -46,8 +46,7 @@
   ""
   [service]
   ["#stop appserver"
-   (str "service " service " stop")
-   ""])
+   (str "service " service " stop")])
 
 (defn start-app-server
   [service]
