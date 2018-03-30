@@ -74,11 +74,6 @@
         "; then")
    "echo \"starting restore\""])
 
-(def restore-tail
-  ["echo \"finished restore successfull, pls. start the appserver.\""
-   "fi"
-   ""])
-
 (defn restore-element-type
   [backup-element]
   (-> backup-element :type))

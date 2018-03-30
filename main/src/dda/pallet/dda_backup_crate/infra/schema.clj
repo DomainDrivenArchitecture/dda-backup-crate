@@ -54,8 +54,14 @@
     BackupBaseElement
     ; TODO probably requires slightly different shcema: /etc/.../ not /etc/
     {:backup-path [directory-model/NonRootDirectory]
-     (s/optional-key :new-owner) s/Str}
-    )))
+     (s/optional-key :new-owner) s/Str})
+   #(= (:type %) :file-plain)
+   (merge
+     BackupBaseElement
+     ; TODO probably requires slightly different shcema: /etc/.../ not /etc/
+     {:backup-path [directory-model/NonRootDirectory]
+      (s/optional-key :new-owner) s/Str}
+     )))
 
 (def LocalManagement
   {:gens-stored-on-source-system s/Num})

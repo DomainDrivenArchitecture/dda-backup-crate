@@ -25,6 +25,5 @@
   (testing
     "stop app server"
     (is (= ["#stop appserver"
-            "service tomcat7 stop"
-            ""]
+            "service tomcat7 stop"]
            (sut/stop-app-server "tomcat7")))))
