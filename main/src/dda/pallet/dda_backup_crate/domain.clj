@@ -16,19 +16,19 @@
 
 (ns dda.pallet.dda-backup-crate.domain
   (:require
-   [schema.core :as s]
-   [dda.config.commons.map-utils :as mu]
-   [clj-pgp.core :as pgp]
-   [dda.pallet.dda-backup-crate.domain.schema :as schema]
-   [dda.pallet.dda-backup-crate.domain.file-convention :as file]
-   [dda.pallet.dda-backup-crate.infra :as infra]
-   [dda.pallet.dda-backup-crate.infra.schema :as infra-schema]))
+    [schema.core :as s]
+    [dda.config.commons.map-utils :as mu]
+    [clj-pgp.core :as pgp]
+    [dda.pallet.dda-backup-crate.domain.schema :as schema]
+    [dda.pallet.dda-backup-crate.domain.file-convention :as file]
+    [dda.pallet.dda-backup-crate.infra :as infra]
+    [dda.pallet.dda-backup-crate.infra.schema :as infra-schema]))
 
 (def ResolvedBackupConfig schema/ResolvedBackupConfig)
 
 (def InfraResult infra/InfraResult)
 
-(def default-user-config {:dataBackupSource {:hashed-password  "WIwn6jIUt2Rbc"}})
+(def default-user-config {:dataBackupSource {:hashed-password "WIwn6jIUt2Rbc"}})
 
 (defn key-id
   [ascii-armored-key]
@@ -43,41 +43,47 @@
     (merge
       (if (contains? transport-management :duplicity-push)
         {:root {:hashed-password "fksdjfiosjfr8o0jterojdo"
-                :gpg {:trusted-key {:public-key public-gpg
-                                    :private-key private-gpg
-                                    :passphrase passphrase}}}}
+                :gpg             {:trusted-key {:public-key  public-gpg
+                                                :private-key private-gpg
+                                                :passphrase  passphrase}}}}
         {})
       {:dda-backup backup-user})))
+
+(defn create-backup-path
+  [backup-element]
+  (if (contains? (:backup-path backup-element) :root-dir)
+    (update backup-element :backup-path [(map #(str (-> backup-element :backup-path :root-dir) %) (-> backup-element :backup-path :subdir-to-save))])
+    backup-element))
 
 (s/defn ^:always-validate infra-backup-element :- infra-schema/BackupElement
   [backup-element :- schema/ResolvedBackupElement]
   (let [{:keys [name type]} backup-element]
     (merge
-     backup-element
-     {:backup-file-name (file/backup-file-name name type)
-      :backup-file-prefix-pattern (file/backup-file-prefix-pattern name type)
-      :type-name (file/element-type-name type)})))
+      (create-backup-path backup-element)
+      {:backup-file-name           (file/backup-file-name name type)
+       :backup-file-prefix-pattern (file/backup-file-prefix-pattern name type)
+       :type-name                  (file/element-type-name type)})))
 
 (s/defn ^:always-validate infra-config :- infra-schema/ResolvedBackupConfig
   [config :- ResolvedBackupConfig]
   (let [{:keys [backup-user transport-management backup-elements]} config
         user-key :dda-backup
         public-gpg (get-in transport-management
-                    [:duplicity-push :public-key])
+                           [:duplicity-push :public-key])
         additional-map (if (contains? transport-management :duplicity-push)
-                         {:transport-management {:duplicity-push {:tmp-dir "/tmp"
-                                                                  :gpg-key-id (key-id public-gpg)
+                         {:transport-management {:duplicity-push {:tmp-dir               "/tmp"
+                                                                  :gpg-key-id            (key-id public-gpg)
                                                                   :days-stored-on-backup 21}}}
                          {})]
     (mu/deep-merge
-     config
-     additional-map
-     {:backup-script-path "/usr/local/lib/dda-backup/"
-      :backup-transport-folder "/var/backups/transport-outgoing"
-      :backup-store-folder "/var/backups/store"
-      :backup-restore-folder "/var/backups/restore"
-      :backup-user user-key
-      :backup-elements (map infra-backup-element backup-elements)})))
+      config
+      additional-map
+      {:backup-script-path      "/usr/local/lib/dda-backup/"
+       :backup-transport-folder "/var/backups/transport-outgoing"
+       :backup-store-folder     "/var/backups/store"
+       :backup-restore-folder   "/var/backups/restore"
+       :backup-user             user-key
+       :backup-elements         (map infra-backup-element backup-elements)})))
 
 
 (s/defn ^:always-validate infra-configuration :- InfraResult
