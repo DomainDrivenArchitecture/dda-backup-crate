@@ -23,28 +23,19 @@
    [dda.pallet.dda-backup-crate.infra.transport-management :as transport]))
 
 (def facility :dda-backup)
-(def version  [0 3 4])
 
-(def ResolvedBackupConfig schema/ResolvedBackupConfig)
-
-(def InfraResult {facility ResolvedBackupConfig})
-
-(def dda-backup-crate
-  (dda-crate/make-dda-crate
-   :facility facility
-   :version version
-   :config-default {}))
+(def DdaBackupConfig schema/DdaBackupConfig)
 
 (s/defn ^:always-validate init
   "init package-sources & update packages."
-  [config :- ResolvedBackupConfig]
+  [config :- DdaBackupConfig]
   (let [{:keys [transport-management]} config]
     (when (contains? transport-management :duplicity-push)
       (transport/init))))
 
-(s/defn ^:always-validate install
+(s/defn ^:always-validate install-system
   "collected install actions for backup crate."
-  [config :- ResolvedBackupConfig]
+  [config :- DdaBackupConfig]
   (let [{:keys [backup-user backup-script-path backup-transport-folder
                 backup-store-folder backup-restore-folder
                 transport-management local-management]} config]
@@ -54,9 +45,9 @@
     (when (contains? transport-management :duplicity-push)
       (transport/install))))
 
-(s/defn ^:always-validate configure
+(s/defn ^:always-validate configure-user
   "collected configuration actions for backup crate."
-  [config :- ResolvedBackupConfig]
+  [config :- DdaBackupConfig]
   (let [{:keys [backup-name backup-script-path backup-transport-folder
                 backup-store-folder backup-restore-folder
                 service-restart backup-user backup-elements
@@ -72,14 +63,25 @@
       (transport/configure-duplicity backup-user backup-script-path
        backup-transport-folder backup-restore-folder (:duplicity-push transport-management)))))
 
-(defmethod dda-crate/dda-init facility [dda-crate config]
+(s/defmethod core-infra/dda-init facility
+  [dda-crate config]
   (init config))
 
-(defmethod dda-crate/dda-install facility [dda-crate config]
-  (install config))
+(s/defmethod core-infra/dda-install facility
+  [dda-crate config]
+  (install-system config))
 
-(defmethod dda-crate/dda-configure facility [dda-crate config]
-  (configure config))
+(s/defmethod core-infra/dda-configure facility
+  [dda-crate config]
+  (configure-user config))
+
+(s/defmethod core-infra/dda-settings facility
+  [dda-crate partial-effective-config])
+
+(def dda-backup-crate
+  (core-infra/make-dda-crate-infra
+   :facility facility
+   :infra-schema DdaBackupConfig))
 
 (def with-backup
-  (dda-crate/create-server-spec dda-backup-crate))
+  (core-infra/create-infra-plan dda-backup-crate))

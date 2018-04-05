@@ -22,6 +22,7 @@
    [dda.config.commons.map-utils :as mu]
    [dda.config.commons.user-env :as user-env]
    [dda.pallet.dda-user-crate.app :as user]
+   [dda.pallet.core.app :as core-app]
    [dda.pallet.dda-config-crate.infra :as config-crate]
    [dda.pallet.dda-backup-crate.infra :as infra]
    [dda.pallet.dda-backup-crate.domain :as domain]))
@@ -33,12 +34,14 @@
    user/InfraResult
    infra/InfraResult))
 
+(def BackupDomainConfig domain/ResolvedBackupConfig)
+
 (def BackupAppConfig
   {:group-specific-config
    {s/Keyword InfraResult}})
 
 (s/defn ^:always-validate app-configuration :- BackupAppConfig
-  [domain-config :- domain/ResolvedBackupConfig
+  [domain-config :- BackupDomainConfig
    & options]
   (let [{:keys [group-key]
          :or  {group-key :dda-backup-group}} options]
@@ -46,6 +49,22 @@
       (user/app-configuration (domain/user-domain-configuration domain-config) :group-key group-key)
       {:group-specific-config
         {group-key (domain/infra-configuration domain-config)}})))
+
+(s/defmethod ^:always-validate
+  core-app/group-spec infra/facility
+  [crate-app
+   domain-config :- BackupDomainConfig]
+  (let [app-config (app-configuration domain-config)]
+    (core-app/pallet-group-spec
+      app-config [(config-crate/with-config app-config)
+                  with-backup])))
+
+(def crate-app (core-app/make-dda-crate-app
+                  :facility infra/facility
+                  :domain-schema ServerspecDomainConfig
+                  :domain-schema-resolved ServerspecDomainConfig
+                  :default-domain-file "serverspec.edn"))
+
 
 (s/defn ^:always-validate backup-group-spec
   [app-config :- BackupAppConfig]

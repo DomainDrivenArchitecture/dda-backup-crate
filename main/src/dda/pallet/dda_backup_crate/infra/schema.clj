@@ -60,8 +60,8 @@
      BackupBaseElement
      ; TODO probably requires slightly different shcema: /etc/.../ not /etc/
      {:backup-path [directory-model/NonRootDirectory]
-      (s/optional-key :new-owner) s/Str}
-     )))
+      (s/optional-key :new-owner) s/Str})))
+
 
 (def LocalManagement
   {:gens-stored-on-source-system s/Num})
@@ -82,7 +82,7 @@
   {(s/optional-key :ssh-pull) s/Any
    (s/optional-key :duplicity-push) TransportDuplicity})
 
-(def ResolvedBackupConfig
+(def DdaBackupConfig
   {:backup-name s/Str
    :backup-script-path s/Str
    :backup-transport-folder s/Str

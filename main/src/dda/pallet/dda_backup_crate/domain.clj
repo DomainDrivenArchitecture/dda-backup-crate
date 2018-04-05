@@ -19,12 +19,18 @@
    [schema.core :as s]
    [dda.config.commons.map-utils :as mu]
    [clj-pgp.core :as pgp]
+   [dda.pallet.commons.secret :as secret]
    [dda.pallet.dda-backup-crate.domain.schema :as schema]
    [dda.pallet.dda-backup-crate.domain.file-convention :as file]
    [dda.pallet.dda-backup-crate.infra :as infra]
    [dda.pallet.dda-backup-crate.infra.schema :as infra-schema]))
 
-(def ResolvedBackupConfig schema/ResolvedBackupConfig)
+(def InfraResult {infra/facility infra/DdaBackupConfig})
+
+(def DdaBackupDomainConfig schema/DdaBackupDomainConfig)
+
+(def DdaBackupDomainResolvedConfig
+  (secret/create-resolved-schema DdaBackupDomainConfig))
 
 (def InfraResult infra/InfraResult)
 
