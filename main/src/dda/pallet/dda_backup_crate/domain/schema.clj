@@ -39,18 +39,11 @@
    (s/optional-key :db-pre-processing) [s/Str]
    (s/optional-key :db-post-processing) [s/Str]})
 
-(def ResolvedBackupDbElement
-  "The db backup elements"
-  {:db-user-name s/Str
-   :db-user-passwd s/Str
-   :db-name s/Str
-   (s/optional-key :db-create-options) s/Str
-   (s/optional-key :db-pre-processing) [s/Str]
-   (s/optional-key :db-post-processing) [s/Str]})
-
-(def backup-path-schema
-  {:backup-path (s/either [directory-model/NonRootDirectory] {:root-dir directory-model/NonRootDirectory
-                                                              :subdir-to-save [directory-model/NonRootDirectory]})
+(def BackupPath
+  {:backup-path
+   (s/either [directory-model/NonRootDirectory]
+             {:root-dir directory-model/NonRootDirectory
+              :subdir-to-save [directory-model/NonRootDirectory]})
    (s/optional-key :new-owner) s/Str})
 
 (def BackupElement
@@ -63,11 +56,11 @@
    #(= (:type %) :file-compressed)
    (merge
     BackupBaseElement
-    backup-path-schema)
+    BackupPath)
    #(= (:type %) :file-plain)
    (merge
      BackupBaseElement
-     backup-path-schema)))
+     BackupPath)))
 
 (def LocalManagement
   {:gens-stored-on-source-system s/Num})
@@ -80,17 +73,6 @@
     :passphrase secret/Secret
     (s/optional-key :target-s3) {:aws-access-key-id secret/Secret
                                  :aws-secret-access-key secret/Secret
-                                 :bucket-name s/Str
-                                 (s/optional-key :directory-name) s/Str}}})
-
-(def ResolvedTransportManagement
-  {(s/optional-key :ssh-pull) s/Any
-   (s/optional-key :duplicity-push)
-   {:public-key s/Str
-    :private-key s/Str
-    :passphrase s/Str
-    (s/optional-key :target-s3) {:aws-access-key-id s/Str
-                                 :aws-secret-access-key s/Str
                                  :bucket-name s/Str
                                  (s/optional-key :directory-name) s/Str}}})
 
