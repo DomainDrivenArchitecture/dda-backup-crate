@@ -16,51 +16,42 @@
 
 (ns dda.pallet.dda-backup-crate.infra.lib.backup-lib
   (require
-   [schema.core :as s]
-   [dda.pallet.dda-backup-crate.infra.schema :as schema]))
+    [selmer.parser :as selmer]))
 
-(s/defn backup-files-tar
-  "bash script part to backup as tgz."
-  [backup-name :- s/Str
-   backup-transport-folder :- s/Str
-   user-name :- s/Str
-   backup-element :- schema/BackupElement]
-  (let [{:keys [type backup-file-name root-dir subdir-to-save]} backup-element
-        tar-options (case type
-                      :file-compressed "cvzf"
-                      :file-plain "cvf")]
-    ["#backup the files"
-     (str "cd " root-dir)
-     (str "tar " tar-options " " backup-transport-folder "/"
-          backup-file-name " " subdir-to-save)
-     (str "chown " user-name ":" user-name " " backup-transport-folder "/"
-          backup-file-name)
-     ""]))
+(defn backup-element-type
+  [& {:keys [backup-element]}]
+  (-> backup-element :type))
 
-(s/defn backup-files-rsync
-  "bash script part to backup with rsync."
-  [backup-name :- s/Str
-   backup-transport-folder :- s/Str
-   backup-element :- schema/BackupElement]
-  (let [{:keys [backup-file-name root-dir subdir-to-save]} backup-element]
-     ["#backup the files"
-      (str "cd " root-dir)
-      (str "rsync -Aax " subdir-to-save " " backup-transport-folder "/"
-           backup-file-name)
-      ""]))
+(defmulti backup-element backup-element-type)
 
-(s/defn backup-mysql
-  "bash script part to backup a mysql db."
-  [backup-name :- s/Str
-   backup-transport-folder :- s/Str
-   user-name :- s/Str
-   backup-element :- schema/BackupElement]
-  (let [{:keys [backup-file-name db-user-name db-user-passwd db-name]} backup-element]
-     ["#backup db"
-      (str "mysqldump --no-create-db=true -h localhost -u " db-user-name
-           " -p" db-user-passwd
-           " " db-name " > " backup-transport-folder "/"
-           backup-file-name)
-      (str "chown " user-name ":" user-name " " backup-transport-folder "/"
-           backup-file-name)
-      ""]))
+(defmethod backup-element :file-compressed
+  [& {:keys [backup-element backup-name backup-transport-folder user-name]}]
+  (selmer/render-file "backup_templates/backup_file.template" {:backup-transport-folder backup-transport-folder
+                                                               :backup-file-name (:backup-file-name backup-element)
+                                                               :backup-path (:backup-path backup-element)
+                                                               :user-name user-name
+                                                               :tar-options "cvzf"}))
+
+(defmethod backup-element :file-plain
+  [& {:keys [backup-element backup-name backup-transport-folder user-name]}]
+  (selmer/render-file "backup_templates/backup_file.template" {:backup-transport-folder backup-transport-folder
+                                                               :backup-file-name       (:backup-file-name backup-element)
+                                                               :backup-path (:backup-path backup-element)
+                                                               :user-name               user-name
+                                                               :tar-options             "cvf"}))
+
+(defmethod backup-element :mysql
+  [& {:keys [backup-element backup-transport-folder user-name]}]
+  (selmer/render-file "backup_templates/backup_mysql.template" {:backup-file-name        (:backup-file-name backup-element)
+                                                                :backup-transport-folder backup-transport-folder
+                                                                :user-name               user-name
+                                                                :db-name                 (:db-name backup-element)
+                                                                :db-user-name            (:db-user-name backup-element)
+                                                                :db-user-passwd          (:db-user-passwd backup-element)
+                                                                }))
+
+(defmethod backup-element :rsync
+  [& {:keys [backup-element backup-transport-folder]}]
+  (selmer/render-file "backup_templates/backup_rsync.template" {:backup-transport-folder backup-transport-folder
+                                                               :backup-file-name        (:backup-file-name backup-element)
+                                                               :backup-path             (:backup-path backup-element)}))

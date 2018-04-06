@@ -22,8 +22,7 @@
 
 (def test-backup-element {:type :file-compressed
                           :name "ssh"
-                          :root-dir "/etc/"
-                          :subdir-to-save "ssh"})
+                          :backup-path ["/etc/ssh/"]})
 
 (def test-domain-backup-config
   {:backup-name "test"

@@ -16,16 +16,17 @@
 
 (ns dda.pallet.dda-backup-crate.infra.backup-elements
   (:require
-   [schema.core :as s]
-   [schema-tools.core :as st]
-   [pallet.actions :as actions]
-   [pallet.stevedore :as stevedore]
-   [dda.pallet.dda-backup-crate.infra.schema :as schema]
-   [dda.pallet.dda-backup-crate.infra.lib.common-lib :as common-lib]
-   [dda.pallet.dda-backup-crate.infra.lib.backup-lib :as backup-lib]
-   [dda.pallet.dda-backup-crate.infra.lib.transport-lib :as transport-lib]
-   [dda.pallet.dda-backup-crate.infra.lib.restore-lib :as restore-lib]
-   [dda.pallet.dda-backup-crate.infra.lib.duplicity-lib :as duplicity-lib]))
+    [schema.core :as s]
+    [schema-tools.core :as st]
+    [pallet.actions :as actions]
+    [pallet.stevedore :as stevedore]
+    [dda.pallet.dda-backup-crate.infra.schema :as schema]
+    [dda.pallet.dda-backup-crate.infra.lib.common-lib :as common-lib]
+    [dda.pallet.dda-backup-crate.infra.lib.backup-lib :as backup-lib]
+    [dda.pallet.dda-backup-crate.infra.lib.transport-lib :as transport-lib]
+    [dda.pallet.dda-backup-crate.infra.lib.restore-lib :as restore-lib]
+    [dda.pallet.dda-backup-crate.infra.lib.duplicity-lib :as duplicity-lib]
+    [selmer.parser :as selmer]))
 
 (s/defn write-file
   "Write the backup file."
@@ -50,35 +51,27 @@
        (str "/etc/cron.daily/" cron-order cron-name)
        :action :create))))
 
-(s/defn backup-element-lines
-  ""
-  [backup-name :- s/Str
-   backup-store-folder :- s/Str
-   user-name :- s/Str
-   element :- schema/BackupElement]
-  (println element)
-  (case (get-in element [:type])
-    :file-compressed (backup-lib/backup-files-tar backup-name backup-store-folder user-name element)
-    :mysql (backup-lib/backup-mysql backup-name backup-store-folder user-name element)))
-
 (s/defn backup-script-lines
-  "create the backup script for defined elements."
+  "Create the backup script for defined elements.
+  Selmer will be used to create the script. As the target format is not HTML/XML it is not necessary to escape certain characters.
+  For documentation on Selmer please see https://github.com/yogthos/Selmer."
   [backup-name :- s/Str
    backup-store-folder :- s/Str
    service-restart :- s/Str
    user-name :- s/Str
    elements :- [schema/BackupElement]]
-  (let [service-restart? (not (clojure.string/blank? service-restart))]
-    (into
-     []
-     (concat
-      common-lib/head
-      common-lib/export-timestamp
-      (when service-restart?
-        (common-lib/stop-app-server service-restart))
-      (mapcat #(backup-element-lines backup-name backup-store-folder user-name %) elements)
-      (when service-restart?
-        (common-lib/start-app-server service-restart))))))
+  (clojure.string/split
+    (selmer.util/without-escaping
+      (selmer/render-file "backup_script.template" {:backup-name             backup-name
+                                                    :backup-transport-folder backup-store-folder
+                                                    :service-restart         service-restart
+                                                    :service-restart?        (not (clojure.string/blank? service-restart))
+                                                    :user-name               user-name
+                                                    :backup-elements         (clojure.string/join "\n\n" (map #(backup-lib/backup-element :backup-name backup-name
+                                                                                                                                          :backup-transport-folder backup-store-folder
+                                                                                                                                          :user-name user-name :backup-element %) elements))}))
+    #"\n" -1)
+  )
 
 (s/defn transport-element-lines
   ""
@@ -108,12 +101,6 @@
       ["fi"
        ""]))))
 
-(s/defn restore-element-lines
-  [element :- schema/BackupElement]
-  (case (:type element)
-    :file-compressed (restore-lib/restore-tar-script element)
-    :mysql (restore-lib/restore-mysql-script element)))
-
 (s/defn restore-script-lines
   "create the restore script"
   [duplicity? :- s/Bool
@@ -122,16 +109,16 @@
    service-restart :- s/Str
    transport-management :- schema/TransportManagement
    elements :- [schema/BackupElement]]
-  (into
-   []
-   (concat
-    common-lib/head
-    (when duplicity?
-      (duplicity-lib/transport-restore backup-script-path))
-    (restore-lib/restore-navigate-to-restore-location backup-restore-folder)
-    (restore-lib/provide-restore-dumps elements)
-    (restore-lib/restore-head-script elements)
-    (when (not (clojure.string/blank? service-restart))
-      (common-lib/stop-app-server service-restart))
-    (mapcat restore-element-lines elements)
-    restore-lib/restore-tail)))
+  (let [duplicity (when duplicity? (duplicity-lib/transport-restore backup-script-path))
+        service-restart-str (when (not (empty? service-restart)) (common-lib/stop-app-server service-restart))]
+    (clojure.string/split
+      (selmer.util/without-escaping
+        (selmer/render-file "restore_script.template" {:duplicity duplicity
+                                                       :provide-restore-dumps (clojure.string/join "\n" (restore-lib/provide-restore-dumps elements))
+                                                       :restore-head-script (clojure.string/join "\n" (restore-lib/restore-head-script elements))
+                                                       :service-restart (clojure.string/join "\n" service-restart-str)
+                                                       :restore-elements (clojure.string/join "\n" (map #(restore-lib/restore-element %) elements))
+                                                       }))
+      #"\n" -1))
+  )
+

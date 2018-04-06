@@ -1,0 +1,12 @@
+# ------------- restore db --------------
+echo "db restore ..."
+{% if db-pre-processing %}
+{{db-pre-processing}}
+{% endif %}
+mysql -hlocalhost -u{{db-user-name}} -p{{db-user-passwd}} -e "drop database {{db-name}}";
+mysql -hlocalhost -u{{db-user-name}} -p{{db-user-passwd}} -e "create database {{db-name}}{% if db-create-options %} {{db-create-options}}{% endif %}";
+mysql -hlocalhost -u{{db-user-name}} -p{{db-user-passwd}} {{db-name}} < ${{restore-dump-name}}
+{% if db-post-processing %}
+{{db-post-processing}}
+{% endif %}
+echo "finished db restore"

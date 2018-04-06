@@ -1,6 +1,6 @@
 pom.xml
 pom.xml.asc
-*jar
+*.jar
 /lib/
 /classes/
 /target/
@@ -13,3 +13,4 @@ pom.xml.asc
 /bin/
 /.settings/
 /logs
+dda-backup-crate.iml

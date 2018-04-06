@@ -16,10 +16,11 @@
 
 (ns dda.pallet.dda-backup-crate.domain.schema
   (:require
-   [schema.core :as s]
-   [dda.config.commons.secret :as secret]
-   [dda.pallet.dda-user-crate.domain :as user]
-   [dda.pallet.dda-backup-crate.infra.schema :as infra]))
+    [schema.core :as s]
+    [dda.config.commons.secret :as secret]
+    [dda.pallet.dda-user-crate.domain :as user]
+    [dda.pallet.dda-backup-crate.infra.schema :as infra]
+    [dda.config.commons.directory-model :as directory-model]))
 
 (def BackupElementType infra/BackupElementType)
 
@@ -47,6 +48,11 @@
    (s/optional-key :db-pre-processing) [s/Str]
    (s/optional-key :db-post-processing) [s/Str]})
 
+(def backup-path-schema
+  {:backup-path (s/either [directory-model/NonRootDirectory] {:root-dir directory-model/NonRootDirectory
+                                                              :subdir-to-save [directory-model/NonRootDirectory]})
+   (s/optional-key :new-owner) s/Str})
+
 (def BackupElement
   "The backup elements"
   (s/conditional
@@ -57,9 +63,12 @@
    #(= (:type %) :file-compressed)
    (merge
     BackupBaseElement
-    {:root-dir s/Str
-     :subdir-to-save s/Str
-     (s/optional-key :new-owner) s/Str})))
+    backup-path-schema)
+   #(= (:type %) :file-plain)
+   (merge
+     BackupBaseElement
+     backup-path-schema)
+   ))
 
 (def ResolvedBackupElement
   "The backup elements"
@@ -71,9 +80,11 @@
    #(= (:type %) :file-compressed)
    (merge
     BackupBaseElement
-    {:root-dir s/Str
-     :subdir-to-save s/Str
-     (s/optional-key :new-owner) s/Str})))
+    backup-path-schema)
+   #(= (:type %) :file-plain)
+   (merge
+     BackupBaseElement
+     backup-path-schema)))
 
 (def LocalManagement
   {:gens-stored-on-source-system s/Num})
