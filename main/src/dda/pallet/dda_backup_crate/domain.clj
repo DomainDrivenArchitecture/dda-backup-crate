@@ -24,12 +24,16 @@
     [dda.pallet.dda-backup-crate.infra :as infra]
     [dda.pallet.dda-backup-crate.infra.schema :as infra-schema]))
 
-(def ResolvedBackupConfig schema/ResolvedBackupConfig)
+(def BackupConfig schema/BackupConfig)
+
+(def BackupConfigResolved schema/BackupConfigResolved)
+
+(def BackupElementResolved schema/BackupElementResolved)
 
 (def InfraResult infra/InfraResult)
 
 ; TODO: Wire hardcoded password through domain config
-(def default-user-config {:dataBackupSource {:hashed-password "WIwn6jIUt2Rbc"}})
+(def default-user-config {:dataBackupSource {:hashed-password {:plain "WIwn6jIUt2Rbc"}}})
 
 (defn key-id
   [ascii-armored-key]
@@ -38,14 +42,14 @@
 ; TODO: Wire hardcoded password through domain config
 (s/defn ^:always-validate
   user-domain-configuration
-  [config :- ResolvedBackupConfig]
+  [config :- BackupConfig]
   (let [{:keys [backup-user transport-management]} config
         public-gpg (get-in transport-management [:duplicity-push :public-key])
         private-gpg (get-in transport-management [:duplicity-push :private-key])
         passphrase (get-in transport-management [:duplicity-push :passphrase])]
     (merge
       (if (contains? transport-management :duplicity-push)
-        {:root {:hashed-password "fksdjfiosjfr8o0jterojdo"
+        {:root {:hashed-password {:plain "fksdjfiosjfr8o0jterojdo"}
                 :gpg             {:trusted-key {:public-key  public-gpg
                                                 :private-key private-gpg
                                                 :passphrase  passphrase}}}}
@@ -62,7 +66,7 @@
 
 (s/defn ^:always-validate
   infra-backup-element :- infra-schema/BackupElement
-  [backup-element :- schema/ResolvedBackupElement]
+  [backup-element :- BackupElementResolved]
   (let [{:keys [name type]} backup-element]
     (merge
       (create-backup-path backup-element)
@@ -72,7 +76,7 @@
 
 (s/defn ^:always-validate
   infra-config :- infra-schema/ResolvedBackupConfig
-  [config :- ResolvedBackupConfig]
+  [config :- BackupConfigResolved]
   (let [{:keys [backup-user transport-management backup-elements]} config
         user-key :dda-backup
         public-gpg (get-in transport-management
@@ -95,6 +99,6 @@
 
 (s/defn ^:always-validate
   infra-configuration :- InfraResult
-  [config :- ResolvedBackupConfig]
+  [config :- BackupConfigResolved]
   (let [{} config]
     {infra/facility (infra-config config)}))

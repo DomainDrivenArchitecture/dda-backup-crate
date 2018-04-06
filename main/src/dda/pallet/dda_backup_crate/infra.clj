@@ -16,24 +16,17 @@
 (ns dda.pallet.dda-backup-crate.infra
   (:require
    [schema.core :as s]
-   [dda.pallet.core.dda-crate :as dda-crate]
+   [dda.pallet.core.infra :as core-infra]
    [dda.pallet.dda-backup-crate.infra.schema :as schema]
    [dda.pallet.dda-backup-crate.infra.backup-elements :as elements]
    [dda.pallet.dda-backup-crate.infra.local-management :as local]
    [dda.pallet.dda-backup-crate.infra.transport-management :as transport]))
 
 (def facility :dda-backup)
-(def version  [0 3 4])
 
 (def ResolvedBackupConfig schema/ResolvedBackupConfig)
 
 (def InfraResult {facility ResolvedBackupConfig})
-
-(def dda-backup-crate
-  (dda-crate/make-dda-crate
-   :facility facility
-   :version version
-   :config-default {}))
 
 (s/defn ^:always-validate init
   "init package-sources & update packages."
@@ -72,14 +65,18 @@
       (transport/configure-duplicity backup-user backup-script-path
        backup-transport-folder backup-restore-folder (:duplicity-push transport-management)))))
 
-(defmethod dda-crate/dda-init facility [dda-crate config]
+(defmethod core-infra/dda-init facility [core-infra config]
   (init config))
 
-(defmethod dda-crate/dda-install facility [dda-crate config]
+(defmethod core-infra/dda-install facility [core-infra config]
   (install config))
 
-(defmethod dda-crate/dda-configure facility [dda-crate config]
+(defmethod core-infra/dda-configure facility [core-infra config]
   (configure config))
 
+(def dda-backup-crate
+  (core-infra/make-dda-crate-infra
+   :facility facility))
+
 (def with-backup
-  (dda-crate/create-server-spec dda-backup-crate))
+  (core-infra/create-infra-plan dda-backup-crate))

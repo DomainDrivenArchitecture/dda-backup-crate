@@ -17,10 +17,9 @@
 (ns dda.pallet.dda-backup-crate.app
   (:require
    [schema.core :as s]
-   [dda.cm.group :as group]
-   [dda.pallet.core.dda-crate :as dda-crate]
+   [dda.pallet.commons.secret :as secret]
    [dda.config.commons.map-utils :as mu]
-   [dda.config.commons.user-env :as user-env]
+   [dda.pallet.core.app :as core-app]
    [dda.pallet.dda-user-crate.app :as user]
    [dda.pallet.dda-config-crate.infra :as config-crate]
    [dda.pallet.dda-backup-crate.infra :as infra]
@@ -28,28 +27,49 @@
 
 (def with-backup infra/with-backup)
 
+(def BackupConfig domain/BackupConfig)
+
+(def BackupConfigResolved domain/ResolvedBackupConfig)
+
 (def InfraResult
   (merge
    user/InfraResult
    infra/InfraResult))
 
 (def BackupAppConfig
-  {:group-specific-config
-   {s/Keyword InfraResult}})
+  {:group-specific-config {s/Keyword InfraResult}})
 
-(s/defn ^:always-validate app-configuration :- BackupAppConfig
-  [domain-config :- domain/ResolvedBackupConfig
+(s/defn ^:always-validate
+  app-configuration-resolved :- BackupAppConfig
+  [domain-config :- BackupConfigResolved
    & options]
   (let [{:keys [group-key]
-         :or  {group-key :dda-backup-group}} options]
+         :or  {group-key infra/facility}} options]
     (mu/deep-merge
-      (user/app-configuration (domain/user-domain-configuration domain-config) :group-key group-key)
+      (user/app-configuration-resolved
+        (domain/user-domain-configuration domain-config) :group-key group-key)
       {:group-specific-config
         {group-key (domain/infra-configuration domain-config)}})))
 
-(s/defn ^:always-validate backup-group-spec
-  [app-config :- BackupAppConfig]
-  (group/group-spec
-   app-config [(config-crate/with-config app-config)
-               user/with-user
-               with-backup]))
+(s/defn ^:always-validate
+  app-configuration :- BackupAppConfig
+  [domain-config :- BackupConfig
+   & options]
+  (let [resolved-domain-config (secret/resolve-secrets domain-config BackupConfig)]
+    (apply app-configuration-resolved resolved-domain-config options)))
+
+(s/defmethod ^:always-validate
+  core-app/group-spec infra/facility
+  [crate-app
+   domain-config :- BackupConfigResolved]
+  (let [app-config (app-configuration-resolved domain-config)]
+    (core-app/pallet-group-spec
+      app-config [(config-crate/with-config app-config)
+                  user/with-user
+                  with-backup])))
+
+(def crate-app (core-app/make-dda-crate-app
+                  :facility infra/facility
+                  :domain-schema BackupConfig
+                  :domain-schema-resolved BackupConfigResolved
+                  :default-domain-file "backup.edn"))

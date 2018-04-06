@@ -67,23 +67,6 @@
    #(= (:type %) :file-plain)
    (merge
      BackupBaseElement
-     backup-path-schema)
-   ))
-
-(def ResolvedBackupElement
-  "The backup elements"
-  (s/conditional
-   #(= (:type %) :mysql)
-   (merge
-    BackupBaseElement
-    ResolvedBackupDbElement)
-   #(= (:type %) :file-compressed)
-   (merge
-    BackupBaseElement
-    backup-path-schema)
-   #(= (:type %) :file-plain)
-   (merge
-     BackupBaseElement
      backup-path-schema)))
 
 (def LocalManagement
@@ -119,10 +102,6 @@
    :transport-management TransportManagement
    :backup-elements [BackupElement]})
 
-(def ResolvedBackupConfig
-  {:backup-name s/Str
-   :backup-user user/User
-   (s/optional-key :service-restart) s/Str
-   :local-management LocalManagement
-   :transport-management ResolvedTransportManagement
-   :backup-elements [ResolvedBackupElement]})
+(def BackupElementResolved (secret/create-resolved-schema BackupElement))
+
+(def BackupConfigResolved (secret/create-resolved-schema BackupConfig))
