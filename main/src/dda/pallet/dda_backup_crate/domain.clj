@@ -17,8 +17,8 @@
 (ns dda.pallet.dda-backup-crate.domain
   (:require
     [schema.core :as s]
-    [dda.config.commons.map-utils :as mu]
     [clj-pgp.core :as pgp]
+    [dda.config.commons.map-utils :as mu]
     [dda.pallet.dda-backup-crate.domain.schema :as schema]
     [dda.pallet.dda-backup-crate.domain.file-convention :as file]
     [dda.pallet.dda-backup-crate.infra :as infra]
@@ -28,13 +28,16 @@
 
 (def InfraResult infra/InfraResult)
 
+; TODO: Wire hardcoded password through domain config
 (def default-user-config {:dataBackupSource {:hashed-password "WIwn6jIUt2Rbc"}})
 
 (defn key-id
   [ascii-armored-key]
   (clojure.string/upper-case (pgp/hex-id (pgp/decode-public-key ascii-armored-key))))
 
-(s/defn ^:always-validate user-domain-configuration
+; TODO: Wire hardcoded password through domain config
+(s/defn ^:always-validate
+  user-domain-configuration
   [config :- ResolvedBackupConfig]
   (let [{:keys [backup-user transport-management]} config
         public-gpg (get-in transport-management [:duplicity-push :public-key])
@@ -49,13 +52,16 @@
         {})
       {:dda-backup backup-user})))
 
-(defn create-backup-path
+; TODO: move to downstream namespace as that should not be exposed to outside.
+(defn
+  create-backup-path
   [backup-element]
   (if (contains? (:backup-path backup-element) :root-dir)
     (update backup-element :backup-path [(map #(str (-> backup-element :backup-path :root-dir) %) (-> backup-element :backup-path :subdir-to-save))])
     backup-element))
 
-(s/defn ^:always-validate infra-backup-element :- infra-schema/BackupElement
+(s/defn ^:always-validate
+  infra-backup-element :- infra-schema/BackupElement
   [backup-element :- schema/ResolvedBackupElement]
   (let [{:keys [name type]} backup-element]
     (merge
@@ -64,7 +70,8 @@
        :backup-file-prefix-pattern (file/backup-file-prefix-pattern name type)
        :type-name                  (file/element-type-name type)})))
 
-(s/defn ^:always-validate infra-config :- infra-schema/ResolvedBackupConfig
+(s/defn ^:always-validate
+  infra-config :- infra-schema/ResolvedBackupConfig
   [config :- ResolvedBackupConfig]
   (let [{:keys [backup-user transport-management backup-elements]} config
         user-key :dda-backup
@@ -86,7 +93,8 @@
        :backup-elements         (map infra-backup-element backup-elements)})))
 
 
-(s/defn ^:always-validate infra-configuration :- InfraResult
+(s/defn ^:always-validate
+  infra-configuration :- InfraResult
   [config :- ResolvedBackupConfig]
   (let [{} config]
     {infra/facility (infra-config config)}))
