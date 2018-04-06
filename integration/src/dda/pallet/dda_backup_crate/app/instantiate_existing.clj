@@ -16,45 +16,36 @@
 
 (ns dda.pallet.dda-backup-crate.app.instantiate-existing
   (:require
-   [clojure.inspector :as inspector]
-   [pallet.repl :as pr]
-   [dda.pallet.commons.session-tools :as session-tools]
-   [dda.pallet.commons.pallet-schema :as ps]
-   [dda.pallet.commons.operation :as operation]
-   [dda.pallet.commons.existing :as existing]
+   [schema.core :as s]
+   [dda.pallet.core.app :as core-app]
    [dda.pallet.dda-backup-crate.app :as app]))
 
-(def provisioning-ip
-  "192.168.56.103")
+(defn install
+  [& options]
+  (let [{:keys [domain targets summarize-session]
+         :or {domain "backup.edn"
+              targets "integration/resources/existing-targets.edn"
+              summarize-session true}} options]
+    (core-app/existing-install app/crate-app
+                          {:domain domain
+                           :targets targets})))
 
-(def provisioning-user
-  {:login "initial"
-   :password "test1234"})
+(defn configure
+ [& options]
+ (let [{:keys [domain targets summarize-session]
+        :or {domain "backup.edn"
+             targets "integration/resources/existing-targets.edn"
+             summarize-session true}} options]
+  (core-app/existing-configure app/crate-app
+                          {:domain domain
+                           :targets targets})))
 
-(def domain-config {:backup-name "ssh"
-                    :script-path "/usr/lib/dda-backup/"
-                    :gens-stored-on-source-system 3
-                    :elements [{:type :file-compressed
-                                :name "ssh"
-                                :root-dir "/etc/"
-                                :subdir-to-save "ssh"}]})
-
-(defn provider []
-  (existing/provider provisioning-ip "node-id" "dda-backup-group"))
-
-(defn integrated-group-spec []
-  (merge
-   (app/backup-group-spec (app/app-configuration domain-config))
-   (existing/node-spec provisioning-user)))
-
-(defn apply-install []
-  (pr/session-summary
-   (operation/do-apply-install (provider) (integrated-group-spec))))
-
-(defn apply-config []
-  (pr/session-summary
-   (operation/do-apply-configure (provider) (integrated-group-spec))))
-
-(defn server-test []
-  (pr/session-summary
-   (operation/do-server-test (provider) (integrated-group-spec))))
+(defn serverspec
+  [& options]
+  (let [{:keys [domain targets summarize-session]
+         :or {domain "backup.edn"
+              targets "integration/resources/existing-targets.edn"
+              summarize-session true}} options]
+    (core-app/existing-serverspec app/crate-app
+                             {:domain domain
+                              :targets targets})))

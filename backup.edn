@@ -1,0 +1,7 @@
+{:backup-name "ssh"
+ :script-path "/usr/lib/dda-backup/"
+ :gens-stored-on-source-system 3
+ :elements [{:type :file-compressed
+             :name "ssh"
+             :root-dir "/etc/"
+             :subdir-to-save "ssh"}]}

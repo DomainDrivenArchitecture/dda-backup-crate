@@ -17,48 +17,35 @@
 (ns dda.pallet.dda-backup-crate.app.instantiate-aws
   (:require
    [clojure.inspector :as inspector]
-   [pallet.repl :as pr]
-   [dda.pallet.commons.encrypted-credentials :as crypto]
-   [dda.pallet.commons.session-tools :as session-tools]
-   [dda.pallet.commons.pallet-schema :as ps]
-   [dda.pallet.commons.operation :as operation]
-   [dda.pallet.commons.aws :as cloud-target]
-   [dda.pallet.dda-backup-crate.app :as app]
-   [dda.pallet.dda-backup-crate.app.passwordstore-config :as config]
-   [dda.pallet.dda-backup-crate.app.snakeoil-config :as config2]))
-
-(defn provisioning-spec [node-spec-config count]
-  (merge
-   (app/backup-group-spec (app/app-configuration config/duplicity-domain-config))
-   (cloud-target/node-spec node-spec-config)
-   {:count count}))
+   [dda.pallet.core.app :as core-app]
+   [dda.pallet.dda-backup-crate.app :as app]))
 
 (defn converge-install
   [count & options]
-  (let [{:keys [gpg-key-id gpg-passphrase target]
-         :or {target "integration/resources/jem-aws-target.edn"}} options
-        target-config (cloud-target/load-targets target)]
-   (operation/do-converge-install
-     (cloud-target/provider (:context target-config))
-     (provisioning-spec (:node-spec target-config) count)
-     :summarize-session true)))
+  (let [{:keys [domain targets summarize-session]
+         :or {domain "backup-snakeoil.edn"
+              targets "integration/resources/jem-aws-target.edn"
+              summarize-session true}} options]
+    (core-app/aws-install app/crate-app count
+                          {:domain domain
+                           :targets targets})))
 
 (defn configure
  [& options]
- (let [{:keys [gpg-key-id gpg-passphrase target]
-        :or {target "integration/resources/jem-aws-target.edn"}} options
-       target-config (cloud-target/load-targets target)]
-  (operation/do-apply-configure
-    (cloud-target/provider (:context target-config))
-    (provisioning-spec (:node-spec target-config) 0)
-    :summarize-session true)))
+ (let [{:keys [domain targets summarize-session]
+        :or {domain "backup-snakeoil.edn"
+             targets "integration/resources/jem-aws-target.edn"
+             summarize-session true}} options]
+  (core-app/aws-configure app/crate-app
+                          {:domain domain
+                           :targets targets})))
 
-(defn node-test
+(defn serverspec
   [& options]
-  (let [{:keys [gpg-key-id gpg-passphrase target]
-         :or {target "integration/resources/jem-aws-target.edn"}} options
-        target-config (cloud-target/load-targets target)]
-   (operation/do-server-test
-     (cloud-target/provider (:context target-config))
-     (provisioning-spec (:node-spec target-config) count)
-     :summarize-session true)))
+  (let [{:keys [domain targets summarize-session]
+         :or {domain "backup-snakeoil.edn"
+              targets "integration/resources/jem-aws-target.edn"
+              summarize-session true}} options]
+    (core-app/aws-serverspec app/crate-app
+                             {:domain domain
+                              :targets targets})))
