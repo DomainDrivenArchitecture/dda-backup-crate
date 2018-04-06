@@ -20,21 +20,26 @@
    [clojure.test :refer :all]
    [dda.pallet.dda-backup-crate.domain :as sut]))
 
-(def test-backup-element {:type :file-compressed
-                          :name "ssh"
-                          :backup-path ["/etc/ssh/"]})
+(def test-backup-element1 {:type :file-compressed
+                           :name "ssh"
+                           :backup-path ["/etc/ssh/"]})
+
+(def test-backup-element2 {:type :file-compressed
+                           :name "ssh"
+                           :root-dir "/etc/"
+                           :subdir-to-save ["ssh/"]})
 
 (def test-domain-backup-config
   {:backup-name "test"
    :backup-user {:hashed-password {:plain "WIwn6jIUt2Rbc"}}
    :local-management {:gens-stored-on-source-system 2}
    :transport-management {:ssh-pull true}
-   :backup-elements [test-backup-element]})
+   :backup-elements [test-backup-element1]})
 
 (def user-domain-config
   {:dda-backup {:hashed-password {:plain "WIwn6jIUt2Rbc"}}})
 
-(def test-infra-backup-element (merge test-backup-element
+(def test-infra-backup-element (merge test-backup-element1
                                       {:backup-file-prefix-pattern "ssh_file*",
                                        :backup-file-name "ssh_file_${timestamp}.tgz"
                                        :type-name "file"}))
@@ -58,10 +63,15 @@
    (is (= user-domain-config (sut/user-domain-configuration test-domain-backup-config)))))
 
 (deftest infra-backup-element-test
-  (testing (is (= test-infra-backup-element (sut/infra-backup-element test-backup-element)))))
+  (testing (is (= test-infra-backup-element
+                  (sut/infra-backup-element test-backup-element1))))
+  (testing (is (= test-infra-backup-element
+                  (sut/infra-backup-element test-backup-element2)))))
 
 (deftest infra-config-test
-  (testing (is (= test-backup-infra-config (sut/infra-config test-domain-backup-config)))))
+  (testing (is (= test-backup-infra-config
+                  (sut/infra-config test-domain-backup-config)))))
 
 (deftest infra-configuration-test
-  (testing (is (= infra-result-config (sut/infra-configuration test-domain-backup-config)))))
+  (testing (is (= infra-result-config
+                  (sut/infra-configuration test-domain-backup-config)))))

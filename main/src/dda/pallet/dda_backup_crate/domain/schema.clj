@@ -40,11 +40,13 @@
    (s/optional-key :db-post-processing) [s/Str]})
 
 (def BackupPath
-  {:backup-path
-   (s/either [directory-model/NonRootDirectory]
-             {:root-dir directory-model/NonRootDirectory
-              :subdir-to-save [directory-model/NonRootDirectory]})
-   (s/optional-key :new-owner) s/Str})
+  ;TODO: either does not work here ...
+  ;(s/either
+    {:backup-path [directory-model/NonRootDirectory]
+     (s/optional-key :new-owner) s/Str})
+    ;{:root-dir directory-model/NonRootDirectory
+    ; :subdir-to-save [directory-model/NonRootDirectory]
+    ; (s/optional-key :new-owner) s/Str})
 
 (def BackupElement
   "The backup elements"
