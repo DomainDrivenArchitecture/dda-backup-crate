@@ -86,6 +86,16 @@
    :transport-management TransportManagement
    :backup-elements [BackupElement]})
 
+(def UserResolved (secret/create-resolved-schema user/User))
+
+(def TransportManagementResolved (secret/create-resolved-schema TransportManagement))
+
 (def BackupElementResolved (secret/create-resolved-schema BackupElement))
 
-(def BackupConfigResolved (secret/create-resolved-schema BackupConfig))
+(def BackupConfigResolved
+  {:backup-name s/Str
+   :backup-user UserResolved
+   (s/optional-key :service-restart) s/Str
+   :local-management LocalManagement
+   :transport-management TransportManagementResolved
+   :backup-elements [BackupElementResolved]})

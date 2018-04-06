@@ -66,9 +66,7 @@
    :backup-elements
    [{:type :file-compressed
      :name "ssh"
-     :backup-path {:root-dir "/etc/"
-                   :subdir-to-save "ssh"}}
+     :backup-path ["/etc/ssh/"]}
     {:type :file-compressed
      :name "root"
-     :backup-path {:root-dir "/"
-                   :subdir-to-save "root"}}]}
+     :backup-path ["/root/"]}]}
