@@ -29,7 +29,7 @@
 
 (def BackupConfig domain/BackupConfig)
 
-(def BackupConfigResolved domain/ResolvedBackupConfig)
+(def BackupConfigResolved domain/BackupConfigResolved)
 
 (def InfraResult
   (merge
