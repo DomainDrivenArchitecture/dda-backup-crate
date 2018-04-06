@@ -27,7 +27,8 @@
                    :plugins [[lein-sub "0.3.0"]
                              [lein-pprint "1.1.2"]]
                    :leiningen/reply  {:dependencies [[org.slf4j/jcl-over-slf4j "1.8.0-alpha2"
-                                                      :exclusions [commons-logging]]]}}
+                                                      :exclusions [commons-logging]]]}
+                   :repl-options {:init-ns dda.pallet.dda-backup-crate.app.instantiate-aws}}
              :test {:test-paths ["test/src"]
                     :resource-paths ["test/resources"]
                     :dependencies [[com.palletops/pallet "0.8.12" :classifier "tests"]]}
