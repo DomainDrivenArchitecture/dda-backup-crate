@@ -41,15 +41,15 @@
 
 (s/defn ^:always-validate
   app-configuration-resolved :- BackupAppConfig
-  [domain-config :- BackupConfigResolved
+  [resolved-domain-config :- BackupConfigResolved
    & options]
   (let [{:keys [group-key]
          :or  {group-key infra/facility}} options]
     (mu/deep-merge
       (user/app-configuration-resolved
-        (domain/user-domain-configuration domain-config) :group-key group-key)
+        (domain/user-domain-configuration resolved-domain-config) :group-key group-key)
       {:group-specific-config
-        {group-key (domain/infra-configuration domain-config)}})))
+        {group-key (domain/infra-configuration resolved-domain-config)}})))
 
 (s/defn ^:always-validate
   app-configuration :- BackupAppConfig

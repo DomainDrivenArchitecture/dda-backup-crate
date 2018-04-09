@@ -58,8 +58,8 @@
    (merge
      BackupBaseElement
      {:backup-path [directory-model/NonRootDirectory]
-      (s/optional-key :new-owner) s/Str}
-     )))
+      (s/optional-key :new-owner) s/Str})))
+
 
 (def LocalManagement
   {:gens-stored-on-source-system s/Num})
