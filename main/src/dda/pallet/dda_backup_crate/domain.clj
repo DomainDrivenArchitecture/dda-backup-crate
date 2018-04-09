@@ -42,14 +42,14 @@
 ; TODO: Wire hardcoded password through domain config
 (s/defn ^:always-validate
   user-domain-configuration
-  [config :- BackupConfig]
+  [config :- BackupConfigResolved]
   (let [{:keys [backup-user transport-management]} config
         public-gpg (get-in transport-management [:duplicity-push :public-key])
         private-gpg (get-in transport-management [:duplicity-push :private-key])
         passphrase (get-in transport-management [:duplicity-push :passphrase])]
     (merge
       (if (contains? transport-management :duplicity-push)
-        {:root {:hashed-password {:plain "fksdjfiosjfr8o0jterojdo"}
+        {:root {:hashed-password "fksdjfiosjfr8o0jterojdo"
                 :gpg             {:trusted-key {:public-key  public-gpg
                                                 :private-key private-gpg
                                                 :passphrase  passphrase}}}}
