@@ -31,9 +31,3 @@
    (is (s/validate sut/BackupConfig (test-backup-snakeoil)))
    (is (s/validate sut/BackupConfigResolved
           (secret/resolve-secrets (test-backup-snakeoil) sut/BackupConfig)))))
-
-
-(deftest secret-resolving-test
-  (testing
-   (is (= ""
-          (secret/resolve-secrets (test-backup-snakeoil) sut/BackupConfig)))))

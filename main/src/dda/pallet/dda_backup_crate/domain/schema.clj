@@ -17,7 +17,7 @@
 (ns dda.pallet.dda-backup-crate.domain.schema
   (:require
     [schema.core :as s]
-    [dda.config.commons.secret :as secret]
+    [dda.pallet.commons.secret :as secret]
     [dda.pallet.dda-user-crate.domain :as user]
     [dda.config.commons.directory-model :as directory-model]))
 
