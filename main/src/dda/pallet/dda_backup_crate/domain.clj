@@ -19,16 +19,86 @@
     [schema.core :as s]
     [clj-pgp.core :as pgp]
     [dda.config.commons.map-utils :as mu]
+    [dda.config.commons.directory-model :as directory-model]
+    [dda.pallet.commons.secret :as secret]
     [dda.pallet.dda-backup-crate.domain.schema :as schema]
-    [dda.pallet.dda-backup-crate.domain.file-convention :as file]
+    [dda.pallet.dda-backup-crate.domain.backup-element-type :as element-type]
+    [dda.pallet.dda-user-crate.domain :as user]
     [dda.pallet.dda-backup-crate.infra :as infra]
     [dda.pallet.dda-backup-crate.infra.schema :as infra-schema]))
 
-(def BackupConfig schema/BackupConfig)
+(def BackupElementType element-type/BackupElementType)
 
-(def BackupConfigResolved schema/BackupConfigResolved)
+(def TransportType
+  (s/enum :ssh-pull :duplicity-push))
 
-(def BackupElementResolved schema/BackupElementResolved)
+(def BackupBaseElement
+  {:type BackupElementType
+   :name s/Str})
+
+(def BackupDbElement
+  "The db backup elements"
+  {:db-user-name s/Str
+   :db-user-passwd secret/Secret
+   :db-name s/Str
+   (s/optional-key :db-create-options) s/Str
+   (s/optional-key :db-pre-processing) [s/Str]
+   (s/optional-key :db-post-processing) [s/Str]})
+
+(def BackupPath
+  ;TODO: either does not work here ...
+  ;(s/either
+    {:backup-path [directory-model/NonRootDirectory]
+     (s/optional-key :new-owner) s/Str})
+    ;{:root-dir directory-model/NonRootDirectory
+    ; :subdir-to-save [directory-model/NonRootDirectory]
+    ; (s/optional-key :new-owner) s/Str})
+
+(def BackupElement
+  "The backup elements"
+  (s/conditional
+   #(= (:type %) :mysql)
+   (merge
+    BackupBaseElement
+    BackupDbElement)
+   #(= (:type %) :file-compressed)
+   (merge
+    BackupBaseElement
+    BackupPath)
+   #(= (:type %) :file-plain)
+   (merge
+     BackupBaseElement
+     BackupPath)))
+
+(def LocalManagement
+  {:gens-stored-on-source-system s/Num})
+
+(def TransportManagement
+  {(s/optional-key :ssh-pull) s/Any
+   (s/optional-key :duplicity-push)
+   {:public-key secret/Secret
+    :private-key secret/Secret
+    :passphrase secret/Secret
+    (s/optional-key :target-s3) {:aws-access-key-id secret/Secret
+                                 :aws-secret-access-key secret/Secret
+                                 :bucket-name s/Str
+                                 (s/optional-key :directory-name) s/Str}}})
+
+(def BackupConfig
+  {:backup-name s/Str
+   :backup-user user/User
+   (s/optional-key :service-restart) s/Str
+   :local-management LocalManagement
+   :transport-management TransportManagement
+   :backup-elements [BackupElement]})
+
+(def UserResolved (secret/create-resolved-schema user/User))
+
+(def TransportManagementResolved (secret/create-resolved-schema TransportManagement))
+
+(def BackupElementResolved (secret/create-resolved-schema BackupElement))
+
+(def BackupConfigResolved (secret/create-resolved-schema BackupConfig))
 
 (def InfraResult infra/InfraResult)
 
@@ -70,9 +140,9 @@
   (let [{:keys [name type]} backup-element]
     (merge
       (create-backup-path backup-element)
-      {:backup-file-name           (file/backup-file-name name type)
-       :backup-file-prefix-pattern (file/backup-file-prefix-pattern name type)
-       :type-name                  (file/element-type-name type)})))
+      {:backup-file-name           (element-type/backup-file-name name type)
+       :backup-file-prefix-pattern (element-type/backup-file-prefix-pattern name type)
+       :type-name                  (element-type/element-type-name type)})))
 
 (s/defn ^:always-validate
   infra-config :- infra-schema/ResolvedBackupConfig
