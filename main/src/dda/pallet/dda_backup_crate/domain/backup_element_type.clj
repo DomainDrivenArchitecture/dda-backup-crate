@@ -14,13 +14,16 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.dda-backup-crate.domain.file-convention
+(ns dda.pallet.dda-backup-crate.domain.backup-element-type
   (:require
-   [schema.core :as s]
-   [dda.pallet.dda-backup-crate.domain.schema :as schema]))
+   [schema.core :as s]))
+
+(def BackupElementType
+  "The backup source elements"
+  (s/enum :mysql :file-compressed :file-plain :rsync))
 
 (s/defn element-type-name
-  [type :- schema/BackupElementType]
+  [type :- BackupElementType]
   (case type
     :file-compressed "file"
     :file-plain "file"
@@ -29,7 +32,7 @@
     :duplicity "file"))
 
 (s/defn element-type-file-extension
-  [type :- schema/BackupElementType]
+  [type :- BackupElementType]
   (case type
     :file-compressed "tgz"
     :file-plain "tar"
@@ -40,19 +43,19 @@
 (s/defn backup-file-prefix  :- s/Str
   ""
   [name :- s/Str
-   type :- schema/BackupElementType]
+   type :- BackupElementType]
   (str name "_" (element-type-name type)))
 
 (s/defn backup-file-prefix-pattern :- s/Str
   ""
   [name :- s/Str
-   type :- schema/BackupElementType]
+   type :- BackupElementType]
   (str (backup-file-prefix name type) "*"))
 
 (s/defn backup-file-name
   ""
   [name :- s/Str
-   type :- schema/BackupElementType]
+   type :- BackupElementType]
   (str (backup-file-prefix name type)
        "_${timestamp}."
        (element-type-file-extension type)))

@@ -19,11 +19,10 @@
     [schema.core :as s]
     [dda.pallet.commons.secret :as secret]
     [dda.pallet.dda-user-crate.domain :as user]
+    [dda.pallet.dda-backup-crate.domain.backup-element-type :as element-type]
     [dda.config.commons.directory-model :as directory-model]))
 
-(def BackupElementType
-  "The backup source elements"
-  (s/enum :mysql :file-compressed :file-plain :rsync))
+(def BackupElementType element-type/BackupElementType)
 
 (def TransportType
   (s/enum :ssh-pull :duplicity-push))
