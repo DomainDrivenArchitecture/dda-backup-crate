@@ -126,8 +126,8 @@
   (let [{:keys [name type]} backup-element]
     (-> backup-element
         (assoc :backup-file-name (element-type/backup-file-name name type))
-        (update :backup-file-prefix-pattern (element-type/backup-file-prefix-pattern name type))
-        (update :type-name  (element-type/element-type-name type)))))
+        (assoc :backup-file-prefix-pattern (element-type/backup-file-prefix-pattern name type))
+        (assoc :type-name  (element-type/element-type-name type)))))
 
 (s/defn ^:always-validate
   infra-config :- infra-schema/ResolvedBackupConfig
