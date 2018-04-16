@@ -21,7 +21,6 @@
     [dda.config.commons.map-utils :as mu]
     [dda.config.commons.directory-model :as directory-model]
     [dda.pallet.commons.secret :as secret]
-    [dda.pallet.dda-backup-crate.domain.schema :as schema]
     [dda.pallet.dda-backup-crate.domain.backup-element-type :as element-type]
     [dda.pallet.dda-user-crate.domain :as user]
     [dda.pallet.dda-backup-crate.infra :as infra]
