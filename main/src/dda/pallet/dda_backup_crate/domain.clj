@@ -46,13 +46,8 @@
    (s/optional-key :db-post-processing) [s/Str]})
 
 (def BackupPath
-  ;TODO: either does not work here ...
-  ;(s/either
     {:backup-path [directory-model/NonRootDirectory]
      (s/optional-key :new-owner) s/Str})
-    ;{:root-dir directory-model/NonRootDirectory
-    ; :subdir-to-save [directory-model/NonRootDirectory]
-    ; (s/optional-key :new-owner) s/Str})
 
 (def BackupElement
   "The backup elements"
@@ -126,23 +121,14 @@
         {})
       {:dda-backup backup-user})))
 
-; TODO: move to downstream namespace as that should not be exposed to outside.
-(defn
-  create-backup-path
-  [backup-element]
-  (if (contains? (:backup-path backup-element) :root-dir)
-    (update backup-element :backup-path [(map #(str (-> backup-element :backup-path :root-dir) %) (-> backup-element :backup-path :subdir-to-save))])
-    backup-element))
-
 (s/defn ^:always-validate
   infra-backup-element :- infra-schema/BackupElement
   [backup-element :- BackupElementResolved]
   (let [{:keys [name type]} backup-element]
-    (merge
-      (create-backup-path backup-element)
-      {:backup-file-name           (element-type/backup-file-name name type)
-       :backup-file-prefix-pattern (element-type/backup-file-prefix-pattern name type)
-       :type-name                  (element-type/element-type-name type)})))
+    (-> backup-element
+        (assoc :backup-file-name (element-type/backup-file-name name type))
+        (update :backup-file-prefix-pattern (element-type/backup-file-prefix-pattern name type))
+        (update :type-name  (element-type/element-type-name type)))))
 
 (s/defn ^:always-validate
   infra-config :- infra-schema/ResolvedBackupConfig
