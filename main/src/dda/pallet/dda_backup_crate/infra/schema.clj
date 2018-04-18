@@ -58,6 +58,11 @@
    (merge
      BackupBaseElement
      {:backup-path [directory-model/NonRootDirectory]
+      (s/optional-key :new-owner) s/Str})
+   #(= (:type %) :rsync)
+   (merge
+     BackupBaseElement
+     {:backup-path [directory-model/NonRootDirectory]
       (s/optional-key :new-owner) s/Str})))
 
 

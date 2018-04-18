@@ -53,5 +53,5 @@
 (defmethod backup-element :rsync
   [& {:keys [backup-element backup-transport-folder]}]
   (selmer/render-file "backup_templates/backup_rsync.template" {:backup-transport-folder backup-transport-folder
-                                                               :backup-file-name        (:backup-file-name backup-element)
-                                                               :backup-path             (:backup-path backup-element)}))
+                                                                :backup-file-name        (:backup-file-name backup-element)
+                                                                :backup-path             (:backup-path backup-element)}))
