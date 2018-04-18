@@ -126,7 +126,7 @@
   (let [{:keys [name type]} backup-element]
     (-> backup-element
         (assoc :backup-file-name (element-type/backup-file-name name type))
-        (assoc :backup-file-prefix-pattern (element-type/backup-file-prefix-pattern name type))
+        (assoc :backup-file-prefix-pattern (str "/var/backups/transport-outgoing/" (element-type/backup-file-prefix-pattern name type)))
         (assoc :type-name  (element-type/element-type-name type)))))
 
 (s/defn ^:always-validate
