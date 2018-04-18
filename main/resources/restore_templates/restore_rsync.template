@@ -1,0 +1,9 @@
+# ------------- restore rsync --------------
+echo "rsync restore ..."
+
+rm -r {{backup-path}}
+rsync -aAx --inplace ${{restore-dump-name}} /
+{% if chown %}
+{{chown}}
+{% endif %}
+echo "finished file restore."

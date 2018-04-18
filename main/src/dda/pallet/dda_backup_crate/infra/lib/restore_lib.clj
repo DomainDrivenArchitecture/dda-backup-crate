@@ -123,21 +123,13 @@
                          :restore-dump-name (str "{" (restore-dump-name element) "}")
                          :db-post-processing (clojure.string/join "\n" (:db-post-processing element))})))
 
-;TODO What is the argument restore-target-dir? It is not present in any configuration.
-(defn restore-rsync
-  [& {:keys [restore-target-dir
-             new-owner]
-      :or {dump-filename "${most_recent_file_dump}"}}]
-  (into []
-        (concat
-         [(str "rm -r " restore-target-dir "/*")
-          (str "rsync -Aax"
-               " ${most_recent_file_dump}/"
-               restore-target-dir
-               "/ "
-               restore-target-dir)]
-         (if new-owner
-           [(str "chown -R " new-owner ":" new-owner " " restore-target-dir)]
-           [])
-         [""])))
-
+(defmethod restore-element :rsync
+  [element]
+  (render-file "restore_templates/restore_rsync.template"
+               {:backup-path (clojure.string/join " " (:backup-path element))
+                :chown (if (contains? element :new-owner)
+                         [(str "chown -R " (:new-owner element)
+                               ":" (:new-owner element)
+                               " " (clojure.string/join " " (:backup-path element)))]
+                         nil)
+                :restore-dump-name (str "{" (restore-dump-name element) "}/")}))
