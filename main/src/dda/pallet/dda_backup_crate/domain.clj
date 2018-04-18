@@ -62,6 +62,10 @@
    #(= (:type %) :file-plain)
    (merge
      BackupBaseElement
+     BackupPath)
+   #(= (:type %) :rsync)
+   (merge
+     BackupBaseElement
      BackupPath)))
 
 (def LocalManagement
