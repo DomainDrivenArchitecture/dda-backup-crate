@@ -1,3 +1,3 @@
 #backup the specified files and directories
-tar {{tar-options}} {{backup-transport-folder}}/{{backup-file-name}} {{backup-path|join:" "}}
+tar {{tar-options}} {{backup-transport-folder}}/{{backup-file-name}} {{backup-path}}
 chown {{user-name}}:{{user-name}} {{backup-transport-folder}}/{{backup-file-name}}

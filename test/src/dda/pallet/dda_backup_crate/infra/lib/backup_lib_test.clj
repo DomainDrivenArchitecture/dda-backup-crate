@@ -54,8 +54,7 @@
 (deftest backup-files-rsync
   (testing
     (is (= ["#backup the files"
-            "rsync -Aax /var/lib/liferay/data/ /var/lib/httpd/www/ /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz"
-            ]
+            "rsync -Aax --relative /var/lib/liferay/data/ /var/lib/httpd/www/ /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz"]
            (clojure.string/split-lines (sut/backup-element
                                          :backup-name "portal"
                                          :backup-transport-folder "/var/backups/transport-outgoing"
