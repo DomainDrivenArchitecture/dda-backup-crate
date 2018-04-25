@@ -77,6 +77,8 @@
    {:public-key secret/Secret
     :private-key secret/Secret
     :passphrase secret/Secret
+    :root-password (s/either {:hashed-password secret/Secret}
+                             {:clear-password secret/Secret})
     (s/optional-key :target-s3) {:aws-access-key-id secret/Secret
                                  :aws-secret-access-key secret/Secret
                                  :bucket-name s/Str
@@ -100,27 +102,29 @@
 
 (def InfraResult infra/InfraResult)
 
-; TODO: Wire hardcoded password through domain config
-(def default-user-config {:dataBackupSource {:hashed-password {:plain "WIwn6jIUt2Rbc"}}})
-
 (defn key-id
   [ascii-armored-key]
   (clojure.string/upper-case (pgp/hex-id (pgp/decode-public-key ascii-armored-key))))
 
-; TODO: Wire hardcoded password through domain config
 (s/defn ^:always-validate
   user-domain-configuration
   [config :- BackupConfigResolved]
   (let [{:keys [backup-user transport-management]} config
-        public-gpg (get-in transport-management [:duplicity-push :public-key])
-        private-gpg (get-in transport-management [:duplicity-push :private-key])
-        passphrase (get-in transport-management [:duplicity-push :passphrase])]
+        duplicity-push (get-in transport-management [:duplicity-push])
+        public-gpg (get-in duplicity-push [:public-key])
+        private-gpg (get-in duplicity-push [:private-key])
+        passphrase (get-in duplicity-push [:passphrase])
+        root-password (get-in duplicity-push [:root-password])]
     (merge
       (if (contains? transport-management :duplicity-push)
-        {:root {:hashed-password "fksdjfiosjfr8o0jterojdo"
-                :gpg             {:trusted-key {:public-key  public-gpg
-                                                :private-key private-gpg
-                                                :passphrase  passphrase}}}}
+        {:root
+         (merge
+           (if (contains? root-password :hashed-password)
+             {:hashed-password (-> root-password :hashed-password)}
+             {:clear-password (-> root-password :clear-password)})
+           {:gpg {:trusted-key {:public-key  public-gpg
+                                :private-key private-gpg
+                                :passphrase  passphrase}}})}
         {})
       {:dda-backup backup-user})))
 
@@ -146,7 +150,11 @@
                                                                   :days-stored-on-backup 21}}}
                          {})]
     (mu/deep-merge
-      config
+      (update-in 
+        config 
+        [:transport-management :duplicity-push] 
+        dissoc
+        :root-password)
       additional-map
       {:backup-script-path      "/usr/local/lib/dda-backup/"
        :backup-transport-folder "/var/backups/transport-outgoing"
