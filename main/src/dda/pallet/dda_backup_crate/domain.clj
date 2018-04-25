@@ -89,7 +89,7 @@
    :backup-user user/User
    (s/optional-key :service-restart) s/Str
    :local-management LocalManagement
-   :transport-management TransportManagement
+   (s/optional-key :transport-management) TransportManagement
    :backup-elements [BackupElement]})
 
 (def UserResolved (secret/create-resolved-schema user/User))

@@ -62,7 +62,8 @@
                          :passphrase {:plain "passphrase"}
                          :target-s3 {:aws-access-key-id {:plain ""}
                                      :aws-secret-access-key {:plain ""}
-                                     :bucket-name ""}}}
+                                     :bucket-name ""}
+           :root-password {:hashed-password {:plain "fksdjfiosjfr8o0jterojdo"}}}}
    :backup-elements
    [{:type :file-compressed
      :name "ssh"

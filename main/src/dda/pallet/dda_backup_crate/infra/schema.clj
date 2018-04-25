@@ -94,5 +94,5 @@
    :backup-user s/Keyword
    (s/optional-key :service-restart) s/Str
    :local-management LocalManagement
-   :transport-management TransportManagement
+   (s/optional-key :transport-management) TransportManagement
    :backup-elements [BackupElement]})
