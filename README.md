@@ -35,22 +35,21 @@ backing up and restoring the system. You may use the following example as a star
 {:backup-name          "downloads"                                                       ;name of the backup to be created
  :backup-user          {:clear-password {:plain "test1234"}}                             ;password for the backup-user
  :local-management     {:gens-stored-on-source-system 3}                                 ;the number of backup generations to be saved before deleting backups
- :transport-management {}
  :backup-elements      [{:type        :file-compressed                                   ;type of the backup
                          :name        "downloads_file_compressed"                        ;name of the backup-element
                          :backup-path ["/home/krj/Downloads/" "/home/krj/Documents/"]}   ;the paths which are supposed to be backed up and restored
                         {:type        :rsync                                             ;use rsync for backup on the same host
                          :name        "downloads_rsync"                                  ;name of the backup-element
-                         :backup-path ["/home/krj/Downloads/" "/home/krj/Documents/"]}]  ;the paths which are supposed to be backed up and restored 
+                         :backup-path ["/home/krj/Downloads/" "/home/krj/Documents/"]}]  ;the paths which are supposed to be backed up and restored
  }
   ```
-  
+
 3. The target hosts need to be specified in the `integration/resources/existing-targets.edn`. In this file you define which servers are suppose to receive the backup and restore scripts. You may use and adjust the following example config:
 ```clojure
 {:existing [{:node-name "target1"                      ; semantic name (keep the default or use a name that suits you)
-             :node-ip "192.168.56.104"}]               ; the ip4 address of the machine to be provisioned
+             :node-ip "192.168.56.104"}                ; the ip4 address of the machine to be provisioned
              {:node-name "target2"                     ; semantic name (keep the default or use a name that suits you)
-                          :node-ip "192.168.56.105"}]  ; the ip4 address of the machine to be provisioned
+              :node-ip "192.168.56.105"}]              ; the ip4 address of the machine to be provisioned
  :provisioning-user {:login "initial"                  ; user on the target machine, must have sudo rights
                      :password {:plain "secure1234"}}} ; password can be ommited, if a ssh key is authorized
 ```
@@ -89,13 +88,12 @@ The ```provisioning-user``` has to be the same for all nodes that will be tested
 {:backup-name          "downloads"                                                    
  :backup-user          {:clear-password {:plain "test1234"}}                          
  :local-management     {:gens-stored-on-source-system 3}                          
- :transport-management {}
  :backup-elements      [{:type        :file-compressed                              
                          :name        "downloads_file_compressed"                        
                          :backup-path ["/home/krj/Downloads/" "/home/krj/Documents/"]}   
                         {:type        :rsync                                            
                          :name        "downloads_rsync"                                
-                         :backup-path ["/home/krj/Downloads/" "/home/krj/Documents/"]}]
+                         :backup-path ["/home/krj/Downloads/" "/home/krj/Documents/"]}]}
 ```
 The backup config file determines the resulting backup and restore script files. For example the part containing ```{:type :file-compressed}``` creates a backup script that uses tar and compressed the files to be backed-up.
 There are different types of backups that can be used. More details can be found in the reference below.
@@ -137,69 +135,71 @@ The schema for the tests is:
   "The backup source elements"
   (s/enum :mysql :file-compressed :file-plain :rsync))
 
-(def BackupElementType element-type/BackupElementType)
+  (def BackupElementType element-type/BackupElementType)
 
-(def TransportType
-  (s/enum :ssh-pull :duplicity-push))
+  (def TransportType
+    (s/enum :ssh-pull :duplicity-push))
 
-(def BackupBaseElement
-  {:type BackupElementType
-   :name s/Str})
+  (def BackupBaseElement
+    {:type BackupElementType
+     :name s/Str})
 
-(def BackupDbElement
-  "The db backup elements"
-  {:db-user-name s/Str
-   :db-user-passwd secret/Secret
-   :db-name s/Str
-   (s/optional-key :db-create-options) s/Str
-   (s/optional-key :db-pre-processing) [s/Str]
-   (s/optional-key :db-post-processing) [s/Str]})
+  (def BackupDbElement
+    "The db backup elements"
+    {:db-user-name                        s/Str
+     :db-user-passwd                      secret/Secret
+     :db-name                             s/Str
+     (s/optional-key :db-create-options)  s/Str
+     (s/optional-key :db-pre-processing)  [s/Str]
+     (s/optional-key :db-post-processing) [s/Str]})
 
-(def BackupPath
-    {:backup-path [directory-model/NonRootDirectory]
+  (def BackupPath
+    {:backup-path                [directory-model/NonRootDirectory]
      (s/optional-key :new-owner) s/Str})
 
-(def BackupElement
-  "The backup elements"
-  (s/conditional
-   #(= (:type %) :mysql)
-   (merge
-    BackupBaseElement
-    BackupDbElement)
-   #(= (:type %) :file-compressed)
-   (merge
-    BackupBaseElement
-    BackupPath)
-   #(= (:type %) :file-plain)
-   (merge
-     BackupBaseElement
-     BackupPath)
-   #(= (:type %) :rsync)
-   (merge
-     BackupBaseElement
-     BackupPath)))
+  (def BackupElement
+    "The backup elements"
+    (s/conditional
+      #(= (:type %) :mysql)
+      (merge
+        BackupBaseElement
+        BackupDbElement)
+      #(= (:type %) :file-compressed)
+      (merge
+        BackupBaseElement
+        BackupPath)
+      #(= (:type %) :file-plain)
+      (merge
+        BackupBaseElement
+        BackupPath)
+      #(= (:type %) :rsync)
+      (merge
+        BackupBaseElement
+        BackupPath)))
 
-(def LocalManagement
-  {:gens-stored-on-source-system s/Num})
+  (def LocalManagement
+    {:gens-stored-on-source-system s/Num})
 
-(def TransportManagement
-  {(s/optional-key :ssh-pull) s/Any
-   (s/optional-key :duplicity-push)
-   {:public-key secret/Secret
-    :private-key secret/Secret
-    :passphrase secret/Secret
-    (s/optional-key :target-s3) {:aws-access-key-id secret/Secret
-                                 :aws-secret-access-key secret/Secret
-                                 :bucket-name s/Str
-                                 (s/optional-key :directory-name) s/Str}}})
+  (def TransportManagement
+    {(s/optional-key :ssh-pull) s/Any
+     (s/optional-key :duplicity-push)
+                                {:public-key                 secret/Secret
+                                 :private-key                secret/Secret
+                                 :passphrase                 secret/Secret
+                                 :root-password              (s/either {:hashed-password secret/Secret}
+                                                                       {:clear-password secret/Secret})
+                                 (s/optional-key :target-s3) {:aws-access-key-id               secret/Secret
+                                                              :aws-secret-access-key           secret/Secret
+                                                              :bucket-name                     s/Str
+                                                              (s/optional-key :directory-name) s/Str}}})
 
-(def BackupConfig
-  {:backup-name s/Str
-   :backup-user user/User
-   (s/optional-key :service-restart) s/Str
-   :local-management LocalManagement
-   :transport-management TransportManagement
-   :backup-elements [BackupElement]})
+  (def BackupConfig
+    {:backup-name                           s/Str
+     :backup-user                           user/User
+     (s/optional-key :service-restart)      s/Str
+     :local-management                      LocalManagement
+     (s/optional-key :transport-management) TransportManagement
+     :backup-elements                       [BackupElement]})
 ```
 The "backup.edn" file has to match this schema.
 
@@ -283,8 +283,9 @@ The schema is:
    :backup-user s/Keyword
    (s/optional-key :service-restart) s/Str
    :local-management LocalManagement
-   :transport-management TransportManagement
+   (s/optional-key :transport-management) TransportManagement
    :backup-elements [BackupElement]})
+
 ```
 
 ## Compatibility

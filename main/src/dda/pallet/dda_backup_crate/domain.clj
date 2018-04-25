@@ -37,36 +37,36 @@
 
 (def BackupDbElement
   "The db backup elements"
-  {:db-user-name s/Str
-   :db-user-passwd secret/Secret
-   :db-name s/Str
-   (s/optional-key :db-create-options) s/Str
-   (s/optional-key :db-pre-processing) [s/Str]
+  {:db-user-name                        s/Str
+   :db-user-passwd                      secret/Secret
+   :db-name                             s/Str
+   (s/optional-key :db-create-options)  s/Str
+   (s/optional-key :db-pre-processing)  [s/Str]
    (s/optional-key :db-post-processing) [s/Str]})
 
 (def BackupPath
-    {:backup-path [directory-model/NonRootDirectory]
-     (s/optional-key :new-owner) s/Str})
+  {:backup-path                [directory-model/NonRootDirectory]
+   (s/optional-key :new-owner) s/Str})
 
 (def BackupElement
   "The backup elements"
   (s/conditional
-   #(= (:type %) :mysql)
-   (merge
-    BackupBaseElement
-    BackupDbElement)
-   #(= (:type %) :file-compressed)
-   (merge
-    BackupBaseElement
-    BackupPath)
-   #(= (:type %) :file-plain)
-   (merge
-     BackupBaseElement
-     BackupPath)
-   #(= (:type %) :rsync)
-   (merge
-     BackupBaseElement
-     BackupPath)))
+    #(= (:type %) :mysql)
+    (merge
+      BackupBaseElement
+      BackupDbElement)
+    #(= (:type %) :file-compressed)
+    (merge
+      BackupBaseElement
+      BackupPath)
+    #(= (:type %) :file-plain)
+    (merge
+      BackupBaseElement
+      BackupPath)
+    #(= (:type %) :rsync)
+    (merge
+      BackupBaseElement
+      BackupPath)))
 
 (def LocalManagement
   {:gens-stored-on-source-system s/Num})
@@ -74,23 +74,23 @@
 (def TransportManagement
   {(s/optional-key :ssh-pull) s/Any
    (s/optional-key :duplicity-push)
-   {:public-key secret/Secret
-    :private-key secret/Secret
-    :passphrase secret/Secret
-    :root-password (s/either {:hashed-password secret/Secret}
-                             {:clear-password secret/Secret})
-    (s/optional-key :target-s3) {:aws-access-key-id secret/Secret
-                                 :aws-secret-access-key secret/Secret
-                                 :bucket-name s/Str
-                                 (s/optional-key :directory-name) s/Str}}})
+                              {:public-key                 secret/Secret
+                               :private-key                secret/Secret
+                               :passphrase                 secret/Secret
+                               :root-password              (s/either {:hashed-password secret/Secret}
+                                                                     {:clear-password secret/Secret})
+                               (s/optional-key :target-s3) {:aws-access-key-id               secret/Secret
+                                                            :aws-secret-access-key           secret/Secret
+                                                            :bucket-name                     s/Str
+                                                            (s/optional-key :directory-name) s/Str}}})
 
 (def BackupConfig
-  {:backup-name s/Str
-   :backup-user user/User
-   (s/optional-key :service-restart) s/Str
-   :local-management LocalManagement
+  {:backup-name                           s/Str
+   :backup-user                           user/User
+   (s/optional-key :service-restart)      s/Str
+   :local-management                      LocalManagement
    (s/optional-key :transport-management) TransportManagement
-   :backup-elements [BackupElement]})
+   :backup-elements                       [BackupElement]})
 
 (def UserResolved (secret/create-resolved-schema user/User))
 
@@ -107,7 +107,7 @@
   (clojure.string/upper-case (pgp/hex-id (pgp/decode-public-key ascii-armored-key))))
 
 (s/defn ^:always-validate
-  user-domain-configuration
+user-domain-configuration
   [config :- BackupConfigResolved]
   (let [{:keys [backup-user transport-management]} config
         duplicity-push (get-in transport-management [:duplicity-push])
@@ -129,13 +129,13 @@
       {:dda-backup backup-user})))
 
 (s/defn ^:always-validate
-  infra-backup-element :- infra-schema/BackupElement
+infra-backup-element :- infra-schema/BackupElement
   [backup-element :- BackupElementResolved]
   (let [{:keys [name type]} backup-element]
     (-> backup-element
         (assoc :backup-file-name (element-type/backup-file-name name type))
         (assoc :backup-file-prefix-pattern (str "/var/backups/transport-outgoing/" (element-type/backup-file-prefix-pattern name type)))
-        (assoc :type-name  (element-type/element-type-name type)))))
+        (assoc :type-name (element-type/element-type-name type)))))
 
 (s/defn ^:always-validate
   infra-config :- infra-schema/ResolvedBackupConfig
@@ -150,11 +150,13 @@
                                                                   :days-stored-on-backup 21}}}
                          {})]
     (mu/deep-merge
-      (update-in 
-        config 
-        [:transport-management :duplicity-push] 
-        dissoc
-        :root-password)
+      (if (contains? transport-management :duplicity-push)
+        (update-in
+          config
+          [:transport-management :duplicity-push]
+          dissoc
+          :root-password)
+        config)
       additional-map
       {:backup-script-path      "/usr/local/lib/dda-backup/"
        :backup-transport-folder "/var/backups/transport-outgoing"
@@ -165,7 +167,7 @@
 
 
 (s/defn ^:always-validate
-  infra-configuration :- InfraResult
+infra-configuration :- InfraResult
   [config :- BackupConfigResolved]
   (let [{} config]
     {infra/facility (infra-config config)}))

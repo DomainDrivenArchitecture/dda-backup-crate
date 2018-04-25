@@ -104,9 +104,9 @@
                                           "--same-owner --same-permissions")
                        :tar-compress-option "-xf"
                        :chown (if (contains? element :new-owner)
-                                [(str "chown -R " (:new-owner element)
+                                (str "chown -R " (:new-owner element)
                                       ":" (:new-owner element)
-                                      " " (clojure.string/join " " (:backup-path element)))]
+                                      " " (clojure.string/join " " (:backup-path element)))
                                 nil)
                        :restore-dump-name (str "{" (restore-dump-name element) "}")}))
 
@@ -128,8 +128,8 @@
   (render-file "restore_templates/restore_rsync.template"
                {:backup-path (clojure.string/join " " (:backup-path element))
                 :chown (if (contains? element :new-owner)
-                         [(str "chown -R " (:new-owner element)
+                         (str "chown -R " (:new-owner element)
                                ":" (:new-owner element)
-                               " " (clojure.string/join " " (:backup-path element)))]
+                               " " (clojure.string/join " " (:backup-path element)))
                          nil)
                 :restore-dump-name (str "{" (restore-dump-name element) "}/")}))

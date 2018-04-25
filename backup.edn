@@ -1,7 +1,12 @@
-{:backup-name "ssh"
- :script-path "/usr/lib/dda-backup/"
- :gens-stored-on-source-system 3
- :elements [{:type :file-compressed
-             :name "ssh"
-             :root-dir "/etc/"
-             :subdir-to-save "ssh"}]}
+{:backup-name          "downloads"
+ :backup-user          {:clear-password {:plain "secret"}}
+ :local-management     {:gens-stored-on-source-system 3}
+ :backup-elements      [{:type        :file-plain
+                         :name        "hame"
+                         :backup-path ["/home/" "/home/"]
+                         :new-owner "test"}
+                        {:type        :rsync
+                         :name        "downloads_compressed"
+                         :backup-path ["path"]
+                         :new-owner "test"}]
+ }
