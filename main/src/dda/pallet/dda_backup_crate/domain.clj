@@ -74,15 +74,15 @@
 (def TransportManagement
   {(s/optional-key :ssh-pull) s/Any
    (s/optional-key :duplicity-push)
-                              {:public-key                 secret/Secret
-                               :private-key                secret/Secret
-                               :passphrase                 secret/Secret
-                               :root-password              (s/either {:hashed-password secret/Secret}
-                                                                     {:clear-password secret/Secret})
-                               (s/optional-key :target-s3) {:aws-access-key-id               secret/Secret
-                                                            :aws-secret-access-key           secret/Secret
-                                                            :bucket-name                     s/Str
-                                                            (s/optional-key :directory-name) s/Str}}})
+   {:public-key                 secret/Secret
+    :private-key                secret/Secret
+    :passphrase                 secret/Secret
+    :root-password              (s/either {:hashed-password secret/Secret}
+                                          {:clear-password secret/Secret})
+    (s/optional-key :target-s3) {:aws-access-key-id               secret/Secret
+                                 :aws-secret-access-key           secret/Secret
+                                 :bucket-name                     s/Str
+                                 (s/optional-key :directory-name) s/Str}}})
 
 (def BackupConfig
   {:backup-name                           s/Str
@@ -107,7 +107,7 @@
   (clojure.string/upper-case (pgp/hex-id (pgp/decode-public-key ascii-armored-key))))
 
 (s/defn ^:always-validate
-user-domain-configuration
+ user-domain-configuration
   [config :- BackupConfigResolved]
   (let [{:keys [backup-user transport-management]} config
         duplicity-push (get-in transport-management [:duplicity-push])
@@ -129,7 +129,7 @@ user-domain-configuration
       {:dda-backup backup-user})))
 
 (s/defn ^:always-validate
-infra-backup-element :- infra-schema/BackupElement
+ infra-backup-element :- infra-schema/BackupElement
   [backup-element :- BackupElementResolved]
   (let [{:keys [name type]} backup-element]
     (-> backup-element
@@ -167,7 +167,7 @@ infra-backup-element :- infra-schema/BackupElement
 
 
 (s/defn ^:always-validate
-infra-configuration :- InfraResult
+ infra-configuration :- InfraResult
   [config :- BackupConfigResolved]
   (let [{} config]
     {infra/facility (infra-config config)}))
