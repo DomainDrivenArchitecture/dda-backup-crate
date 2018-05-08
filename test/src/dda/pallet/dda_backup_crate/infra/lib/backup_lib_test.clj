@@ -25,7 +25,7 @@
   (testing
     "backup files as compressed archive"
     (is (= ["#backup the specified files and directories"
-            "tar cvzf /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz /var/lib/liferay/data/ /var/lib/httpd/www/"
+            "tar cvzf /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz /var/lib/liferay/data/ /var/lib/httpd/www/ -C /"
             "chown dda-backup:dda-backup /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz"]
            (clojure.string/split-lines (sut/backup-element
                                          :backup-name "portal"
@@ -34,12 +34,12 @@
                                          :backup-element {:name             "prod"
                                                           :type             :file-compressed
                                                           :backup-file-name "portal_prod_file_${timestamp}.tgz"
-                                                          :backup-path      ["/var/lib/liferay/data/" "/var/lib/httpd/www/"]
-                                                          })))))
+                                                          :backup-path      ["/var/lib/liferay/data/" "/var/lib/httpd/www/"]})))))
+
   (testing
     "backup files as compressed archive"
     (is (= ["#backup the specified files and directories"
-            "tar cvf /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz /var/lib/liferay/data/ /var/lib/httpd/www/"
+            "tar cvf /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz /var/lib/liferay/data/ /var/lib/httpd/www/ -C /"
             "chown dda-backup:dda-backup /var/backups/transport-outgoing/portal_prod_file_${timestamp}.tgz"]
            (clojure.string/split-lines (sut/backup-element
                                          :backup-name "portal"
@@ -48,8 +48,8 @@
                                          :backup-element {:name             "prod"
                                                           :type             :file-plain
                                                           :backup-file-name "portal_prod_file_${timestamp}.tgz"
-                                                          :backup-path      ["/var/lib/liferay/data/" "/var/lib/httpd/www/"]
-                                                          }))))))
+                                                          :backup-path      ["/var/lib/liferay/data/" "/var/lib/httpd/www/"]}))))))
+
 
 (deftest backup-files-rsync
   (testing
@@ -62,8 +62,8 @@
                                          :backup-element {:name             "prod"
                                                           :type             :rsync
                                                           :backup-file-name "portal_prod_file_${timestamp}.tgz"
-                                                          :backup-path      ["/var/lib/liferay/data/" "/var/lib/httpd/www/"]
-                                                          }))))))
+                                                          :backup-path      ["/var/lib/liferay/data/" "/var/lib/httpd/www/"]}))))))
+
 
 
 
@@ -81,6 +81,4 @@
                                                           :backup-file-name "portal_prod_file_${timestamp}.sql"
                                                           :db-user-name "db-user"
                                                           :db-user-passwd "db-passwd"
-                                                          :db-name "db-name"
-                                                          }))))))
-
+                                                          :db-name "db-name"}))))))
