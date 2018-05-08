@@ -70,8 +70,8 @@
                                                     :backup-elements         (clojure.string/join "\n\n" (map #(backup-lib/backup-element :backup-name backup-name
                                                                                                                                           :backup-transport-folder backup-store-folder
                                                                                                                                           :user-name user-name :backup-element %) elements))}))
-    #"\n" -1)
-  )
+    #"\n" -1))
+
 
 (s/defn transport-element-lines
   ""
@@ -117,8 +117,6 @@
                                                        :provide-restore-dumps (clojure.string/join "\n" (restore-lib/provide-restore-dumps elements))
                                                        :restore-head-script (clojure.string/join "\n" (restore-lib/restore-head-script elements))
                                                        :service-restart (clojure.string/join "\n" service-restart-str)
-                                                       :restore-elements (clojure.string/join "\n" (map #(restore-lib/restore-element %) elements))
-                                                       }))
-      #"\n" -1))
-  )
+                                                       :restore-elements (clojure.string/join "\n" (map #(restore-lib/restore-element %) elements))}))
 
+      #"\n" -1)))
