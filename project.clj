@@ -1,11 +1,11 @@
-(defproject dda/dda-backup-crate "1.0.1-SNAPSHOT"
+(defproject dda/dda-backup-crate "1.0.1"
   :description "A crate to handle backups"
   :url "https://www.domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [dda/dda-pallet "2.1.1"]
-                 [dda/dda-user-crate "1.0.3-SNAPSHOT"]
+                 [dda/dda-pallet "2.1.2"]
+                 [dda/dda-user-crate "1.0.3"]
                  [selmer "1.11.7"]]
   :source-paths ["main/src"]
   :resource-paths ["main/resources"]
@@ -36,7 +36,7 @@
                        :resource-paths ["uberjar/resources"]
                        :aot :all
                        :main dda.pallet.dda-backup-crate.main
-                       :dependencies [[org.clojure/tools.cli "0.3.5"]
+                       :dependencies [[org.clojure/tools.cli "0.3.7"]
                                       [ch.qos.logback/logback-classic "1.3.0-alpha4"]
                                       [org.slf4j/jcl-over-slf4j "1.8.0-beta2"]]}}
   :local-repo-classpath true)
