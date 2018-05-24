@@ -7,13 +7,13 @@
 
 ## Jump to
 [Usage](#usage)
-[Additional-info-about-the-configuration](#additional-info-about-the-configuration)
-[Targets-config-example](#targets-config-example)
-[Backup-config-example](#backup-config-example)
-[Reference-Targets](#targets)
-[Reference-Domain-API](#domain-api)
-[Reference-Infra-API](#infra-api)
-[Compatibility](#compatibility)
+[Additional-info-about-the-configuration](#additional-info-about-the-configuration)  
+[Targets-config-example](#targets-config-example)  
+[Backup-config-example](#backup-config-example)  
+[Reference-Targets](#targets)  
+[Reference-Domain-API](#domain-api)  
+[Reference-Infra-API](#infra-api)  
+[Compatibility](#compatibility)  
 [License](#license)
 
 ## Features
@@ -65,6 +65,11 @@ java -jar dda-backup-crate-standalone.jar backup.edn
   ```bash
 java -jar dda-backup-crate-standalone.jar --targets targets.edn backup.edn
 ```
+6. After a successful installation there will be scripts managing the backup and restored
+process. If u navigate to `/usr/local/lib/dda-backup/` you can see all scripts.
+If you want to backup something, just execute the `backup.sh` script. After that you can `source-transport.sh` script. This will transport your backup to your store folder and it will also manages your `:gens-stored-on-source-system`. When you want to restore a backup just execute the `restore.sh` script. But be aware, that the `restore.sh` script can only restore the newest version, so if you want to restore an old version just delete the newer version or move them elsewhere.
+The backups themselves can found when you navigate to `/var/backups/` and there you also can see the three folders **transport-outgoing**, **store** and **restore**
+
 
 ## Additional-info-about-the-configuration
 Two configuration files are required by the dda-backup-crate:: "backup.edn" and "targets.edn" (or similar names). These files specify both WHAT to backup and restore and WHERE. In detail: the first file defines the configuration for the backup and restore scripts, while the second configuration file specifies the target nodes/systems, on which the installation and configurationg will be performed. The following examples will explain these files more in details.

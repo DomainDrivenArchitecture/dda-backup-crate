@@ -1,12 +1,7 @@
-{:backup-name          "downloads"
+{:backup-name          "home"
  :backup-user          {:clear-password {:plain "secret"}}
  :local-management     {:gens-stored-on-source-system 3}
  :backup-elements      [{:type        :file-plain
-                         :name        "hame"
-                         :backup-path ["/home/" "/home/"]
-                         :new-owner "test"}
-                        {:type        :rsync
-                         :name        "downloads_compressed"
-                         :backup-path ["path"]
-                         :new-owner "test"}]
- }
+                         :name        "home"
+                         :backup-path ["/home/"]
+                         :new-owner "test"}]}
