@@ -105,7 +105,7 @@ orVoJcs081M33hIFGyiETDanGni2zMlrf5Roy5LO8b5OW/zCgC/z
 
 (def test-infra-backup-element
    (merge test-backup-element1
-          {:backup-file-prefix-pattern "/var/backups/restore/ssh_file*",
+          {:backup-file-prefix-pattern "/var/backups/store/ssh_file*",
            :backup-file-name "ssh_file_${timestamp}.tgz"
            :type-name "file"}))
 
