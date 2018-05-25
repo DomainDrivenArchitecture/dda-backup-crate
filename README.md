@@ -27,7 +27,7 @@ The backup Crate provides:
 * manages the required cronjobs.
 
 ## Usage
-1. **Download the jar-file** from the releases page of this repository (e.g. `curl -L -o backup.jar https://github.com/DomainDrivenArchitecture/dda-backup-crate/releases/download/1.0.1/dda-backup-crate-1.0.1-standalone.jar`)
+1. **Download the jar-file** from the releases page of this repository (e.g. `curl -L -o backup.jar https://github.com/DomainDrivenArchitecture/dda-backup-crate/releases/download/1.0.2/dda-backup-crate-1.0.2-standalone.jar`)
 1. **Create the ```backup.edn``` configruration** file in the same folder where you saved the jar-file. The ```backup.edn``` file specifies the configuration used to generate the scripts for
 backing up and restoring the system. You may use the following example as a starting point and adjust it according to your own needs:
 
