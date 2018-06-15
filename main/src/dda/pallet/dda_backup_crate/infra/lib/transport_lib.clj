@@ -15,7 +15,7 @@
 ; limitations under the License.
 
 (ns dda.pallet.dda-backup-crate.infra.lib.transport-lib
-  (require
+  (:require
    [schema.core :as s]))
 
 (s/defn move-local

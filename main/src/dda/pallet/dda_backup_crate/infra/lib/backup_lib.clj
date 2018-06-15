@@ -15,7 +15,7 @@
 ; limitations under the License.
 
 (ns dda.pallet.dda-backup-crate.infra.lib.backup-lib
-  (require
+  (:require
     [selmer.parser :as selmer]))
 
 (defn render-file
@@ -52,8 +52,8 @@
                                                                 :user-name               user-name
                                                                 :db-name                 (:db-name backup-element)
                                                                 :db-user-name            (:db-user-name backup-element)
-                                                                :db-user-passwd          (:db-user-passwd backup-element)
-                                                                }))
+                                                                :db-user-passwd          (:db-user-passwd backup-element)}))
+
 
 (defmethod backup-element :rsync
   [& {:keys [backup-element backup-transport-folder]}]
