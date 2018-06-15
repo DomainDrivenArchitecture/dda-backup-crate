@@ -3,10 +3,8 @@
   :url "https://www.domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0.html"}
-  :dependencies [[org.clojure/clojure "1.7.0"]
-                 [dda/dda-pallet "2.1.2"]
-                 [dda/dda-user-crate "1.0.3"]
-                 [selmer "1.11.7"]]
+  :dependencies [[dda/dda-pallet "2.2.0"]
+                 [dda/dda-user-crate "1.0.5"]]
   :source-paths ["main/src"]
   :resource-paths ["main/resources"]
   :repositories [["snapshots" :clojars]
@@ -20,8 +18,9 @@
                                     "test/resources"]
                    :dependencies
                    [[org.clojure/test.check "0.10.0-alpha2"]
-                    [org.domaindrivenarchitecture/pallet-aws "0.2.8.2"]
-                    [com.palletops/pallet "0.8.12" :classifier "tests"]
+                    [org.domaindrivenarchitecture/pallet-aws "0.2.8.2"
+                     :exclusions [com.palletops/pallet]]
+                    [dda/pallet "0.9.0" :classifier "tests"]
                     [ch.qos.logback/logback-classic "1.3.0-alpha4"]
                     [org.slf4j/jcl-over-slf4j "1.8.0-beta2"]]
                    :plugins [[lein-sub "0.3.0"]
@@ -31,7 +30,7 @@
                    :repl-options {:init-ns dda.pallet.dda-backup-crate.app.instantiate-aws}}
              :test {:test-paths ["test/src"]
                     :resource-paths ["test/resources"]
-                    :dependencies [[com.palletops/pallet "0.8.12" :classifier "tests"]]}
+                    :dependencies [[dda/pallet "0.9.0" :classifier "tests"]]}
              :uberjar {:source-paths ["uberjar/src"]
                        :resource-paths ["uberjar/resources"]
                        :aot :all
