@@ -4,4 +4,7 @@
  :backup-elements      [{:type        :file-plain
                          :name        "home"
                          :backup-path ["/home/"]
-                         :new-owner "test"}]}
+                         :new-owner "test"}
+                        {:type        :rsync
+                         :name        "home_rsync"
+                         :backup-path ["/home/"]}]}
