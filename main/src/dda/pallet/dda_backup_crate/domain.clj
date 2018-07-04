@@ -145,19 +145,21 @@
         public-gpg (get-in transport-management
                            [:duplicity-push :public-key])
         additional-map (if (contains? transport-management :duplicity-push)
-                         {:transport-management {:duplicity-push {:tmp-dir               "/tmp"
-                                                                  :gpg-key-id            (key-id public-gpg)
-                                                                  :days-stored-on-backup 21}}}
+                         {:transport-management
+                          {:duplicity-push {:tmp-dir               "/tmp"
+                                            :gpg-key-id            (key-id public-gpg)
+                                            :days-stored-on-backup 21}}}
                          {})]
-    (mu/deep-merge
-      (if (contains? transport-management :duplicity-push)
-        (update-in
-          config
-          [:transport-management :duplicity-push]
-          dissoc
-          :root-password)
-        config)
-      additional-map
+    (merge
+      (mu/deep-merge
+        (if (contains? transport-management :duplicity-push)
+          (update-in
+            config
+            [:transport-management :duplicity-push]
+            dissoc
+            :root-password)
+          config)
+        additional-map)
       {:backup-script-path      "/usr/local/lib/dda-backup/"
        :backup-transport-folder "/var/backups/transport-outgoing"
        :backup-store-folder     "/var/backups/store"

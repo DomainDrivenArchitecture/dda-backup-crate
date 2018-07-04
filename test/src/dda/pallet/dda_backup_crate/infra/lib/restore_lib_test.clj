@@ -17,10 +17,10 @@
 (ns dda.pallet.dda-backup-crate.infra.lib.restore-lib-test
   (:require
    [clojure.test :refer :all]
-   [pallet.actions :as actions]
-   ;[dda.pallet.dda-backup-crate.infra.core.backup-element-test :as backup-element]
+   [schema.core :as s]
    [dda.pallet.dda-backup-crate.infra.lib.restore-lib :as sut]))
 
+(s/set-fn-validation! true)
 
 (deftest restore-mysql
   (testing
