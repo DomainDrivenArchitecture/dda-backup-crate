@@ -16,9 +16,11 @@
 
 (ns dda.pallet.dda-backup-crate.domain-test
   (:require
-   [schema.core :as s]
    [clojure.test :refer :all]
+   [schema.core :as s]
    [dda.pallet.dda-backup-crate.domain :as sut]))
+
+(s/set-fn-validation! true)
 
 (def test-backup-element1 {:type :file-compressed
                            :name "ssh"

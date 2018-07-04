@@ -35,7 +35,9 @@
             "echo \"finished db restore\""]
            (clojure.string/split-lines
              (sut/restore-element
-                {:type :mysql
+                {:backup-file-name "file-name"
+                 :backup-file-prefix-pattern "prefix"
+                 :type :mysql
                  :name "name"
                  :type-name "mysql"
                  :db-user-name "owncloud"
@@ -48,31 +50,35 @@
     (is (= ["# ------------- restore file --------------"
             "echo \"file restore ...\""
             ""
-            "rm -r /var/www/owncloud/*"
+            "rm -r /var/www/owncloud/"
             "tar --same-owner --same-permissions -xf ${most_recent_name_file_dump} -C /"
             ""
             "echo \"finished file restore.\""]
            (clojure.string/split-lines
              (sut/restore-element
-               {:type :file-plain
+               {:backup-file-name "file-name"
+                :backup-file-prefix-pattern "prefix"
+                :type :file-plain
                 :name "name"
                 :type-name "file"
-                :backup-path ["/var/www/owncloud/*"]})))))
+                :backup-path ["/var/www/owncloud/"]})))))
   (testing
    "restore for liferay"
     (is (= ["# ------------- restore file --------------"
             "echo \"file restore ...\""
             ""
-            "rm -r /var/lib/liferay/data/*"
+            "rm -r /var/lib/liferay/data/"
             "tar -xzf ${most_recent_name_file_dump} -C /"
             ""
-            "chown -R tomcat7:tomcat7 /var/lib/liferay/data/*"
+            "chown -R tomcat7:tomcat7 /var/lib/liferay/data/"
             ""
             "echo \"finished file restore.\""]
            (clojure.string/split-lines
              (sut/restore-element
-               {:type :file-compressed
+               {:backup-file-name "file-name"
+                :backup-file-prefix-pattern "prefix"
+                :type :file-compressed
                 :name "name"
                 :type-name "file"
-                :backup-path ["/var/lib/liferay/data/*"]
+                :backup-path ["/var/lib/liferay/data/"]
                 :new-owner "tomcat7"}))))))
