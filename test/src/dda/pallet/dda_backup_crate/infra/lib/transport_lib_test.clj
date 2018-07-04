@@ -18,8 +18,9 @@
   (:require
    [clojure.test :refer :all]
    [schema.core :as s]
-   ;[dda.pallet.dda-backup-crate.infra.core.backup-element-test :as backup-element]
    [dda.pallet.dda-backup-crate.infra.lib.transport-lib :as sut]))
+
+(s/set-fn-validation! true)
 
 (deftest move-local-test
   (testing

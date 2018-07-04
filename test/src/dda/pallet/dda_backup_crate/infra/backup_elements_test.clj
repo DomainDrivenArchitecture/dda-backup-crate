@@ -20,6 +20,8 @@
     [clojure.test :refer :all]
     [dda.pallet.dda-backup-crate.infra.backup-elements :as sut]))
 
+(s/set-fn-validation! true)
+
 (defn pre-process
   [fqdn]
   ["# replace location in portal config"
@@ -158,7 +160,7 @@
            (sut/backup-script-lines
             "service-name"
             "/var/backups/transport-outgoing"
-            nil
+            ""
             "dda-backup"
             letsencrypt-only-element))))
   (testing
@@ -166,7 +168,7 @@
     (is (= (sut/backup-script-lines
              "service-name"
              "/var/backups/transport-outgoing"
-             nil
+             ""
              "dda-backup"
              letsencrypt-only-element)
            (sut/backup-script-lines

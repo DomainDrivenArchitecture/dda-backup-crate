@@ -87,7 +87,7 @@
    backup-script-path :- s/Str
    backup-transport-folder :- s/Str
    backup-store-folder :- s/Str
-   local-management :- [schema/LocalManagement]
+   local-management :- schema/LocalManagement
    elements :- [schema/BackupElement]]
   (let [{:keys [gens-stored-on-source-system]} local-management]
     (into
